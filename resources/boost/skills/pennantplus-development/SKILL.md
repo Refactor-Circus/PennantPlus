@@ -1,0 +1,117 @@
+---
+name: pennantplus-development
+description: >
+  Configure and apply the PennantPlus package in Laravel applications: a
+  Pennant driver that layers per-user values over one global value, a
+  FeatureGate (and `feature:` middleware) for routes and MCP tools, and
+  feature flag management through a REST API, an MCP server, and an Atrium
+  dashboard page.
+license: MIT
+metadata:
+  author: Jay Fletcher
+---
+
+# PennantPlus
+
+Use this skill when a Laravel application uses `jayi/pennantplus` to layer Pennant feature flags (one global value, per-user overrides), gate routes or MCP tools on them, or manage stored flag values through the API, MCP tools, or the Atrium page.
+
+## Primary Goal
+
+- apply the `jayi/pennantplus` package's public API in the smallest correct way
+
+## Workflow
+
+### 1. Install and point Pennant at the driver
+
+```bash
+composer require jayi/pennantplus
+php artisan vendor:publish --tag="pennantplus-config"
+```
+
+```php
+// config/pennant.php — same options as the `database` driver
+'database' => ['driver' => 'pennantplus', 'connection' => null, 'table' => 'features'],
+```
+
+A scope (user) with no stored value is resolved and compared with the global (null-scope) value; when they match nothing is written, so the scope keeps following the global value. Only a value that differs from global (an explicit `activate()`/`deactivate()` for that scope, or a resolver rule that treats it differently) is stored.
+
+### 2. Write features whose users follow the global value
+
+```php
+public function resolve(mixed $scope): bool
+{
+    return $scope === null
+        ? true                                       // the global default
+        : Feature::for(null)->active(static::class); // users follow global
+}
+```
+
+Keep the global default `false` only for kill switches that must stay dark until flipped. Never fold another flag into a feature's `resolve()`: a stored user value would snapshot both and go stale.
+
+### 3. Gate entry surfaces with the FeatureGate
+
+- `JayI\PennantPlus\FeatureGate::allows($feature, $user)`: features matching `pennantplus.gate.global_only` (default `*SupportFeature`) are checked globally only; every other feature must be active globally **and** for the user (globally only without a user).
+- Register a bypass once, e.g. in a service provider: `app(FeatureGate::class)->bypassUsing(fn (Authenticatable $user): bool => $user->hasRole('developer'));`
+- Routes: alias `feature` to `JayI\PennantPlus\Http\Middleware\EnsureFeatureActive` and use `->middleware('feature:'.ReportsFeature::class)`; it aborts 403 when the gate refuses.
+- MCP tools: return `app(FeatureGate::class)->allows($feature, auth()->user())` from `shouldRegister()`.
+
+### 4. Secure the management surface before exposing it
+
+The API, MCP server and dashboard change flags for **every** user. Routes ship on `api` middleware only and both MCP transports are off:
+
+```php
+// config/pennantplus.php
+'ability' => 'manageFeatures', // optional Gate ability checked by every endpoint, tool and the page
+'routes' => ['enabled' => true, 'prefix' => 'pennantplus', 'middleware' => ['api', 'auth:sanctum']],
+'mcp' => [
+    'web' => ['enabled' => true, 'route' => 'mcp/pennantplus', 'middleware' => ['auth:sanctum']],
+    'local' => ['enabled' => true, 'handle' => 'pennantplus'], // php artisan mcp:start pennantplus
+],
+```
+
+Or register `JayI\PennantPlus\Mcp\PennantPlusServer` yourself in `routes/ai.php` behind your own auth group.
+
+### 5. Manage flags via the API (or the matching MCP tools)
+
+A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Models\User|5`, or any string) or with `scope_type` (`global`, `other`, or a configured model type) plus `scope_id`. Without either, the global scope.
+
+- `GET /pennantplus/features` — every defined, discoverable or stored feature: `name`, `defined`, `global` (stored), `global_stored`, `overrides`. MCP `list-features-tool`.
+- `GET /pennantplus/features/{feature}` — the same plus the resolved global `value`. MCP `show-feature-tool`.
+- `GET /pennantplus/features/{feature}/check?scope_type=&scope_id=` — `global`, the scope's `value`, `active`, and `gate` (FeatureGate result; null for non-user scopes). MCP `check-feature-tool`.
+- `DELETE /pennantplus/features/{feature}` — purge every stored value. MCP `purge-feature-tool`.
+- `GET /pennantplus/values?feature=&scope=&scope_id=&page=` — stored values, newest first (scope filter: `global`, `other`, or a model type). MCP `list-feature-values-tool`.
+- `PUT /pennantplus/values` `{feature, scope|scope_type+scope_id, value}` — store a value (any JSON). Setting the **global** value forgets every other scope's value of that feature (`purge_scopes_on_global_update`). MCP `set-feature-value-tool` takes `value` JSON-encoded (`"true"`, `"false"`, `"{...}"`).
+- `DELETE /pennantplus/values` `{feature, scope|scope_type+scope_id}` — forget one scope's value so it follows global again. MCP `forget-feature-value-tool`.
+- `GET /pennantplus/scopes` — scope types. MCP `list-scope-types-tool`.
+- `GET /pennantplus/scopes/{type}/models?q=` — find models of a configured type, with the serialized `scope` to reuse. MCP `search-scope-models-tool`.
+
+Class-based feature names contain backslashes; URL-encode them in paths.
+
+### 6. Configure discovery and scope models
+
+```php
+'features' => [app_path('Features'), app_path('Domains/*/Features')], // globbed, so features list before first use
+'scopes' => [App\Models\User::class => ['label' => 'Users', 'search' => ['name', 'email'], 'title' => 'name']],
+```
+
+### 7. The Atrium page
+
+With `jayi/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`, routes `atrium.pennant.*`). Hide it with `atrium.disabled => ['pennant']`.
+
+### 8. React to changes
+
+Every write fires an action event pair from `JayI\PennantPlus\Events\Action`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `JayI\PennantPlus\Contracts\ActionFinishedEvent` for all of them; finished events fire after commit.
+
+## Rules, References, and Templates
+
+Read before executing:
+
+- `config/pennantplus.php` — store, ability, purge switch, discovery, scopes, gate patterns, routes, MCP transports
+- `README.md` — driver, gate, API and MCP reference
+
+## Anti-patterns
+
+- do not expose the routes or enable the MCP web transport without auth middleware
+- do not change a global value outside the API/MCP/page (e.g. tinker) and expect user values to follow — only those surfaces purge the stored user values
+- do not return a hard-coded default for user scopes in `resolve()`; return the global value so users follow flips
+- do not check `*SupportFeature` (global-only) flags per user
