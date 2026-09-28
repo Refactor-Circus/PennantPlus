@@ -274,6 +274,20 @@ class AtriumPluginTest extends TestCase
         $this->assertNotContains(TrackingRates::class, $features);
     }
 
+    public function test_both_feature_fields_are_searchable(): void
+    {
+        Feature::for(null)->activate('stored-only');
+
+        $this->actingAs($this->user())->get(route('atrium.pennant.index', ['feature' => 'stored-only']))
+            ->assertOk()
+            ->assertSee('data-testid="pennant-feature"', false)
+            ->assertSee('data-testid="pennant-filter-feature"', false)
+            ->assertSee('atriumPennantFeature', false)
+            ->assertSee('value="stored-only"', false)
+            ->assertDontSee('<datalist', false)
+            ->assertDontSee('<select name="feature"', false);
+    }
+
     public function test_it_forgets_a_stored_value(): void
     {
         $ada = $this->user();

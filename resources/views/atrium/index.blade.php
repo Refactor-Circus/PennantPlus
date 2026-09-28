@@ -14,6 +14,7 @@
     {{-- Utilities this page uses that Atrium's compiled stylesheet does not ship. --}}
     <style>
         .contents{display:contents}
+        .break-all{word-break:break-all}
         .ml-1{margin-left:var(--spacing)}
         .mt-1\.5{margin-top:calc(var(--spacing) * 1.5)}
         .max-h-60{max-height:calc(var(--spacing) * 60)}
@@ -42,12 +43,12 @@
                 @csrf
                 @method('PUT')
 
-                <x-atrium::form.input name="feature" :label="__('pennantplus::pennantplus.feature')" list="atrium-pennant-features" required />
-                <datalist id="atrium-pennant-features">
-                    @foreach ($features as $feature)
-                        <option value="{{ $feature }}"></option>
-                    @endforeach
-                </datalist>
+                @include('pennantplus::atrium.partials.feature-combobox', [
+                    'id' => 'atrium-pennant-feature',
+                    'value' => old('feature', ''),
+                    'required' => true,
+                    'testid' => 'pennant-feature',
+                ])
 
                 <div class="contents" x-data="atriumPennantScope(@js(route('atrium.pennant.scopes')), @js(old('scope_type', FeatureFlagManager::GLOBAL)))">
                     <x-atrium::form.select name="scope_type" id="atrium-pennant-scope-type" :label="__('pennantplus::pennantplus.scope')"
@@ -110,9 +111,12 @@
 
         @if ($supported)
             <form method="GET" action="{{ route('atrium.pennant.index') }}" class="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennant-filters">
-                <x-atrium::form.select name="feature" id="atrium-pennant-filter-feature" :label="__('pennantplus::pennantplus.feature')"
-                                       :options="['' => __('pennantplus::pennantplus.all_features')] + array_combine($features, $features)"
-                                       :selected="$filters['feature']" />
+                @include('pennantplus::atrium.partials.feature-combobox', [
+                    'id' => 'atrium-pennant-filter-feature',
+                    'value' => $filters['feature'],
+                    'placeholder' => __('pennantplus::pennantplus.all_features'),
+                    'testid' => 'pennant-filter-feature',
+                ])
                 <x-atrium::form.select name="scope" id="atrium-pennant-filter-scope" :label="__('pennantplus::pennantplus.scope')"
                                        :options="$scopeOptions" :selected="$filters['scope']" />
                 <x-atrium::form.input name="scope_id" id="atrium-pennant-filter-scope-id" :label="__('pennantplus::pennantplus.scope_id')" :value="$filters['scope_id']" />
@@ -201,6 +205,40 @@
     @once
         @push('atrium-scripts')
             <script>
+                window.atriumPennantFeature = function (features, value) {
+                    return {
+                        features: features,
+                        query: value ?? '',
+                        open: false,
+                        active: -1,
+                        get matches() {
+                            const needle = this.query.trim().toLowerCase()
+
+                            return needle === '' ? this.features : this.features.filter((feature) => feature.toLowerCase().includes(needle))
+                        },
+                        show() {
+                            this.open = true
+                            this.active = -1
+                        },
+                        move(step) {
+                            if (! this.open) { this.show() }
+                            const count = this.matches.length
+                            if (count === 0) { return }
+                            this.active = (this.active + step + count) % count
+                        },
+                        choose(event) {
+                            if (! this.open || this.active < 0 || ! this.matches[this.active]) { return }
+                            event.preventDefault()
+                            this.pick(this.matches[this.active])
+                        },
+                        pick(feature) {
+                            this.query = feature
+                            this.open = false
+                            this.active = -1
+                        },
+                    }
+                }
+
                 window.atriumPennantScope = function (url, type) {
                     return {
                         type: type,

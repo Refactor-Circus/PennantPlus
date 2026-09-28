@@ -10,6 +10,7 @@ return [
     'other' => 'Other scopes',
     'all_scopes' => 'All scopes',
     'all_features' => 'All features',
+    'no_features' => 'No matching features.',
     'feature' => 'Feature',
     'scope' => 'Scope',
     'scope_id' => 'Scope ID',
