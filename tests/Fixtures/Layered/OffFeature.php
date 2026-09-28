@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace JayI\PennantPlus\Tests\Fixtures\Layered;
 
-use JayI\PennantPlus\LayeredFeature;
+use JayI\PennantPlus\OffLayeredFeature;
 
-class OffFeature extends LayeredFeature
-{
-    protected function default(): bool
-    {
-        return false;
-    }
-}
+class OffFeature extends OffLayeredFeature {}

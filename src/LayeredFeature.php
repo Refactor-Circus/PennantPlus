@@ -11,18 +11,12 @@ use Laravel\Pennant\Feature;
  *
  * The global (null) scope resolves to `default()`; any other scope resolves
  * to the current global value, so with the `pennantplus` driver nothing is
- * stored for it until it is given its own value. Extend it and, for a
- * feature that must start off, override `default()`:
+ * stored for it until it is given its own value. Extend OnLayeredFeature or
+ * OffLayeredFeature rather than this class:
  *
- *     class ReportsFeature extends LayeredFeature {}
+ *     class ReportsFeature extends OnLayeredFeature {}
  *
- *     class HubWritesFeature extends LayeredFeature
- *     {
- *         protected function default(): bool
- *         {
- *             return false;
- *         }
- *     }
+ *     class ExternalWritesFeature extends OffLayeredFeature {}
  */
 abstract class LayeredFeature
 {
@@ -36,8 +30,5 @@ abstract class LayeredFeature
     /**
      * The global value before anything has been stored for it.
      */
-    protected function default(): bool
-    {
-        return true;
-    }
+    abstract protected function default(): bool;
 }

@@ -27,20 +27,15 @@ For a non-null scope with no stored value, the driver resolves the feature and c
 Pair it with features whose user value follows the global one:
 
 ```php
-use JayI\PennantPlus\LayeredFeature;
+use JayI\PennantPlus\OffLayeredFeature;
+use JayI\PennantPlus\OnLayeredFeature;
 
-class ReportsFeature extends LayeredFeature {}   // global default: on
+class ReportsFeature extends OnLayeredFeature {}           // global default: on
 
-class HubWritesFeature extends LayeredFeature    // global default: off
-{
-    protected function default(): bool
-    {
-        return false;
-    }
-}
+class ExternalWritesFeature extends OffLayeredFeature {}   // global default: off
 ```
 
-`LayeredFeature::resolve()` returns `default()` for the global scope and the current global value for any other scope.
+Both extend `LayeredFeature`, whose `resolve()` returns the default for the global scope and the current global value for any other scope.
 
 ## The feature gate
 
