@@ -27,13 +27,20 @@ For a non-null scope with no stored value, the driver resolves the feature and c
 Pair it with features whose user value follows the global one:
 
 ```php
-public function resolve(mixed $scope): bool
+use JayI\PennantPlus\LayeredFeature;
+
+class ReportsFeature extends LayeredFeature {}   // global default: on
+
+class HubWritesFeature extends LayeredFeature    // global default: off
 {
-    return $scope === null
-        ? true                                      // the global default
-        : Feature::for(null)->active(static::class); // users follow global
+    protected function default(): bool
+    {
+        return false;
+    }
 }
 ```
+
+`LayeredFeature::resolve()` returns `default()` for the global scope and the current global value for any other scope.
 
 ## The feature gate
 

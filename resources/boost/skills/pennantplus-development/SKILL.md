@@ -38,13 +38,20 @@ A scope (user) with no stored value is resolved and compared with the global (nu
 ### 2. Write features whose users follow the global value
 
 ```php
-public function resolve(mixed $scope): bool
+use JayI\PennantPlus\LayeredFeature;
+
+class ReportsFeature extends LayeredFeature {}   // global default: on
+
+class HubWritesFeature extends LayeredFeature    // global default: off
 {
-    return $scope === null
-        ? true                                       // the global default
-        : Feature::for(null)->active(static::class); // users follow global
+    protected function default(): bool
+    {
+        return false;
+    }
 }
 ```
+
+`LayeredFeature::resolve()` returns `default()` for the global scope and the current global value for any other scope.
 
 Keep the global default `false` only for kill switches that must stay dark until flipped. Never fold another flag into a feature's `resolve()`: a stored user value would snapshot both and go stale.
 
@@ -113,5 +120,5 @@ Read before executing:
 
 - do not expose the routes or enable the MCP web transport without auth middleware
 - do not change a global value outside the API/MCP/page (e.g. tinker) and expect user values to follow — only those surfaces purge the stored user values
-- do not return a hard-coded default for user scopes in `resolve()`; return the global value so users follow flips
+- do not hand-write `resolve()` returning a hard-coded default for user scopes; extend `LayeredFeature` so users follow global flips
 - do not check `*SupportFeature` (global-only) flags per user
