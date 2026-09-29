@@ -131,4 +131,23 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Cortex
+    |--------------------------------------------------------------------------
+    |
+    | When jayi/cortex is installed, the MCP server is registered with it, so
+    | its instructions can be overridden, and the tools join its registry,
+    | so Cortex agents can inspect and change feature flags. Set `tools` to
+    | a list of tool names, such as ['list-features-tool',
+    | 'check-feature-tool'], to offer only some of them.
+    |
+    */
+
+    'cortex' => [
+        'enabled' => true,
+        'server' => 'pennantplus',
+        'tools' => null,
+    ],
+
 ];

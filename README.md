@@ -85,6 +85,29 @@ Feature names that are class names contain backslashes: URL-encode them.
 
 `JayI\PennantPlus\Mcp\PennantPlusServer` exposes the same operations as nine tools behind ToolSearch: `list-features-tool`, `show-feature-tool`, `check-feature-tool`, `purge-feature-tool`, `list-feature-values-tool`, `set-feature-value-tool` (value JSON-encoded), `forget-feature-value-tool`, `list-scope-types-tool`, `search-scope-models-tool`. Enable its transports under `pennantplus.mcp`, or register it yourself behind your own auth.
 
+## Cortex
+
+When [`jayi/cortex`](https://github.com/jayjfletcher/cortex) is installed, PennantPlus connects its MCP server to it. Nothing needs registering in your app.
+
+- **Agents can manage flags.** Every PennantPlus MCP tool joins Cortex's tool registry under its own name (`list-features-tool`, `check-feature-tool`, `set-feature-value-tool`, ...), so an agent can inspect and change feature flags. They are tagged with the server name (`pennantplus`), so they filter together in the Cortex dashboard.
+- **Instructions and descriptions can change without a deploy.** The server is registered with Cortex as `pennantplus`, so its instructions get Cortex's versioned, publishable overrides, and so does each tool's description. Published overrides are served both to MCP clients and to agents.
+
+```php
+// config/pennantplus.php
+'cortex' => [
+    'enabled' => true,          // false leaves Cortex alone
+    'server' => 'pennantplus',  // the server's name in Cortex
+    'tools' => null,            // null for every tool, or a list of names
+],
+```
+
+About how it works:
+
+- **Optional:** Cortex is not a dependency. Without it nothing Cortex-related loads.
+- **Lazy:** registration happens the first time Cortex's registries are used.
+- **Your config wins:** a name already registered with Cortex, for example in your own `config/cortex.php`, is left alone.
+- **Tool list from the server:** the tools come from `PennantPlusServer::TOOLS`, which is also the catalog the server serves, so a tool added to PennantPlus reaches Cortex without any change in your app.
+
 ## Atrium dashboard
 
 With `jayi/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`). It lists stored values by feature and scope, sets a value for the global scope, a configured model or any string scope, forgets a value, and purges a feature. Setting a **global** value forgets every other scope's value of that feature (`pennantplus.purge_scopes_on_global_update`). It uses the same `store`, `ability`, `features` and `scopes` settings as the API.

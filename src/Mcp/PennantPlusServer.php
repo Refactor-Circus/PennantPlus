@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace JayI\PennantPlus\Mcp;
 
+use JayI\PennantPlus\Cortex\CortexIntegration;
 use JayI\PennantPlus\Mcp\Tools\CheckFeatureTool;
 use JayI\PennantPlus\Mcp\Tools\ForgetFeatureValueTool;
 use JayI\PennantPlus\Mcp\Tools\ListFeaturesTool;
@@ -17,6 +18,7 @@ use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
+use Laravel\Mcp\Server\ServerContext;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\ToolSearch;
 
@@ -26,24 +28,48 @@ use Laravel\Mcp\Server\Tools\ToolSearch;
 final class PennantPlusServer extends Server
 {
     /**
+     * Every tool the server offers, behind ToolSearch. Also registered with
+     * Cortex when it is installed.
+     *
+     * @var array<int, class-string<Tool>>
+     */
+    public const array TOOLS = [
+        // Features
+        ListFeaturesTool::class,
+        ShowFeatureTool::class,
+        CheckFeatureTool::class,
+        PurgeFeatureTool::class,
+
+        // Stored values
+        ListFeatureValuesTool::class,
+        SetFeatureValueTool::class,
+        ForgetFeatureValueTool::class,
+
+        // Scopes
+        ListScopeTypesTool::class,
+        SearchScopeModelsTool::class,
+    ];
+
+    /**
      * @var array<class-string<ToolSearch>, array<int, class-string<Tool>|Tool>>
      */
     protected array $tools = [
-        ToolSearch::class => [
-            // Features
-            ListFeaturesTool::class,
-            ShowFeatureTool::class,
-            CheckFeatureTool::class,
-            PurgeFeatureTool::class,
-
-            // Stored values
-            ListFeatureValuesTool::class,
-            SetFeatureValueTool::class,
-            ForgetFeatureValueTool::class,
-
-            // Scopes
-            ListScopeTypesTool::class,
-            SearchScopeModelsTool::class,
-        ],
+        ToolSearch::class => self::TOOLS,
     ];
+
+    /**
+     * Serve Cortex's published instructions override, when Cortex is
+     * installed and one is published, in place of the ones declared above.
+     */
+    public function createContext(): ServerContext
+    {
+        $context = parent::createContext();
+        $override = app(CortexIntegration::class)->instructions();
+
+        if ($override !== null) {
+            $context->instructions = $override;
+        }
+
+        return $context;
+    }
 }

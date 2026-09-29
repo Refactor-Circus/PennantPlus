@@ -6,10 +6,10 @@ namespace JayI\PennantPlus\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use JayI\PennantPlus\Mcp\Requests\SearchScopeModelsMcpRequest;
+use JayI\PennantPlus\Mcp\Tool;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
-use Laravel\Mcp\Server\Tool;
 
 #[Description('Find models of a searchable scope type by key or search columns, with the serialized scope to use in other tools.')]
 final class SearchScopeModelsTool extends Tool

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Foundation\Auth\User;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
+use JayI\PennantPlus\Tests\CortexTestCase;
 use JayI\PennantPlus\Tests\TestCase;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Server\Testing\TestResponse;
@@ -11,7 +12,8 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Transport\FakeTransporter;
 use Laravel\Mcp\Transport\JsonRpcResponse;
 
-uses(TestCase::class)->in(__DIR__);
+uses(TestCase::class)->in('Feature', 'Unit');
+uses(CortexTestCase::class)->in('Cortex');
 
 /**
  * Call a catalog tool the way a client reaches it: every PennantPlus tool

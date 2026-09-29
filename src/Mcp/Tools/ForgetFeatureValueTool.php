@@ -6,11 +6,11 @@ namespace JayI\PennantPlus\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use JayI\PennantPlus\Mcp\Requests\ForgetFeatureValueMcpRequest;
+use JayI\PennantPlus\Mcp\Tool;
 use JayI\PennantPlus\Mcp\Tools\Concerns\DescribesScope;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
-use Laravel\Mcp\Server\Tool;
 
 #[Description('Forget the stored value of a feature flag for one scope, so that scope follows the global value again.')]
 final class ForgetFeatureValueTool extends Tool

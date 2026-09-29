@@ -10,3 +10,4 @@
 - A management API (`pennantplus.routes`) and an MCP server (`PennantPlusServer`, nine tools) to list, show, check, set, forget and purge feature values and find scopes, sharing actions and an optional `pennantplus.ability`.
 - The Atrium **Feature flags** page, moved from `jayi/atrium` (`JayI\PennantPlus\Atrium`). Setting a global value purges every other scope's value of that feature.
 - The Atrium page's feature field and feature filter are searchable comboboxes over the discovered features.
+- Cortex integration: when `jayi/cortex` is installed, the MCP server registers with it as `pennantplus` and every tool joins its tool registry (tagged `pennantplus`), so agents can use them. Published instruction and tool description overrides are served to MCP clients and agents. Configured under `pennantplus.cortex`; Cortex stays optional.

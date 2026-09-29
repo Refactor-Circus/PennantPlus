@@ -25,6 +25,7 @@
     },
     "require-dev": {
         "jayi/atrium": "dev-main",
+        "jayi/cortex": "dev-main",
         "larastan/larastan": "^3.12",
         "laravel/pao": "^1.0",
         "laravel/pint": "^1.29",
@@ -35,7 +36,8 @@
         "phpstan/extension-installer": "^1.4"
     },
     "suggest": {
-        "jayi/atrium": "Manage stored feature flag values from the Atrium dashboard (dev-main)."
+        "jayi/atrium": "Manage stored feature flag values from the Atrium dashboard (dev-main).",
+        "jayi/cortex": "Let Cortex agents use the PennantPlus tools and manage the MCP instructions and tool descriptions (dev-main)."
     },
     "autoload": {
         "psr-4": {
@@ -116,6 +118,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/jayjfletcher/Atrium.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/jayjfletcher/cortex.git"
         }
     ]
 }

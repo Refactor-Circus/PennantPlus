@@ -6,11 +6,11 @@ namespace JayI\PennantPlus\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use JayI\PennantPlus\Mcp\Requests\CheckFeatureMcpRequest;
+use JayI\PennantPlus\Mcp\Tool;
 use JayI\PennantPlus\Mcp\Tools\Concerns\DescribesScope;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
-use Laravel\Mcp\Server\Tool;
 
 #[Description('Resolve a feature flag for one scope (global when none is given): the global value, the scope value, and whether the feature gate lets that scope through.')]
 final class CheckFeatureTool extends Tool

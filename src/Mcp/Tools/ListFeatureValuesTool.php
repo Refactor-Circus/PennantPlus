@@ -6,10 +6,10 @@ namespace JayI\PennantPlus\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use JayI\PennantPlus\Mcp\Requests\ListFeatureValuesMcpRequest;
+use JayI\PennantPlus\Mcp\Tool;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
-use Laravel\Mcp\Server\Tool;
 
 #[Description('List stored feature flag values, newest first. Filter by feature and by scope: "global", "other", or a model type (optionally one model key). Paginated.')]
 final class ListFeatureValuesTool extends Tool

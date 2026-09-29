@@ -9,6 +9,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
+use JayI\PennantPlus\Cortex\CortexIntegration;
 use JayI\PennantPlus\Drivers\GlobalAwareDatabaseDriver;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
 use Laravel\Mcp\Facades\Mcp;
@@ -38,6 +39,9 @@ class PennantPlusServiceProvider extends ServiceProvider
         }
 
         $this->registerMcpServer();
+
+        // Cortex is optional: agents get the PennantPlus tools only when it is loaded.
+        $this->app->make(CortexIntegration::class)->register();
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'pennantplus');
 
