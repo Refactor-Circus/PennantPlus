@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace JayI\PennantPlus\Atrium\Http\Requests\Concerns;
 
-use JayI\Atrium\Plugins\PluginRegistry;
-use JayI\PennantPlus\Atrium\PennantPlugin;
+use JayI\PennantPlus\Atrium\FeatureFlagAccess;
 
 /**
  * Feature flags have no model to hold a policy, so their requests defer to
@@ -15,9 +14,7 @@ trait AuthorizesFeatureFlags
 {
     public function authorize(): bool
     {
-        $plugin = app(PluginRegistry::class)->get('pennant');
-
-        return $plugin instanceof PennantPlugin && $plugin->authorize($this);
+        return FeatureFlagAccess::allows($this);
     }
 
     protected function redirectToFeatureFlags(): string

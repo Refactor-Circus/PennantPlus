@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use JayI\Atrium\Plugins\PluginRegistry;
+use JayI\PennantPlus\Atrium\FeatureFlagAccess;
 use JayI\PennantPlus\Atrium\Http\Requests\DeleteFeatureValueRequest;
 use JayI\PennantPlus\Atrium\Http\Requests\PurgeFeatureRequest;
 use JayI\PennantPlus\Atrium\Http\Requests\UpdateFeatureValueRequest;
@@ -19,9 +19,9 @@ class FeatureFlagController
 {
     public function __construct(protected FeatureFlagManager $features) {}
 
-    public function index(Request $request, PluginRegistry $plugins): View
+    public function index(Request $request): View
     {
-        $this->authorize($request, $plugins);
+        $this->authorize($request);
 
         $filters = [
             'feature' => $request->string('feature')->toString(),
@@ -48,9 +48,9 @@ class FeatureFlagController
      * Models of a configured scope type matching a search term, for picking
      * the model a value is scoped to.
      */
-    public function scopes(Request $request, PluginRegistry $plugins): JsonResponse
+    public function scopes(Request $request): JsonResponse
     {
-        $this->authorize($request, $plugins);
+        $this->authorize($request);
 
         $scope = $this->features->scopeModel($request->string('type')->toString());
 
@@ -84,8 +84,8 @@ class FeatureFlagController
         return $request->persist();
     }
 
-    protected function authorize(Request $request, PluginRegistry $plugins): void
+    protected function authorize(Request $request): void
     {
-        abort_unless($plugins->get('pennant')?->authorize($request) === true, 403);
+        abort_unless(FeatureFlagAccess::allows($request), 403);
     }
 }

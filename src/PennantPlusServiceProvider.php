@@ -10,8 +10,11 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use JayI\Atrium\Access\Gatekeeper;
+use JayI\Atrium\Plugins\PluginRegistry;
+use JayI\PennantPlus\Atrium\FeatureFlagAccess;
 use JayI\PennantPlus\Cortex\CortexIntegration;
 use JayI\PennantPlus\Drivers\GlobalAwareDatabaseDriver;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
@@ -44,6 +47,8 @@ class PennantPlusServiceProvider extends ServiceProvider
         $this->registerMcpServer();
 
         $this->registerAtriumFeatureResolver();
+
+        $this->registerAtriumBladeConditional();
 
         // Cortex is optional: agents get the PennantPlus tools only when it is loaded.
         $this->app->make(CortexIntegration::class)->register();
@@ -92,6 +97,20 @@ class PennantPlusServiceProvider extends ServiceProvider
                 return $this->app->make(FeatureGate::class)->allows($feature, $user instanceof Authenticatable ? $user : null);
             });
         });
+    }
+
+    /**
+     * `@pennantplusManages` shows a control on the Feature flags screen only
+     * when the signed-in user may manage feature flags, when Atrium is
+     * installed.
+     */
+    private function registerAtriumBladeConditional(): void
+    {
+        if (! class_exists(PluginRegistry::class)) {
+            return;
+        }
+
+        Blade::if('pennantplusManages', fn (): bool => FeatureFlagAccess::allows());
     }
 
     /**

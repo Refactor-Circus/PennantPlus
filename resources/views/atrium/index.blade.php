@@ -15,7 +15,6 @@
     <style>
         .contents{display:contents}
         .break-all{word-break:break-all}
-        .ml-1{margin-left:var(--spacing)}
         .mt-1\.5{margin-top:calc(var(--spacing) * 1.5)}
         .max-h-60{max-height:calc(var(--spacing) * 60)}
         .z-20{z-index:20}
@@ -38,6 +37,7 @@
             <x-atrium::alert variant="warning" data-testid="pennant-unsupported">{{ __('pennantplus::pennantplus.unsupported') }}</x-atrium::alert>
         @endunless
 
+        @pennantplusManages
         <x-atrium::card :title="__('pennantplus::pennantplus.set_value')">
             <form method="POST" action="{{ route('atrium.pennant.values.update') }}" class="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-5" data-testid="pennant-set-value">
                 @csrf
@@ -104,10 +104,11 @@
 
                 {{-- Offset by the label's height, so the button lines up with the fields. --}}
                 <div class="sm:pt-6.5">
-                    <x-atrium::button type="submit">{{ __('pennantplus::pennantplus.save') }}</x-atrium::button>
+                    <x-atrium::icon-button icon="check" :label="__('pennantplus::pennantplus.save')" variant="primary" type="submit" data-testid="pennant-save" />
                 </div>
             </form>
         </x-atrium::card>
+        @endpennantplusManages
 
         @if ($supported)
             <form method="GET" action="{{ route('atrium.pennant.index') }}" class="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennant-filters">
@@ -122,8 +123,8 @@
                 <x-atrium::form.input name="scope_id" id="atrium-pennant-filter-scope-id" :label="__('pennantplus::pennantplus.scope_id')" :value="$filters['scope_id']" />
 
                 <div class="flex gap-2">
-                    <x-atrium::button type="submit" variant="outline">{{ __('pennantplus::pennantplus.filter') }}</x-atrium::button>
-                    <x-atrium::button variant="ghost" :href="route('atrium.pennant.index')">{{ __('pennantplus::pennantplus.reset') }}</x-atrium::button>
+                    <x-atrium::icon-button icon="funnel" :label="__('pennantplus::pennantplus.filter')" variant="outline" type="submit" data-testid="pennant-filter" />
+                    <x-atrium::icon-button icon="x-mark" :label="__('pennantplus::pennantplus.reset')" :href="route('atrium.pennant.index')" data-testid="pennant-reset" />
                 </div>
             </form>
 
@@ -137,7 +138,9 @@
                             <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.scope') }}</x-atrium::table.cell>
                             <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.value') }}</x-atrium::table.cell>
                             <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.updated') }}</x-atrium::table.cell>
-                            <x-atrium::table.cell heading />
+                            @pennantplusManages
+                                <x-atrium::table.cell heading />
+                            @endpennantplusManages
                         </x-atrium::table.row>
                     </x-slot:head>
 
@@ -151,14 +154,17 @@
                                 @endif
                             </x-atrium::table.cell>
                             <x-atrium::table.cell>
-                                <x-atrium::badge :variant="$value->isActive() ? 'success' : 'neutral'">
-                                    {{ $value->isActive() ? __('pennantplus::pennantplus.active') : __('pennantplus::pennantplus.inactive') }}
-                                </x-atrium::badge>
-                                @unless (is_bool($value->value))
-                                    <code class="ml-1 text-xs">{{ \Illuminate\Support\Str::limit($value->displayValue(), 60) }}</code>
-                                @endunless
+                                <div class="flex items-center gap-2">
+                                    <x-atrium::status-dot :variant="$value->isActive() ? 'success' : 'neutral'"
+                                                          :label="$value->isActive() ? __('pennantplus::pennantplus.active') : __('pennantplus::pennantplus.inactive')"
+                                                          :data-status="$value->isActive() ? 'active' : 'inactive'" data-testid="pennant-value-status" />
+                                    @unless (is_bool($value->value))
+                                        <code class="text-xs">{{ \Illuminate\Support\Str::limit($value->displayValue(), 60) }}</code>
+                                    @endunless
+                                </div>
                             </x-atrium::table.cell>
                             <x-atrium::table.cell>{{ $value->updatedAt?->diffForHumans() }}</x-atrium::table.cell>
+                            @pennantplusManages
                             <x-atrium::table.cell>
                                 <div class="flex justify-end gap-2">
                                     <form method="POST" action="{{ route('atrium.pennant.values.update') }}">
@@ -167,9 +173,9 @@
                                         <input type="hidden" name="feature" value="{{ $value->feature }}">
                                         <input type="hidden" name="scope" value="{{ $value->scope }}">
                                         <input type="hidden" name="value" value="{{ $value->isActive() ? 'false' : 'true' }}">
-                                        <x-atrium::button type="submit" size="sm" variant="outline">
-                                            {{ $value->isActive() ? __('pennantplus::pennantplus.deactivate') : __('pennantplus::pennantplus.activate') }}
-                                        </x-atrium::button>
+                                        <x-atrium::icon-button :icon="$value->isActive() ? 'no-symbol' : 'check-circle'"
+                                                               :label="$value->isActive() ? __('pennantplus::pennantplus.deactivate') : __('pennantplus::pennantplus.activate')"
+                                                               type="submit" size="sm" variant="outline" data-testid="pennant-toggle" />
                                     </form>
 
                                     <form method="POST" action="{{ route('atrium.pennant.values.destroy') }}">
@@ -177,10 +183,11 @@
                                         @method('DELETE')
                                         <input type="hidden" name="feature" value="{{ $value->feature }}">
                                         <input type="hidden" name="scope" value="{{ $value->scope }}">
-                                        <x-atrium::button type="submit" size="sm" variant="ghost">{{ __('pennantplus::pennantplus.forget') }}</x-atrium::button>
+                                        <x-atrium::icon-button icon="x-mark" :label="__('pennantplus::pennantplus.forget')" type="submit" size="sm" data-testid="pennant-forget" />
                                     </form>
                                 </div>
                             </x-atrium::table.cell>
+                            @endpennantplusManages
                         </x-atrium::table.row>
                     @endforeach
                 </x-atrium::table>
@@ -189,15 +196,16 @@
             @endif
 
             @if ($filters['feature'] !== '')
+                @pennantplusManages
                 <form method="POST" action="{{ route('atrium.pennant.features.purge') }}"
                       onsubmit="return confirm(@js(__('pennantplus::pennantplus.purge_confirm')))">
                     @csrf
                     @method('DELETE')
                     <input type="hidden" name="feature" value="{{ $filters['feature'] }}">
-                    <x-atrium::button type="submit" variant="danger" size="sm" data-testid="pennant-purge">
-                        {{ __('pennantplus::pennantplus.purge') }}: {{ $filters['feature'] }}
-                    </x-atrium::button>
+                    <x-atrium::icon-button icon="trash" :label="__('pennantplus::pennantplus.purge').': '.$filters['feature']"
+                                           type="submit" variant="danger" size="sm" tooltip="right" data-testid="pennant-purge" />
                 </form>
+                @endpennantplusManages
             @endif
         @endif
     </div>
