@@ -6,7 +6,9 @@ namespace JayI\PennantPlus\Tests\Feature;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use JayI\Atrium\Facades\Atrium;
 use JayI\Atrium\Plugins\PluginRegistry;
 use JayI\PennantPlus\Atrium\PennantPlugin;
 use JayI\PennantPlus\FeatureFlagManager;
@@ -32,6 +34,20 @@ class AtriumPluginTest extends TestCase
     protected function gatePennant($app): void
     {
         $app->make(Repository::class)->set('pennantplus.ability', 'manageFeatures');
+    }
+
+    protected function leaveAtriumFeaturesAlone($app): void
+    {
+        $app->make(Repository::class)->set('pennantplus.atrium.resolve_features', false);
+    }
+
+    #[DefineEnvironment('useArrayStore')]
+    #[DefineEnvironment('leaveAtriumFeaturesAlone')]
+    public function test_atrium_features_stay_on_when_the_resolver_is_turned_off(): void
+    {
+        Feature::define('InvoiceToolFeature', fn (): bool => false);
+
+        $this->assertTrue(Atrium::featureEnabled('InvoiceToolFeature', Request::create('/atrium')));
     }
 
     public function test_the_plugin_registers_when_pennant_is_installed(): void

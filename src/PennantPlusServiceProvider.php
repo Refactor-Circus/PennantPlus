@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace JayI\PennantPlus;
 
 use Illuminate\Config\Repository;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use JayI\Atrium\Access\Gatekeeper;
 use JayI\PennantPlus\Cortex\CortexIntegration;
 use JayI\PennantPlus\Drivers\GlobalAwareDatabaseDriver;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
@@ -40,6 +43,8 @@ class PennantPlusServiceProvider extends ServiceProvider
 
         $this->registerMcpServer();
 
+        $this->registerAtriumFeatureResolver();
+
         // Cortex is optional: agents get the PennantPlus tools only when it is loaded.
         $this->app->make(CortexIntegration::class)->register();
 
@@ -62,6 +67,31 @@ class PennantPlusServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../lang' => $this->app->langPath('vendor/pennantplus'),
         ], ['pennantplus', 'pennantplus-lang']);
+    }
+
+    /**
+     * Let the feature gate decide Atrium's features, when Atrium is
+     * installed. Waiting for Atrium's Gatekeeper keeps provider order from
+     * mattering, and an application registering its own resolver later
+     * still replaces this one.
+     */
+    private function registerAtriumFeatureResolver(): void
+    {
+        if (! class_exists(Gatekeeper::class)) {
+            return;
+        }
+
+        if ($this->app->make(Repository::class)->get('pennantplus.atrium.resolve_features') !== true) {
+            return;
+        }
+
+        $this->callAfterResolving(Gatekeeper::class, function (Gatekeeper $gatekeeper): void {
+            $gatekeeper->resolveFeaturesUsing(function (string $feature, Request $request): bool {
+                $user = $request->user();
+
+                return $this->app->make(FeatureGate::class)->allows($feature, $user instanceof Authenticatable ? $user : null);
+            });
+        });
     }
 
     /**

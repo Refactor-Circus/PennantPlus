@@ -95,6 +95,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Atrium
+    |--------------------------------------------------------------------------
+    |
+    | When jayi/atrium is installed, PennantPlus answers whether the features
+    | Atrium's navigation, plugins and `atrium.feature` middleware name are
+    | on, using the feature gate above - so `gate.global_only` and the bypass
+    | callback apply there too. To have Pennant decide only global
+    | visibility, and leave per-user visibility to permissions, set
+    | `gate.global_only` to ['*'].
+    |
+    | resolve_features: false leaves Atrium's feature resolver alone.
+    |
+    */
+
+    'atrium' => [
+        'resolve_features' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | HTTP API routes
     |--------------------------------------------------------------------------
     |

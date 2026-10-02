@@ -100,6 +100,8 @@ Class-based feature names contain backslashes; URL-encode them in paths.
 
 With `jayi/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`, routes `atrium.pennant.*`). Hide it with `atrium.disabled => ['pennant']`.
 
+PennantPlus also registers Atrium's feature resolver, so `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware ask `FeatureGate::allows($feature, $request->user())`. `pennantplus.gate.global_only => ['*']` makes Pennant decide only global visibility, leaving per-user visibility to Atrium's `can()` permissions. `pennantplus.atrium.resolve_features => false` opts out.
+
 ### 8. Cortex
 
 With `jayi/cortex` installed, the MCP server registers with Cortex as `pennantplus` and every tool joins its tool registry tagged with the server name, so Cortex agents can use them; published instruction and tool description overrides are served to MCP clients and agents. Nothing to register in the app. Configure under `pennantplus.cortex`: `enabled` (false leaves Cortex alone), `server` (the name in Cortex), `tools` (null for all, or a list of tool names). Names already registered in the app's `config/cortex.php` are left alone.
