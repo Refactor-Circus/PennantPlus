@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use JayI\Cortex\Actions\CreateMcpInstructionVersionAction;
-use JayI\Cortex\Actions\CreateToolDescriptionVersionAction;
-use JayI\Cortex\Mcp\McpServerRegistry;
-use JayI\Cortex\Tools\ToolRegistry;
+use JayI\Cortex\Domains\McpServer\Actions\CreateMcpInstructionVersionAction;
+use JayI\Cortex\Domains\McpServer\Services\McpServerRegistry;
+use JayI\Cortex\Domains\Tool\Actions\CreateToolDescriptionVersionAction;
+use JayI\Cortex\Domains\Tool\Services\ToolRegistry;
 use JayI\PennantPlus\Cortex\CortexIntegration;
 use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
