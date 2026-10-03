@@ -1,16 +1,28 @@
 laravel: '@testbench'
 
 providers:
-  # - Workbench\App\Providers\WorkbenchServiceProvider
+  - Laravel\Pennant\PennantServiceProvider
+  - Laravel\Mcp\Server\McpServiceProvider
+  - JayI\Atrium\AtriumServiceProvider
+  - JayI\PennantPlus\PennantPlusServiceProvider
+  - Workbench\App\Providers\WorkbenchServiceProvider
 
 migrations:
   - workbench/database/migrations
+  # Pennant's features table, which the `pennantplus` store writes to.
+  - vendor/laravel/pennant/database/migrations
+  # jayi/cortex is a dev dependency and auto-discovered, so the demo runs with it.
+  - vendor/jayi/cortex/database/migrations
 
 seeders:
   - Workbench\Database\Seeders\DatabaseSeeder
 
 workbench:
-  start: '/'
+  # The Feature flags page. With `user` set, `/` sends a guest through
+  # /_workbench, which signs them in and redirects here; starting at `/`
+  # would loop.
+  start: '/atrium/pennant'
+  user: admin@example.com
   install: true
   health: false
   discovers:
@@ -27,6 +39,8 @@ workbench:
     - migrate-fresh
   assets:
     - laravel-assets
+    # Atrium's stylesheet and scripts, served from public/vendor/atrium.
+    - atrium-assets
   sync:
     - from: storage
       to: workbench/storage
