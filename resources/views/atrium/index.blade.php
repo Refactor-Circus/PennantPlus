@@ -12,15 +12,6 @@
 
 <x-atrium::layout :title="__('pennantplus::pennantplus.features')">
     {{-- Utilities this page uses that Atrium's compiled stylesheet does not ship. --}}
-    <style>
-        .contents{display:contents}
-        .break-all{word-break:break-all}
-        .mt-1\.5{margin-top:calc(var(--spacing) * 1.5)}
-        .max-h-60{max-height:calc(var(--spacing) * 60)}
-        .z-20{z-index:20}
-        @media (width >= 40rem){.sm\:pt-6\.5{padding-top:calc(var(--spacing) * 6.5)}}
-        @media (width >= 64rem){.lg\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.lg\:grid-cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}}
-    </style>
 
     <x-atrium::page-header :title="__('pennantplus::pennantplus.features')" :description="__('pennantplus::pennantplus.description')" />
 

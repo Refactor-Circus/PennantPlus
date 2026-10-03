@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/jayjfletcher/PennantPlus/compare/v0.1.0...main)
 
+### Fixed
+
+- The Atrium screens' utilities that Atrium's stylesheet lacks are generated into `resources/css/atrium.css` and added through Atrium's style hook, so they take effect (the Feature flags page's inline styles move there too).
+
 ### Added
 
 - `pennantplus` Pennant driver: stores a scope's value only when it differs from the global value.

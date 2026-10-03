@@ -1,0 +1,34 @@
+/*
+ * Utilities PennantPlus's Atrium screens use that Atrium's precompiled stylesheet
+ * lacks, added to the dashboard with Atrium::css(). Generated with Atrium's
+ * Tailwind build and theme (colours stay on Atrium's theme variables), and
+ * kept complete by tests/Feature/Ui/StylesTest.php.
+ */
+.z-20 {
+  z-index: 20;
+}
+.mt-1\.5 {
+  margin-top: calc(var(--spacing, 0.25rem) * 1.5);
+}
+.contents {
+  display: contents;
+}
+.max-h-60 {
+  max-height: calc(var(--spacing, 0.25rem) * 60);
+}
+.break-all {
+  word-break: break-all;
+}
+@media (width >= 40rem) {
+  .sm\:pt-6\.5 {
+    padding-top: calc(var(--spacing, 0.25rem) * 6.5);
+  }
+}
+@media (width >= 64rem) {
+  .lg\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .lg\:grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
