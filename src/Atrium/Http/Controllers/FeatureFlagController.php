@@ -13,7 +13,7 @@ use JayI\PennantPlus\Atrium\FeatureFlagAccess;
 use JayI\PennantPlus\Atrium\Http\Requests\DeleteFeatureValueRequest;
 use JayI\PennantPlus\Atrium\Http\Requests\PurgeFeatureRequest;
 use JayI\PennantPlus\Atrium\Http\Requests\UpdateFeatureValueRequest;
-use JayI\PennantPlus\FeatureFlagManager;
+use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 class FeatureFlagController
 {

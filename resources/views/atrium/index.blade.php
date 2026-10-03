@@ -1,5 +1,5 @@
 @php
-    use JayI\PennantPlus\FeatureFlagManager;
+    use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
     $scopeOptions = ['' => __('pennantplus::pennantplus.all_scopes'), FeatureFlagManager::GLOBAL => __('pennantplus::pennantplus.global')]
         + $scopeFilterOptions

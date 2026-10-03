@@ -6,21 +6,18 @@ namespace JayI\PennantPlus;
 
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-use JayI\Atrium\Access\Gatekeeper;
-use JayI\Atrium\Assets\StyleRegistry;
-use JayI\Atrium\Plugins\PluginRegistry;
+use JayI\Atrium\Domains\Access\Services\Gatekeeper;
+use JayI\Atrium\Domains\Plugins\Services\PluginRegistry;
+use JayI\Atrium\Support\StyleRegistry;
 use JayI\PennantPlus\Atrium\FeatureFlagAccess;
 use JayI\PennantPlus\Cortex\CortexIntegration;
-use JayI\PennantPlus\Drivers\GlobalAwareDatabaseDriver;
+use JayI\PennantPlus\Domains\DomainServiceProvider;
+use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
 use Laravel\Mcp\Facades\Mcp;
-use Laravel\Pennant\Feature;
 
 class PennantPlusServiceProvider extends ServiceProvider
 {
@@ -28,23 +25,11 @@ class PennantPlusServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/pennantplus.php', 'pennantplus');
 
-        $this->app->singleton(FeatureGate::class);
-        $this->app->singleton(FeatureFlagManager::class);
+        $this->app->register(DomainServiceProvider::class);
     }
 
     public function boot(): void
     {
-        Feature::extend('pennantplus', fn (Application $app, array $config): GlobalAwareDatabaseDriver => new GlobalAwareDatabaseDriver(
-            $app->make(DatabaseManager::class),
-            $app->make(Dispatcher::class),
-            $app->make(Repository::class),
-            $config,
-        ));
-
-        if ($this->app->make(Repository::class)->get('pennantplus.routes.enabled') === true) {
-            $this->loadRoutesFrom(__DIR__.'/../routes/pennantplus.php');
-        }
-
         $this->registerMcpServer();
 
         $this->registerAtriumFeatureResolver();

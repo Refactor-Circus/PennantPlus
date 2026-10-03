@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace JayI\PennantPlus\Atrium;
 
 use Illuminate\Http\Request;
-use JayI\Atrium\Plugins\PluginRegistry;
+use JayI\Atrium\Domains\Plugins\Services\PluginRegistry;
 
 /**
  * Whether a request may manage feature flags from Atrium, asked the way the

@@ -6,11 +6,11 @@ namespace JayI\PennantPlus\Atrium;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use JayI\Atrium\Navigation\NavItem;
-use JayI\Atrium\Plugins\Plugin;
+use JayI\Atrium\Domains\Navigation\Data\NavItem;
+use JayI\Atrium\Domains\Plugins\Support\Plugin;
 use JayI\Atrium\Support\Icons;
 use JayI\PennantPlus\Atrium\Http\Controllers\FeatureFlagController;
-use JayI\PennantPlus\FeatureFlagManager;
+use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
  * Manages the feature flag values Pennant has stored.

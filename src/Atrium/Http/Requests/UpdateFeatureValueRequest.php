@@ -6,10 +6,10 @@ namespace JayI\PennantPlus\Atrium\Http\Requests;
 
 use Illuminate\Http\RedirectResponse;
 use JayI\Atrium\Http\Requests\Request;
-use JayI\PennantPlus\Actions\UpdateFeatureValueAction;
 use JayI\PennantPlus\Atrium\Http\Requests\Concerns\AuthorizesFeatureFlags;
-use JayI\PennantPlus\FeatureFlagManager;
-use JayI\PennantPlus\Support\ScopeRules;
+use JayI\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
+use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use JayI\PennantPlus\Domains\Scope\Support\ScopeRules;
 
 /**
  * Stores a feature flag value for a scope from the dashboard form.

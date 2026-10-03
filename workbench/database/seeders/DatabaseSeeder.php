@@ -3,7 +3,7 @@
 namespace Workbench\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use JayI\PennantPlus\Actions\UpdateFeatureValueAction;
+use JayI\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
 use Laravel\Pennant\Feature;
 use Workbench\App\Features\BetaDashboardFeature;
 use Workbench\App\Features\BillingSupportFeature;

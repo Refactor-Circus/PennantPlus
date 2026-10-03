@@ -2,6 +2,70 @@
 
 ## [Unreleased](https://github.com/jayjfletcher/PennantPlus/compare/v0.1.0...main)
 
+### Breaking
+
+- The package is reorganised into domain modules (`src/Domains/Feature`, `src/Domains/Scope`), mirroring the mono application's layout. Classes move namespaces; there are no aliases for the old names, so update imports. Config keys, route names and paths, MCP tool names, publish tags, views, translations, the `pennantplus` driver name and the Atrium plugin are unchanged, and nothing PennantPlus stores is keyed by its own class names, so stored feature values are untouched. The management API routes now load from each domain (`routes/pennantplus.php` is gone). Old → new:
+  - `JayI\PennantPlus\Actions\CheckFeatureAction` → `JayI\PennantPlus\Domains\Feature\Actions\CheckFeatureAction`
+  - `JayI\PennantPlus\Actions\DeleteFeatureValueAction` → `JayI\PennantPlus\Domains\Feature\Actions\DeleteFeatureValueAction`
+  - `JayI\PennantPlus\Actions\ListFeatureValuesAction` → `JayI\PennantPlus\Domains\Feature\Actions\ListFeatureValuesAction`
+  - `JayI\PennantPlus\Actions\ListFeaturesAction` → `JayI\PennantPlus\Domains\Feature\Actions\ListFeaturesAction`
+  - `JayI\PennantPlus\Actions\ListScopeTypesAction` → `JayI\PennantPlus\Domains\Scope\Actions\ListScopeTypesAction`
+  - `JayI\PennantPlus\Actions\PurgeFeatureAction` → `JayI\PennantPlus\Domains\Feature\Actions\PurgeFeatureAction`
+  - `JayI\PennantPlus\Actions\SearchScopeModelsAction` → `JayI\PennantPlus\Domains\Scope\Actions\SearchScopeModelsAction`
+  - `JayI\PennantPlus\Actions\ShowFeatureAction` → `JayI\PennantPlus\Domains\Feature\Actions\ShowFeatureAction`
+  - `JayI\PennantPlus\Actions\UpdateFeatureValueAction` → `JayI\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction`
+  - `JayI\PennantPlus\Drivers\GlobalAwareDatabaseDriver` → `JayI\PennantPlus\Domains\Feature\Support\GlobalAwareDatabaseDriver`
+  - `JayI\PennantPlus\Events\Action\FeaturePurgedActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeaturePurgedActionEvent`
+  - `JayI\PennantPlus\Events\Action\FeaturePurgingActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeaturePurgingActionEvent`
+  - `JayI\PennantPlus\Events\Action\FeatureValueDeletedActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeatureValueDeletedActionEvent`
+  - `JayI\PennantPlus\Events\Action\FeatureValueDeletingActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeatureValueDeletingActionEvent`
+  - `JayI\PennantPlus\Events\Action\FeatureValueUpdatedActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeatureValueUpdatedActionEvent`
+  - `JayI\PennantPlus\Events\Action\FeatureValueUpdatingActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeatureValueUpdatingActionEvent`
+  - `JayI\PennantPlus\Exceptions\InvalidScopeModelException` → `JayI\PennantPlus\Domains\Scope\Exceptions\InvalidScopeModelException`
+  - `JayI\PennantPlus\FeatureFlagManager` → `JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager`
+  - `JayI\PennantPlus\FeatureGate` → `JayI\PennantPlus\Domains\Feature\Services\FeatureGate`
+  - `JayI\PennantPlus\Http\Controllers\FeatureController` → `JayI\PennantPlus\Domains\Feature\Http\Controllers\FeatureController`
+  - `JayI\PennantPlus\Http\Controllers\FeatureValueController` → `JayI\PennantPlus\Domains\Feature\Http\Controllers\FeatureValueController`
+  - `JayI\PennantPlus\Http\Controllers\ScopeController` → `JayI\PennantPlus\Domains\Scope\Http\Controllers\ScopeController`
+  - `JayI\PennantPlus\Http\Middleware\EnsureFeatureActive` → `JayI\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive`
+  - `JayI\PennantPlus\Http\Requests\CheckFeatureRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\CheckFeatureRequest`
+  - `JayI\PennantPlus\Http\Requests\DeleteFeatureValueRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\DeleteFeatureValueRequest`
+  - `JayI\PennantPlus\Http\Requests\IndexFeatureValuesRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\IndexFeatureValuesRequest`
+  - `JayI\PennantPlus\Http\Requests\IndexFeaturesRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\IndexFeaturesRequest`
+  - `JayI\PennantPlus\Http\Requests\IndexScopeTypesRequest` → `JayI\PennantPlus\Domains\Scope\Http\Requests\IndexScopeTypesRequest`
+  - `JayI\PennantPlus\Http\Requests\PurgeFeatureRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\PurgeFeatureRequest`
+  - `JayI\PennantPlus\Http\Requests\SearchScopeModelsRequest` → `JayI\PennantPlus\Domains\Scope\Http\Requests\SearchScopeModelsRequest`
+  - `JayI\PennantPlus\Http\Requests\ShowFeatureRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\ShowFeatureRequest`
+  - `JayI\PennantPlus\Http\Requests\UpdateFeatureValueRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\UpdateFeatureValueRequest`
+  - `JayI\PennantPlus\Http\Resources\FeatureResource` → `JayI\PennantPlus\Domains\Feature\Http\Resources\FeatureResource`
+  - `JayI\PennantPlus\Http\Resources\FeatureValueResource` → `JayI\PennantPlus\Domains\Feature\Http\Resources\FeatureValueResource`
+  - `JayI\PennantPlus\LayeredFeature` → `JayI\PennantPlus\Domains\Feature\Support\LayeredFeature`
+  - `JayI\PennantPlus\Mcp\Requests\CheckFeatureMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\CheckFeatureMcpRequest`
+  - `JayI\PennantPlus\Mcp\Requests\ForgetFeatureValueMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\ForgetFeatureValueMcpRequest`
+  - `JayI\PennantPlus\Mcp\Requests\ListFeatureValuesMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\ListFeatureValuesMcpRequest`
+  - `JayI\PennantPlus\Mcp\Requests\ListFeaturesMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\ListFeaturesMcpRequest`
+  - `JayI\PennantPlus\Mcp\Requests\ListScopeTypesMcpRequest` → `JayI\PennantPlus\Domains\Scope\Mcp\Requests\ListScopeTypesMcpRequest`
+  - `JayI\PennantPlus\Mcp\Requests\PurgeFeatureMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\PurgeFeatureMcpRequest`
+  - `JayI\PennantPlus\Mcp\Requests\SearchScopeModelsMcpRequest` → `JayI\PennantPlus\Domains\Scope\Mcp\Requests\SearchScopeModelsMcpRequest`
+  - `JayI\PennantPlus\Mcp\Requests\SetFeatureValueMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\SetFeatureValueMcpRequest`
+  - `JayI\PennantPlus\Mcp\Requests\ShowFeatureMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\ShowFeatureMcpRequest`
+  - `JayI\PennantPlus\Mcp\Tools\CheckFeatureTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\CheckFeatureTool`
+  - `JayI\PennantPlus\Mcp\Tools\Concerns\DescribesScope` → `JayI\PennantPlus\Domains\Scope\Concerns\DescribesScope`
+  - `JayI\PennantPlus\Mcp\Tools\ForgetFeatureValueTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\ForgetFeatureValueTool`
+  - `JayI\PennantPlus\Mcp\Tools\ListFeatureValuesTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeatureValuesTool`
+  - `JayI\PennantPlus\Mcp\Tools\ListFeaturesTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool`
+  - `JayI\PennantPlus\Mcp\Tools\ListScopeTypesTool` → `JayI\PennantPlus\Domains\Scope\Mcp\Tools\ListScopeTypesTool`
+  - `JayI\PennantPlus\Mcp\Tools\PurgeFeatureTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\PurgeFeatureTool`
+  - `JayI\PennantPlus\Mcp\Tools\SearchScopeModelsTool` → `JayI\PennantPlus\Domains\Scope\Mcp\Tools\SearchScopeModelsTool`
+  - `JayI\PennantPlus\Mcp\Tools\SetFeatureValueTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\SetFeatureValueTool`
+  - `JayI\PennantPlus\Mcp\Tools\ShowFeatureTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\ShowFeatureTool`
+  - `JayI\PennantPlus\OffLayeredFeature` → `JayI\PennantPlus\Domains\Feature\Support\OffLayeredFeature`
+  - `JayI\PennantPlus\OnLayeredFeature` → `JayI\PennantPlus\Domains\Feature\Support\OnLayeredFeature`
+  - `JayI\PennantPlus\ScopeModel` → `JayI\PennantPlus\Domains\Scope\Data\ScopeModel`
+  - `JayI\PennantPlus\StoredFeatureValue` → `JayI\PennantPlus\Domains\Feature\Data\StoredFeatureValue`
+  - `JayI\PennantPlus\Support\ScopeRules` → `JayI\PennantPlus\Domains\Scope\Support\ScopeRules`
+- Requires the domain-module release of `jayi/atrium` (`JayI\Atrium\Domains\...`).
+
 ### Fixed
 
 - The Atrium screens' utilities that Atrium's stylesheet lacks are generated into `resources/css/atrium.css` and added through Atrium's style hook, so they take effect (the Feature flags page's inline styles move there too).

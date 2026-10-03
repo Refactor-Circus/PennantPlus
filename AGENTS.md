@@ -10,6 +10,26 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 - Prefer explicit Laravel package code over helper abstractions unless the extension point is real.
 - Keep tests focused on observable package behavior through public APIs, service provider wiring, commands, routes, published resources, and documentation promises.
 
+## Layout
+
+The package follows the mono domain-module layout. Code lives in `src/Domains/{Domain}/` (namespace `JayI\PennantPlus\Domains\{Domain}`), each with its own `{Domain}ServiceProvider` registered by `Domains\DomainServiceProvider`, which `PennantPlusServiceProvider` registers. Domains create only the subdirectories they use.
+
+- `Domains/Feature`: the layered feature base classes and the `pennantplus` driver (`Support/`), `FeatureGate` and `FeatureFlagManager` (`Services/`), `StoredFeatureValue` (`Data/`), and the feature and stored-value actions, events, HTTP API, middleware and MCP tools.
+- `Domains/Scope`: `ScopeModel` (`Data/`), the scope validation rules and MCP argument schema, and the scope-type actions, HTTP API and MCP tools.
+- Package-wide pieces stay at the top level: `PennantPlusServiceProvider`, `Contracts/` (action event contracts), the base `Http\Request`, the MCP server and base `Mcp\Request`/`Mcp\Tool`, and `Support\ServiceProvider` (loads a domain's `routes.php` inside the shared API route group).
+- Integrations span both domains, so they keep their own top-level directories: `src/Atrium` (the Feature flags screen) and `src/Cortex`.
+- `config/pennantplus.php` stays one file; domains read from it.
+
+## Layout
+
+The package follows the mono domain-module layout. Code lives in `src/Domains/{Domain}/` (namespace `JayI\PennantPlus\Domains\{Domain}`), each with its own `{Domain}ServiceProvider` registered by `Domains\DomainServiceProvider`, which `PennantPlusServiceProvider` registers. Domains create only the subdirectories they use.
+
+- `Domains/Feature`: the layered feature base classes and the `pennantplus` driver (`Support/`), `FeatureGate` and `FeatureFlagManager` (`Services/`), `StoredFeatureValue` (`Data/`), and the feature and stored-value actions, events, HTTP API, middleware and MCP tools.
+- `Domains/Scope`: `ScopeModel` (`Data/`), the scope validation rules and MCP argument schema, and the scope-type actions, HTTP API and MCP tools.
+- Package-wide pieces stay at the top level: `PennantPlusServiceProvider`, `Contracts/` (action event contracts), the base `Http\Request`, the MCP server and base `Mcp\Request`/`Mcp\Tool`, and `Support\ServiceProvider` (loads a domain's `routes.php` inside the shared API route group).
+- Integrations span both domains, so they keep their own top-level directories: `src/Atrium` (the Feature flags screen) and `src/Cortex`.
+- `config/pennantplus.php` stays one file; domains read from it.
+
 ## Quick Commands
 
 - Full validation: `composer test`

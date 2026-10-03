@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace JayI\PennantPlus\Http;
 
 use Illuminate\Foundation\Http\FormRequest;
-use JayI\PennantPlus\FeatureFlagManager;
+use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

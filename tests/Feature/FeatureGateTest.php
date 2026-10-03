@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Route;
-use JayI\PennantPlus\FeatureGate;
-use JayI\PennantPlus\Http\Middleware\EnsureFeatureActive;
+use JayI\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive;
+use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
 use Laravel\Pennant\Feature;
 
 beforeEach(function (): void {

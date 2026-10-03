@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use JayI\PennantPlus\Cortex\CortexIntegration;
+use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
-use JayI\PennantPlus\Mcp\Tools\ListFeaturesTool;
 use Laravel\Mcp\Server\Transport\FakeTransporter;
 
 it('serves the declared instructions and descriptions without Cortex loaded', function (): void {

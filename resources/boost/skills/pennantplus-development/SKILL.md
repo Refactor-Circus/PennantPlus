@@ -38,8 +38,8 @@ A scope (user) with no stored value is resolved and compared with the global (nu
 ### 2. Write features whose users follow the global value
 
 ```php
-use JayI\PennantPlus\OffLayeredFeature;
-use JayI\PennantPlus\OnLayeredFeature;
+use JayI\PennantPlus\Domains\Feature\Support\OffLayeredFeature;
+use JayI\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
 
 class ReportsFeature extends OnLayeredFeature {}           // global default: on
 
@@ -52,9 +52,9 @@ Keep the global default `false` only for kill switches that must stay dark until
 
 ### 3. Gate entry surfaces with the FeatureGate
 
-- `JayI\PennantPlus\FeatureGate::allows($feature, $user)`: features matching `pennantplus.gate.global_only` (default `*SupportFeature`) are checked globally only; every other feature must be active globally **and** for the user (globally only without a user).
+- `JayI\PennantPlus\Domains\Feature\Services\FeatureGate::allows($feature, $user)`: features matching `pennantplus.gate.global_only` (default `*SupportFeature`) are checked globally only; every other feature must be active globally **and** for the user (globally only without a user).
 - Register a bypass once, e.g. in a service provider: `app(FeatureGate::class)->bypassUsing(fn (Authenticatable $user): bool => $user->hasRole('developer'));`
-- Routes: alias `feature` to `JayI\PennantPlus\Http\Middleware\EnsureFeatureActive` and use `->middleware('feature:'.ReportsFeature::class)`; it aborts 403 when the gate refuses.
+- Routes: alias `feature` to `JayI\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive` and use `->middleware('feature:'.ReportsFeature::class)`; it aborts 403 when the gate refuses.
 - MCP tools: return `app(FeatureGate::class)->allows($feature, auth()->user())` from `shouldRegister()`.
 
 ### 4. Secure the management surface before exposing it
@@ -110,7 +110,7 @@ With `jayi/cortex` installed, the MCP server registers with Cortex as `pennantpl
 
 ### 9. React to changes
 
-Every write fires an action event pair from `JayI\PennantPlus\Events\Action`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `JayI\PennantPlus\Contracts\ActionFinishedEvent` for all of them; finished events fire after commit.
+Every write fires an action event pair from `JayI\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `JayI\PennantPlus\Contracts\ActionFinishedEvent` for all of them; finished events fire after commit.
 
 ## Rules, References, and Templates
 

@@ -6,8 +6,8 @@ namespace JayI\PennantPlus\Atrium\Http\Requests;
 
 use Illuminate\Http\RedirectResponse;
 use JayI\Atrium\Http\Requests\Request;
-use JayI\PennantPlus\Actions\PurgeFeatureAction;
 use JayI\PennantPlus\Atrium\Http\Requests\Concerns\AuthorizesFeatureFlags;
+use JayI\PennantPlus\Domains\Feature\Actions\PurgeFeatureAction;
 
 class PurgeFeatureRequest extends Request
 {

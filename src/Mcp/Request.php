@@ -6,7 +6,7 @@ namespace JayI\PennantPlus\Mcp;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Validator;
-use JayI\PennantPlus\FeatureFlagManager;
+use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use Laravel\Mcp\Request as McpRequest;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;

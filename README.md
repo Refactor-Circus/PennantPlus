@@ -27,8 +27,8 @@ For a non-null scope with no stored value, the driver resolves the feature and c
 Pair it with features whose user value follows the global one:
 
 ```php
-use JayI\PennantPlus\OffLayeredFeature;
-use JayI\PennantPlus\OnLayeredFeature;
+use JayI\PennantPlus\Domains\Feature\Support\OffLayeredFeature;
+use JayI\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
 
 class ReportsFeature extends OnLayeredFeature {}           // global default: on
 
@@ -39,7 +39,7 @@ Both extend `LayeredFeature`, whose `resolve()` returns the default for the glob
 
 ## The feature gate
 
-`JayI\PennantPlus\FeatureGate::allows($feature, $user)`:
+`JayI\PennantPlus\Domains\Feature\Services\FeatureGate::allows($feature, $user)`:
 
 - features matching `pennantplus.gate.global_only` (default `*SupportFeature`) are checked against the global scope only;
 - every other feature must be active globally **and** for the user (globally only when there is no user);
@@ -53,7 +53,7 @@ Use it on routes through the bundled middleware:
 
 ```php
 ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->alias(['feature' => \JayI\PennantPlus\Http\Middleware\EnsureFeatureActive::class]);
+    $middleware->alias(['feature' => \JayI\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive::class]);
 })
 
 Route::get('/reports', ReportController::class)->middleware('feature:'.ReportsFeature::class);
@@ -118,7 +118,7 @@ PennantPlus deliberately has no Pennant feature switch of its own for the Featur
 
 PennantPlus also answers Atrium's feature checks - `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware - through the feature gate, so `global_only` and the bypass callback apply in the dashboard exactly as they do on routes and MCP tools. To have Pennant decide only global visibility and leave per-user visibility to permissions (`NavItem::can()`), set `pennantplus.gate.global_only` to `['*']`. Set `pennantplus.atrium.resolve_features` to `false` to leave Atrium's feature resolver alone.
 
-Every write fires an action event pair from `JayI\PennantPlus\Events\Action`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, and `FeaturePurging`/`FeaturePurged` (each suffixed `ActionEvent`).
+Every write fires an action event pair from `JayI\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, and `FeaturePurging`/`FeaturePurged` (each suffixed `ActionEvent`).
 
 ## Testing
 
