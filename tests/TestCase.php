@@ -36,6 +36,10 @@ abstract class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
+        // jayi/cortex is a dev dependency, so Atrium discovers its plugin here
+        // without its migrations; its navigation would query missing tables.
+        $app['config']->set('atrium.disabled', ['cortex']);
+
         tap($app->make(Repository::class), function (Repository $config): void {
             $config->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
 
