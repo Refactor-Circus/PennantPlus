@@ -15,6 +15,7 @@ use JayI\Foundation\Packages\Package;
 use JayI\Foundation\Support\PackageServiceProvider;
 use JayI\PennantPlus\Atrium\FeatureFlagAccess;
 use JayI\PennantPlus\Domains\DomainServiceProvider;
+use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
 
@@ -28,7 +29,9 @@ class PennantPlusServiceProvider extends PackageServiceProvider
     {
         return Package::make('pennantplus', __NAMESPACE__)
             ->label('PennantPlus')
-            ->server(PennantPlusServer::class);
+            ->server(PennantPlusServer::class)
+            // The history of flag changes is guarded like the rest of the API.
+            ->authorizeHistory(fn (?Authenticatable $user): bool => $this->app->make(FeatureFlagManager::class)->allowsManagement($user));
     }
 
     public function register(): void
