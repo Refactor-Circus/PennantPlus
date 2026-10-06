@@ -6,7 +6,8 @@ use JayI\Cortex\Domains\McpServer\Actions\CreateMcpInstructionVersionAction;
 use JayI\Cortex\Domains\McpServer\Services\McpServerRegistry;
 use JayI\Cortex\Domains\Tool\Actions\CreateToolDescriptionVersionAction;
 use JayI\Cortex\Domains\Tool\Services\ToolRegistry;
-use JayI\PennantPlus\Cortex\CortexIntegration;
+use JayI\Foundation\Cortex\CortexIntegration;
+use JayI\Foundation\Packages\PackageRegistry;
 use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
 use Laravel\Ai\Contracts\Tool as AgentTool;
@@ -27,7 +28,7 @@ it('offers every PennantPlus tool to Cortex agents under its own name', function
 
     $names = array_map(fn (string $class): string => app($class)->name(), PennantPlusServer::TOOLS);
 
-    expect(PennantPlusServer::TOOLS)->toHaveCount(9)
+    expect(PennantPlusServer::TOOLS)->toHaveCount(10)
         ->and(array_diff($names, $tools->names()))->toBe([])
         ->and($tools->get('list-features-tool'))->toBeInstanceOf(AgentTool::class)
         ->and($tools->tagsFor('list-features-tool'))->toContain('pennantplus');
@@ -78,7 +79,7 @@ it('lets an agent call a PennantPlus tool with its arguments', function (): void
 });
 
 it('stays out of Cortex when turned off', function (): void {
-    $integration = app(CortexIntegration::class);
+    $integration = CortexIntegration::for(app(PackageRegistry::class)->get('pennantplus'));
 
     expect($integration->active())->toBeTrue();
 

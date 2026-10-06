@@ -6,7 +6,7 @@ namespace JayI\PennantPlus\Domains\Feature\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use JayI\PennantPlus\Contracts\ActionFinishedEvent;
+use JayI\Foundation\Contracts\ActionFinishedEvent;
 
 /**
  * Every stored value of a feature flag was forgotten.

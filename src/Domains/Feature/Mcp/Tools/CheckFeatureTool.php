@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace JayI\PennantPlus\Domains\Feature\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use JayI\Foundation\Mcp\Tool;
 use JayI\PennantPlus\Domains\Feature\Mcp\Requests\CheckFeatureMcpRequest;
 use JayI\PennantPlus\Domains\Scope\Concerns\DescribesScope;
-use JayI\PennantPlus\Mcp\Tool;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;

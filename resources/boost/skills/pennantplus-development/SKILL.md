@@ -86,6 +86,7 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 - `DELETE /pennantplus/values` `{feature, scope|scope_type+scope_id}` — forget one scope's value so it follows global again. MCP `forget-feature-value-tool`.
 - `GET /pennantplus/scopes` — scope types. MCP `list-scope-types-tool`.
 - `GET /pennantplus/scopes/{type}/models?q=` — find models of a configured type, with the serialized `scope` to reuse. MCP `search-scope-models-tool`.
+- `GET /pennantplus/history?subject_type=&subject_id=&action=&cursor=&per_page=` — the package's audit entries, newest first; 404 until jayi/audit is installed. MCP `list-pennantplus-history-tool`.
 
 Class-based feature names contain backslashes; URL-encode them in paths.
 
@@ -110,7 +111,7 @@ With `jayi/cortex` installed, the MCP server registers with Cortex as `pennantpl
 
 ### 9. React to changes
 
-Every write fires an action event pair from `JayI\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `JayI\PennantPlus\Contracts\ActionFinishedEvent` for all of them; finished events fire after commit.
+Every write fires an action event pair from `JayI\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `JayI\Foundation\Contracts\ActionFinishedEvent` (from jayi/foundation) for all of them; finished events fire after commit.
 
 ## Rules, References, and Templates
 

@@ -81,15 +81,18 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 
 Feature names that are class names contain backslashes: URL-encode them.
 
+`GET history` serves PennantPlus's audit entries, newest first, through jayi/foundation (route name `pennantplus.history.index`). It answers 404 until `jayi/audit` is installed.
+
 ## MCP server
 
-`JayI\PennantPlus\Mcp\PennantPlusServer` exposes the same operations as nine tools behind ToolSearch: `list-features-tool`, `show-feature-tool`, `check-feature-tool`, `purge-feature-tool`, `list-feature-values-tool`, `set-feature-value-tool` (value JSON-encoded), `forget-feature-value-tool`, `list-scope-types-tool`, `search-scope-models-tool`. Enable its transports under `pennantplus.mcp`, or register it yourself behind your own auth.
+`JayI\PennantPlus\Mcp\PennantPlusServer` exposes the same operations as ten tools behind ToolSearch: `list-features-tool`, `show-feature-tool`, `check-feature-tool`, `purge-feature-tool`, `list-feature-values-tool`, `set-feature-value-tool` (value JSON-encoded), `forget-feature-value-tool`, `list-scope-types-tool`, `search-scope-models-tool`, and `list-pennantplus-history-tool` (the audit history, when jayi/audit is installed). Enable its transports under `pennantplus.mcp`, or register it yourself behind your own auth.
 
 ## Cortex
 
 When [`jayi/cortex`](https://github.com/jayjfletcher/cortex) is installed, PennantPlus connects its MCP server to it. Nothing needs registering in your app.
 
 - **Agents can manage flags.** Every PennantPlus MCP tool joins Cortex's tool registry under its own name (`list-features-tool`, `check-feature-tool`, `set-feature-value-tool`, ...), so an agent can inspect and change feature flags. They are tagged with the server name (`pennantplus`), so they filter together in the Cortex dashboard.
+- **Agent changes are marked.** Changes an agent makes through one of the tools record `cortex` as their surface, so an audit log tells agents and people apart.
 - **Instructions and descriptions can change without a deploy.** The server is registered with Cortex as `pennantplus`, so its instructions get Cortex's versioned, publishable overrides, and so does each tool's description. Published overrides are served both to MCP clients and to agents.
 
 ```php
@@ -98,6 +101,7 @@ When [`jayi/cortex`](https://github.com/jayjfletcher/cortex) is installed, Penna
     'enabled' => true,          // false leaves Cortex alone
     'server' => 'pennantplus',  // the server's name in Cortex
     'tools' => null,            // null for every tool, or a list of names
+    // 'tags' => ['pennantplus'], // the Cortex tags, default the server name
 ],
 ```
 
@@ -107,6 +111,10 @@ About how it works:
 - **Lazy:** registration happens the first time Cortex's registries are used.
 - **Your config wins:** a name already registered with Cortex, for example in your own `config/cortex.php`, is left alone.
 - **Tool list from the server:** the tools come from `PennantPlusServer::TOOLS`, which is also the catalog the server serves, so a tool added to PennantPlus reaches Cortex without any change in your app.
+
+## Shared runtime
+
+PennantPlus stands on [`jayi/foundation`](https://github.com/jayjfletcher/Foundation), the shared runtime of the jayi package suite, which Composer installs with it. Its action events implement `JayI\Foundation\Contracts\ActionStartingEvent` and `ActionFinishedEvent`, so one listener can follow every package in the suite.
 
 ## Atrium dashboard
 

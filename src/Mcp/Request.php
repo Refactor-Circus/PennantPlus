@@ -4,65 +4,19 @@ declare(strict_types=1);
 
 namespace JayI\PennantPlus\Mcp;
 
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Validator;
+use JayI\Foundation\Mcp\Requests\Request as FoundationRequest;
 use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use Laravel\Mcp\Request as McpRequest;
-use Laravel\Mcp\Response;
-use Laravel\Mcp\ResponseFactory;
 
 /**
- * Base MCP request: mirrors the HTTP FormRequest `persist()` pattern so tools
+ * Base MCP request: mirrors the HTTP request's `persist()` pattern so tools
  * stay thin and both surfaces resolve the same Actions.
+ *
+ * Feature flags have no model to hold a policy, so every tool call is
+ * authorized against the `pennantplus.ability` Gate ability when one is
+ * configured, rather than through the Foundation authorizer.
  */
-abstract class Request extends McpRequest
+abstract class Request extends FoundationRequest
 {
-    final public function persist(): Response|ResponseFactory
-    {
-        try {
-            if (! $this->authorize()) {
-                return Response::error('Unauthorized.');
-            }
-
-            return $this->handle($this->validated());
-        } catch (ModelNotFoundException) {
-            return Response::error('Not found.');
-        }
-    }
-
-    /**
-     * Handle the validated tool call and return a response.
-     *
-     * @param  array<string, mixed>  $validated
-     */
-    abstract protected function handle(array $validated): Response|ResponseFactory;
-
-    /**
-     * Wrap a list in a `data` envelope: `Response::structured([])` throws, so
-     * an empty list must ship inside a non-empty payload.
-     *
-     * @param  array<int, mixed>  $items
-     * @param  array<string, mixed>  $extra
-     */
-    protected function structuredCollection(array $items, array $extra = []): ResponseFactory
-    {
-        return Response::structured(['data' => $items, ...$extra]);
-    }
-
-    /**
-     * Validation rules for the tool's input.
-     *
-     * @return array<string, mixed>
-     */
-    protected function rules(): array
-    {
-        return [];
-    }
-
-    /**
-     * Authorize the tool call against the `pennantplus.ability` Gate ability
-     * when one is configured.
-     */
     protected function authorize(): bool
     {
         return $this->features()->allowsManagement($this->user());
@@ -71,15 +25,5 @@ abstract class Request extends McpRequest
     protected function features(): FeatureFlagManager
     {
         return app(FeatureFlagManager::class);
-    }
-
-    /**
-     * The validated, safe input.
-     *
-     * @return array<string, mixed>
-     */
-    protected function validated(): array
-    {
-        return Validator::validate($this->all(), $this->rules());
     }
 }

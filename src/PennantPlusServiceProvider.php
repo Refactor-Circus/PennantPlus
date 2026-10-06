@@ -8,22 +8,34 @@ use Illuminate\Config\Repository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\ServiceProvider;
 use JayI\Atrium\Domains\Access\Services\Gatekeeper;
 use JayI\Atrium\Domains\Plugins\Services\PluginRegistry;
 use JayI\Atrium\Support\StyleRegistry;
+use JayI\Foundation\Packages\Package;
+use JayI\Foundation\Support\PackageServiceProvider;
 use JayI\PennantPlus\Atrium\FeatureFlagAccess;
-use JayI\PennantPlus\Cortex\CortexIntegration;
 use JayI\PennantPlus\Domains\DomainServiceProvider;
 use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
 use JayI\PennantPlus\Mcp\PennantPlusServer;
-use Laravel\Mcp\Facades\Mcp;
 
-class PennantPlusServiceProvider extends ServiceProvider
+class PennantPlusServiceProvider extends PackageServiceProvider
 {
+    /**
+     * Feature flags have no models, so no `authorization` default: calls are
+     * checked against the optional `pennantplus.ability` Gate ability instead.
+     */
+    protected function definition(): Package
+    {
+        return Package::make('pennantplus', __NAMESPACE__)
+            ->label('PennantPlus')
+            ->server(PennantPlusServer::class);
+    }
+
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/pennantplus.php', 'pennantplus');
+
+        $this->registerPackage();
 
         $this->app->register(DomainServiceProvider::class);
     }
@@ -32,12 +44,14 @@ class PennantPlusServiceProvider extends ServiceProvider
     {
         $this->registerMcpServer();
 
+        $this->loadHistoryRoutes();
+
         $this->registerAtriumFeatureResolver();
 
         $this->registerAtriumBladeConditional();
 
         // Cortex is optional: agents get the PennantPlus tools only when it is loaded.
-        $this->app->make(CortexIntegration::class)->register();
+        $this->registerCortex();
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'pennantplus');
 
@@ -103,25 +117,5 @@ class PennantPlusServiceProvider extends ServiceProvider
         }
 
         Blade::if('pennantplusManages', fn (): bool => FeatureFlagAccess::allows());
-    }
-
-    /**
-     * Register the MCP server transports enabled in the config.
-     */
-    private function registerMcpServer(): void
-    {
-        $config = $this->app->make(Repository::class);
-
-        if ($config->get('pennantplus.mcp.web.enabled') === true) {
-            /** @var array<int, string> $middleware */
-            $middleware = $config->get('pennantplus.mcp.web.middleware', []);
-
-            Mcp::web((string) $config->get('pennantplus.mcp.web.route'), PennantPlusServer::class)
-                ->middleware($middleware);
-        }
-
-        if ($config->get('pennantplus.mcp.local.enabled') === true) {
-            Mcp::local((string) $config->get('pennantplus.mcp.local.handle'), PennantPlusServer::class);
-        }
     }
 }

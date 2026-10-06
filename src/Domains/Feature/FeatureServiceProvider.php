@@ -8,10 +8,10 @@ use Illuminate\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
+use JayI\Foundation\Support\ServiceProvider;
 use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
 use JayI\PennantPlus\Domains\Feature\Support\GlobalAwareDatabaseDriver;
-use JayI\PennantPlus\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
 
 class FeatureServiceProvider extends ServiceProvider

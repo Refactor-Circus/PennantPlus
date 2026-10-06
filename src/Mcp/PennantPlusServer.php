@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace JayI\PennantPlus\Mcp;
 
-use JayI\PennantPlus\Cortex\CortexIntegration;
+use JayI\Foundation\Mcp\Server;
 use JayI\PennantPlus\Domains\Feature\Mcp\Tools\CheckFeatureTool;
 use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ForgetFeatureValueTool;
 use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
@@ -14,11 +14,10 @@ use JayI\PennantPlus\Domains\Feature\Mcp\Tools\SetFeatureValueTool;
 use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ShowFeatureTool;
 use JayI\PennantPlus\Domains\Scope\Mcp\Tools\ListScopeTypesTool;
 use JayI\PennantPlus\Domains\Scope\Mcp\Tools\SearchScopeModelsTool;
-use Laravel\Mcp\Server;
+use JayI\PennantPlus\Mcp\Tools\ListPennantPlusHistoryTool;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
-use Laravel\Mcp\Server\ServerContext;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\ToolSearch;
 
@@ -48,6 +47,9 @@ final class PennantPlusServer extends Server
         // Scopes
         ListScopeTypesTool::class,
         SearchScopeModelsTool::class,
+
+        // History
+        ListPennantPlusHistoryTool::class,
     ];
 
     /**
@@ -56,20 +58,4 @@ final class PennantPlusServer extends Server
     protected array $tools = [
         ToolSearch::class => self::TOOLS,
     ];
-
-    /**
-     * Serve Cortex's published instructions override, when Cortex is
-     * installed and one is published, in place of the ones declared above.
-     */
-    public function createContext(): ServerContext
-    {
-        $context = parent::createContext();
-        $override = app(CortexIntegration::class)->instructions();
-
-        if ($override !== null) {
-            $context->instructions = $override;
-        }
-
-        return $context;
-    }
 }

@@ -4,6 +4,15 @@
 
 ### Breaking
 
+- PennantPlus now stands on `jayi/foundation`, the suite's shared runtime, and requires it. The package's own copies of the shared pieces are gone in favour of Foundation's; update any imports:
+  - `JayI\PennantPlus\Contracts\ActionStartingEvent` → `JayI\Foundation\Contracts\ActionStartingEvent`
+  - `JayI\PennantPlus\Contracts\ActionFinishedEvent` → `JayI\Foundation\Contracts\ActionFinishedEvent`
+  - `JayI\PennantPlus\Mcp\Tool` → `JayI\Foundation\Mcp\Tool`
+  - `JayI\PennantPlus\Support\ServiceProvider` → `JayI\Foundation\Support\ServiceProvider`
+  - `JayI\PennantPlus\Cortex\CortexIntegration` → `JayI\Foundation\Cortex\CortexIntegration` (built with `CortexIntegration::for($package)` rather than resolved from the container)
+
+  `PennantPlusServiceProvider` extends Foundation's `PackageServiceProvider` and registers the package as `pennantplus`; `PennantPlusServer` extends `JayI\Foundation\Mcp\Server`; the base `Http\Request` and `Mcp\Request` extend Foundation's and keep the `pennantplus.ability` check. MCP calls now run inside Foundation's `mcp` surface, and changes a Cortex agent makes through a PennantPlus tool are marked with the `cortex` surface. Config keys, route names, tool names and behaviour are otherwise unchanged.
+
 - The package is reorganised into domain modules (`src/Domains/Feature`, `src/Domains/Scope`), mirroring the mono application's layout. Classes move namespaces; there are no aliases for the old names, so update imports. Config keys, route names and paths, MCP tool names, publish tags, views, translations, the `pennantplus` driver name and the Atrium plugin are unchanged, and nothing PennantPlus stores is keyed by its own class names, so stored feature values are untouched. The management API routes now load from each domain (`routes/pennantplus.php` is gone). Old → new:
   - `JayI\PennantPlus\Actions\CheckFeatureAction` → `JayI\PennantPlus\Domains\Feature\Actions\CheckFeatureAction`
   - `JayI\PennantPlus\Actions\DeleteFeatureValueAction` → `JayI\PennantPlus\Domains\Feature\Actions\DeleteFeatureValueAction`
@@ -72,10 +81,11 @@
 
 ### Added
 
+- `GET pennantplus/history` (route `pennantplus.history.index`) and the `list-pennantplus-history-tool` MCP tool, from jayi/foundation: PennantPlus's audit entries, newest first. Both answer "not found" until jayi/audit is installed.
 - `pennantplus` Pennant driver: stores a scope's value only when it differs from the global value.
 - `OnLayeredFeature` and `OffLayeredFeature` base classes (on `LayeredFeature`): the global scope resolves to the class's default, every other scope follows the global value.
 - `FeatureGate` and the `EnsureFeatureActive` middleware: global-only features, global-and-user checks for the rest, and a bypass callback.
-- A management API (`pennantplus.routes`) and an MCP server (`PennantPlusServer`, nine tools) to list, show, check, set, forget and purge feature values and find scopes, sharing actions and an optional `pennantplus.ability`.
+- A management API (`pennantplus.routes`) and an MCP server (`PennantPlusServer`) to list, show, check, set, forget and purge feature values and find scopes, sharing actions and an optional `pennantplus.ability`.
 - The Atrium **Feature flags** page, moved from `jayi/atrium` (`JayI\PennantPlus\Atrium`). Setting a global value purges every other scope's value of that feature.
 - Atrium's feature checks (`NavItem::feature()`, plugin `features()`, the `atrium.feature` middleware) are answered by the feature gate when Atrium is installed. Turn it off with `pennantplus.atrium.resolve_features`.
 - The Atrium page's feature field and feature filter are searchable comboboxes over the discovered features.

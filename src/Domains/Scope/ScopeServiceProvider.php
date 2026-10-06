@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace JayI\PennantPlus\Domains\Scope;
 
-use JayI\PennantPlus\Support\ServiceProvider;
+use JayI\Foundation\Support\ServiceProvider;
 
 class ScopeServiceProvider extends ServiceProvider
 {

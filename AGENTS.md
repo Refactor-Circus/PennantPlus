@@ -5,7 +5,7 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 ## Package Conventions
 
 - Use Laravel-native package APIs and the existing service provider shape before adding abstractions.
-- Keep package names, namespaces, Composer metadata, publish tags, documentation, and examples aligned with `jayi/pennantplus` and the `JayI\PennantPlus` namespace. Code under `src/Atrium` extends Atrium classes and must only load when jayi/atrium is installed; nothing outside it may reference Atrium. Likewise, Cortex classes (jayi/cortex) are referenced only from `src/Cortex`, behind `CortexIntegration::active()`.
+- Keep package names, namespaces, Composer metadata, publish tags, documentation, and examples aligned with `jayi/pennantplus` and the `JayI\PennantPlus` namespace. Code under `src/Atrium` extends Atrium classes and must only load when jayi/atrium is installed; nothing outside it may reference Atrium. Cortex (jayi/cortex) is wired only through jayi/foundation's `CortexIntegration`, which references Cortex classes behind its `active()` check; nothing in this package references Cortex directly.
 - Add only the files and dependencies needed for the package behavior being implemented.
 - Prefer explicit Laravel package code over helper abstractions unless the extension point is real.
 - Keep tests focused on observable package behavior through public APIs, service provider wiring, commands, routes, published resources, and documentation promises.
@@ -16,19 +16,18 @@ The package follows the mono domain-module layout. Code lives in `src/Domains/{D
 
 - `Domains/Feature`: the layered feature base classes and the `pennantplus` driver (`Support/`), `FeatureGate` and `FeatureFlagManager` (`Services/`), `StoredFeatureValue` (`Data/`), and the feature and stored-value actions, events, HTTP API, middleware and MCP tools.
 - `Domains/Scope`: `ScopeModel` (`Data/`), the scope validation rules and MCP argument schema, and the scope-type actions, HTTP API and MCP tools.
-- Package-wide pieces stay at the top level: `PennantPlusServiceProvider`, `Contracts/` (action event contracts), the base `Http\Request`, the MCP server and base `Mcp\Request`/`Mcp\Tool`, and `Support\ServiceProvider` (loads a domain's `routes.php` inside the shared API route group).
-- Integrations span both domains, so they keep their own top-level directories: `src/Atrium` (the Feature flags screen) and `src/Cortex`.
+- Package-wide pieces stay at the top level: `PennantPlusServiceProvider`, the base `Http\Request` and `Mcp\Request` (each extends jayi/foundation's and adds only the `pennantplus.ability` check), the MCP server and `Mcp\Tools\ListPennantPlusHistoryTool`.
+- The Atrium integration spans both domains, so it keeps its own top-level directory: `src/Atrium` (the Feature flags screen).
 - `config/pennantplus.php` stays one file; domains read from it.
 
-## Layout
+## Foundation
 
-The package follows the mono domain-module layout. Code lives in `src/Domains/{Domain}/` (namespace `JayI\PennantPlus\Domains\{Domain}`), each with its own `{Domain}ServiceProvider` registered by `Domains\DomainServiceProvider`, which `PennantPlusServiceProvider` registers. Domains create only the subdirectories they use.
+PennantPlus stands on `jayi/foundation`, the suite's shared runtime. Use its classes rather than adding package copies:
 
-- `Domains/Feature`: the layered feature base classes and the `pennantplus` driver (`Support/`), `FeatureGate` and `FeatureFlagManager` (`Services/`), `StoredFeatureValue` (`Data/`), and the feature and stored-value actions, events, HTTP API, middleware and MCP tools.
-- `Domains/Scope`: `ScopeModel` (`Data/`), the scope validation rules and MCP argument schema, and the scope-type actions, HTTP API and MCP tools.
-- Package-wide pieces stay at the top level: `PennantPlusServiceProvider`, `Contracts/` (action event contracts), the base `Http\Request`, the MCP server and base `Mcp\Request`/`Mcp\Tool`, and `Support\ServiceProvider` (loads a domain's `routes.php` inside the shared API route group).
-- Integrations span both domains, so they keep their own top-level directories: `src/Atrium` (the Feature flags screen) and `src/Cortex`.
-- `config/pennantplus.php` stays one file; domains read from it.
+- `PennantPlusServiceProvider` extends `JayI\Foundation\Support\PackageServiceProvider`: `definition()` describes the package (`pennantplus`, its MCP server), `registerPackage()` runs in `register()` before the domain providers, and `boot()` uses `registerMcpServer()`, `registerCortex()` and `loadHistoryRoutes()`.
+- Domain providers extend `JayI\Foundation\Support\ServiceProvider` and load their `routes.php` through `loadApiRoutesFrom()`, inside the shared `pennantplus.routes` group with the `pennantplus.` name prefix.
+- Action events implement `JayI\Foundation\Contracts\ActionStartingEvent` / `ActionFinishedEvent`; MCP tools extend `JayI\Foundation\Mcp\Tool`; the server extends `JayI\Foundation\Mcp\Server`.
+- Feature flags have no models, so there are no policies and no `authorization` default: every endpoint and tool checks the optional `pennantplus.ability` Gate ability through `FeatureFlagManager::allowsManagement()`.
 
 ## Quick Commands
 
