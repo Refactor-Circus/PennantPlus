@@ -47,6 +47,6 @@ class UpdateFeatureValueRequest extends Request
         );
 
         return redirect()->to($this->redirectToFeatureFlags())
-            ->with('atrium.status', __('pennantplus::pennantplus.value_saved'));
+            ->with('status', __('pennantplus::pennantplus.value_saved'));
     }
 }

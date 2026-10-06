@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use JayI\Atrium\Domains\Access\Services\Gatekeeper;
 use JayI\Atrium\Domains\Plugins\Services\PluginRegistry;
-use JayI\Atrium\Support\StyleRegistry;
 use JayI\Foundation\Packages\Package;
 use JayI\Foundation\Support\PackageServiceProvider;
 use JayI\PennantPlus\Atrium\FeatureFlagAccess;
@@ -57,12 +56,6 @@ class PennantPlusServiceProvider extends PackageServiceProvider
         $this->registerCortex();
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'pennantplus');
-
-        // Utilities the Atrium screens use that Atrium's stylesheet lacks.
-        $this->callAfterResolving(StyleRegistry::class, fn (StyleRegistry $styles): StyleRegistry => $styles->css(
-            (string) file_get_contents(__DIR__.'/../resources/css/atrium.css'),
-            'pennantplus',
-        ));
 
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'pennantplus');
 

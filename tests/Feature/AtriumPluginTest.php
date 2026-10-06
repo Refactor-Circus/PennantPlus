@@ -298,7 +298,7 @@ class AtriumPluginTest extends TestCase
             ->assertOk()
             ->assertSee('data-testid="pennant-feature"', false)
             ->assertSee('data-testid="pennant-filter-feature"', false)
-            ->assertSee('atriumPennantFeature', false)
+            ->assertSee('atriumCombobox', false)
             ->assertSee('value="stored-only"', false)
             ->assertDontSee('<datalist', false)
             ->assertDontSee('<select name="feature"', false);
@@ -318,6 +318,18 @@ class AtriumPluginTest extends TestCase
 
         $this->assertDatabaseMissing('features', ['name' => 'beta', 'scope' => Feature::serializeScope($ada)]);
         $this->assertDatabaseHas('features', ['name' => 'beta', 'scope' => Feature::serializeScope(null)]);
+    }
+
+    public function test_a_change_flashes_its_status_through_atriums_flash(): void
+    {
+        $this->actingAs($this->user())->followingRedirects()->put(route('atrium.pennant.values.update'), [
+            'feature' => 'beta',
+            'scope_type' => FeatureFlagManager::GLOBAL,
+            'value' => 'true',
+        ])
+            ->assertOk()
+            ->assertSee('data-testid="flash-status"', false)
+            ->assertSee(__('pennantplus::pennantplus.value_saved'));
     }
 
     public function test_it_purges_a_feature_for_every_scope(): void

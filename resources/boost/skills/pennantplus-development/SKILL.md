@@ -86,7 +86,7 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 - `DELETE /pennantplus/values` `{feature, scope|scope_type+scope_id}` — forget one scope's value so it follows global again. MCP `forget-feature-value-tool`.
 - `GET /pennantplus/scopes` — scope types. MCP `list-scope-types-tool`.
 - `GET /pennantplus/scopes/{type}/models?q=` — find models of a configured type, with the serialized `scope` to reuse. MCP `search-scope-models-tool`.
-- `GET /pennantplus/history?subject_type=&subject_id=&action=&cursor=&per_page=` — the package's audit entries, newest first; 404 until jayi/audit is installed. MCP `list-pennantplus-history-tool`.
+- `GET /pennantplus/history?subject_type=&subject_id=&action=&cursor=&per_page=` — the package's audit entries, newest first; 404 until jayi/keen is installed. MCP `list-pennantplus-history-tool`.
 
 Class-based feature names contain backslashes; URL-encode them in paths.
 
@@ -102,6 +102,8 @@ Class-based feature names contain backslashes; URL-encode them in paths.
 With `jayi/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`, routes `atrium.pennant.*`). Hide it with `atrium.disabled => ['pennant']`.
 
 The page uses Atrium icon buttons and status dots (`data-status="active|inactive"`, assert on that and on `data-testid`, not on button text) and a `flag` nav icon. Its navigation item and every control (set value, toggle, forget, purge) show only when `JayI\PennantPlus\Atrium\FeatureFlagAccess::allows()` passes - the same `pennantplus.ability` check the controller and form requests refuse with; published views can use `@pennantplusManages ... @endpennantplusManages`. Do not gate the page behind a Pennant feature: that could lock admins out of turning it back on.
+
+The page uses only `x-atrium::*` components and Atrium's safelisted utilities (no package stylesheet): `x-atrium::form.combobox` for the feature fields (`data-testid="pennant-feature"` / `"pennant-filter-feature"`, free text allowed), `x-atrium::flash` for status (`data-testid="flash-status"`), and `x-atrium::audit-trail source="pennantplus"`, which shows the package-wide history once jayi/keen is installed. A stored value's audit entry has no subject and carries `feature`, `scope` and `value` context (`FeatureValueUpdatedActionEvent` implements `JayI\Foundation\Audit\Contracts\Auditable`).
 
 PennantPlus also registers Atrium's feature resolver, so `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware ask `FeatureGate::allows($feature, $request->user())`. `pennantplus.gate.global_only => ['*']` makes Pennant decide only global visibility, leaving per-user visibility to Atrium's `can()` permissions. `pennantplus.atrium.resolve_features => false` opts out.
 

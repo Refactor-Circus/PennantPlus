@@ -28,6 +28,6 @@ class PurgeFeatureRequest extends Request
         app(PurgeFeatureAction::class)->execute($this->string('feature')->toString());
 
         return redirect()->route('atrium.pennant.index')
-            ->with('atrium.status', __('pennantplus::pennantplus.feature_purged'));
+            ->with('status', __('pennantplus::pennantplus.feature_purged'));
     }
 }

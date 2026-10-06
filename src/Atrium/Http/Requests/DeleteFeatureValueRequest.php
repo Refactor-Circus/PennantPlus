@@ -32,6 +32,6 @@ class DeleteFeatureValueRequest extends Request
         );
 
         return redirect()->to($this->redirectToFeatureFlags())
-            ->with('atrium.status', __('pennantplus::pennantplus.value_forgotten'));
+            ->with('status', __('pennantplus::pennantplus.value_forgotten'));
     }
 }

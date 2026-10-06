@@ -81,11 +81,11 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 
 Feature names that are class names contain backslashes: URL-encode them.
 
-`GET history` serves PennantPlus's audit entries, newest first, through jayi/foundation (route name `pennantplus.history.index`). It answers 404 until `jayi/audit` is installed.
+`GET history` serves PennantPlus's audit entries, newest first, through jayi/foundation (route name `pennantplus.history.index`). It answers 404 until `jayi/keen` is installed.
 
 ## MCP server
 
-`JayI\PennantPlus\Mcp\PennantPlusServer` exposes the same operations as ten tools behind ToolSearch: `list-features-tool`, `show-feature-tool`, `check-feature-tool`, `purge-feature-tool`, `list-feature-values-tool`, `set-feature-value-tool` (value JSON-encoded), `forget-feature-value-tool`, `list-scope-types-tool`, `search-scope-models-tool`, and `list-pennantplus-history-tool` (the audit history, when jayi/audit is installed). Enable its transports under `pennantplus.mcp`, or register it yourself behind your own auth.
+`JayI\PennantPlus\Mcp\PennantPlusServer` exposes the same operations as ten tools behind ToolSearch: `list-features-tool`, `show-feature-tool`, `check-feature-tool`, `purge-feature-tool`, `list-feature-values-tool`, `set-feature-value-tool` (value JSON-encoded), `forget-feature-value-tool`, `list-scope-types-tool`, `search-scope-models-tool`, and `list-pennantplus-history-tool` (the audit history, when jayi/keen is installed). Enable its transports under `pennantplus.mcp`, or register it yourself behind your own auth.
 
 ## Cortex
 
@@ -121,6 +121,10 @@ PennantPlus stands on [`jayi/foundation`](https://github.com/jayjfletcher/Founda
 With `jayi/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`). It lists stored values by feature and scope, sets a value for the global scope, a configured model or any string scope, forgets a value, and purges a feature. Setting a **global** value forgets every other scope's value of that feature (`pennantplus.purge_scopes_on_global_update`). It uses the same `store`, `ability`, `features` and `scopes` settings as the API.
 
 The page follows Atrium's screen conventions: actions are icon buttons (the label is the tooltip and accessible name), a value's state is a status dot (`success` active, `neutral` inactive; read it from `data-status`), and the navigation item uses the Heroicons `flag` icon. The navigation item, the set-value form, each row's toggle and forget buttons, and the purge button are shown only when `pennantplus.ability` allows the viewer - asked through `JayI\PennantPlus\Atrium\FeatureFlagAccess::allows()`, the same check the page's controller and form requests refuse with. Your own published views can use it as `@pennantplusManages ... @endpennantplusManages`.
+
+The page is built only from Atrium's components and the utilities Atrium's stylesheet ships; PennantPlus has no stylesheet of its own. The feature field and filter are Atrium's `x-atrium::form.combobox` over the discovered features (free text still allowed), status and validation messages show through `x-atrium::flash` (requests flash `status`), and the scope picker searches PennantPlus's own scope endpoint.
+
+With an audit log installed (jayi/keen), the page ends with PennantPlus's history (`<x-atrium::audit-trail source="pennantplus" />`); without one it renders nothing. Flag values are about no model, so the history is package-wide even when one feature is filtered. `FeatureValueUpdatedActionEvent` implements jayi/foundation's `Auditable`: its entry has no subject and records `feature`, `scope` and `value` as context, while the forget and purge events' `feature` and `scope` properties are recorded as they are.
 
 PennantPlus deliberately has no Pennant feature switch of its own for the Feature flags page: gating the feature-flag manager behind a feature flag could lock admins out of turning it back on. Restrict it with `pennantplus.ability`, or hide it with `atrium.disabled`.
 

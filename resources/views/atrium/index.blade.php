@@ -11,18 +11,10 @@
 @endphp
 
 <x-atrium::layout :title="__('pennantplus::pennantplus.features')">
-    {{-- Utilities this page uses that Atrium's compiled stylesheet does not ship. --}}
-
     <x-atrium::page-header :title="__('pennantplus::pennantplus.features')" :description="__('pennantplus::pennantplus.description')" />
 
     <div class="mt-5 flex flex-col gap-5">
-        @if (session('atrium.status'))
-            <x-atrium::alert variant="success" data-testid="pennant-status">{{ session('atrium.status') }}</x-atrium::alert>
-        @endif
-
-        @if ($errors->any())
-            <x-atrium::alert variant="danger">{{ $errors->first() }}</x-atrium::alert>
-        @endif
+        <x-atrium::flash />
 
         @unless ($supported)
             <x-atrium::alert variant="warning" data-testid="pennant-unsupported">{{ __('pennantplus::pennantplus.unsupported') }}</x-atrium::alert>
@@ -34,12 +26,10 @@
                 @csrf
                 @method('PUT')
 
-                @include('pennantplus::atrium.partials.feature-combobox', [
-                    'id' => 'atrium-pennant-feature',
-                    'value' => old('feature', ''),
-                    'required' => true,
-                    'testid' => 'pennant-feature',
-                ])
+                {{-- Free text is still submitted, so features Pennant has not discovered remain usable. --}}
+                <x-atrium::form.combobox name="feature" id="atrium-pennant-feature" :label="__('pennantplus::pennantplus.feature')"
+                                         :options="$features" :empty="__('pennantplus::pennantplus.no_features')"
+                                         required data-testid="pennant-feature" />
 
                 <div class="contents" x-data="atriumPennantScope(@js(route('atrium.pennant.scopes')), @js(old('scope_type', FeatureFlagManager::GLOBAL)))">
                     <x-atrium::form.select name="scope_type" id="atrium-pennant-scope-type" :label="__('pennantplus::pennantplus.scope')"
@@ -64,11 +54,12 @@
                                 <button type="button" class="cursor-pointer rounded-md px-1.5 py-0.5 text-xs font-medium text-on-surface transition-colors hover:bg-on-surface-strong/5 hover:text-on-surface-strong dark:text-on-surface-dark dark:hover:bg-white/5 dark:hover:text-on-surface-dark-strong" x-on:click="clear()">{{ __('pennantplus::pennantplus.clear') }}</button>
                             </div>
 
-                            <input x-show="id === ''" id="atrium-pennant-scope-search" type="search" autocomplete="off"
-                                   placeholder="{{ __('pennantplus::pennantplus.find_model_placeholder') }}"
-                                   class="h-9 w-full rounded-radius border border-outline bg-surface px-3 text-sm text-on-surface-strong shadow-xs transition placeholder:text-on-surface/60 hover:border-on-surface/30 focus:border-primary focus:outline-none focus:ring-3 focus:ring-primary/15 dark:border-outline-dark dark:bg-white/5 dark:text-on-surface-dark-strong dark:placeholder:text-on-surface-dark/60 dark:hover:border-white/20 dark:focus:border-primary-dark dark:focus:ring-primary-dark/20 [&::-webkit-search-cancel-button]:hidden"
-                                   x-model="query" x-on:input.debounce.250ms="search()" x-on:focus="open = results.length > 0"
-                                   data-testid="pennant-scope-search">
+                            <div x-show="id === ''">
+                                <x-atrium::search-input wrapper="w-full" id="atrium-pennant-scope-search" autocomplete="off"
+                                                        :placeholder="__('pennantplus::pennantplus.find_model_placeholder')"
+                                                        x-model="query" x-on:input.debounce.250ms="search()" x-on:focus="open = results.length > 0"
+                                                        data-testid="pennant-scope-search" />
+                            </div>
 
                             <ul x-show="open" x-cloak
                                 class="absolute top-full z-20 mt-1.5 max-h-60 w-full overflow-y-auto rounded-radius border border-outline bg-surface p-1 text-sm shadow-xl dark:border-outline-dark dark:bg-surface-dark">
@@ -93,22 +84,18 @@
 
                 <x-atrium::form.input name="value" :label="__('pennantplus::pennantplus.value')" value="true" :hint="__('pennantplus::pennantplus.value_hint')" required />
 
-                {{-- Offset by the label's height, so the button lines up with the fields. --}}
-                <div class="sm:pt-6.5">
+                <x-atrium::form.actions>
                     <x-atrium::icon-button icon="check" :label="__('pennantplus::pennantplus.save')" variant="primary" type="submit" data-testid="pennant-save" />
-                </div>
+                </x-atrium::form.actions>
             </form>
         </x-atrium::card>
         @endpennantplusManages
 
         @if ($supported)
             <form method="GET" action="{{ route('atrium.pennant.index') }}" class="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennant-filters">
-                @include('pennantplus::atrium.partials.feature-combobox', [
-                    'id' => 'atrium-pennant-filter-feature',
-                    'value' => $filters['feature'],
-                    'placeholder' => __('pennantplus::pennantplus.all_features'),
-                    'testid' => 'pennant-filter-feature',
-                ])
+                <x-atrium::form.combobox name="feature" id="atrium-pennant-filter-feature" :label="__('pennantplus::pennantplus.feature')"
+                                         :options="$features" :value="$filters['feature']" :placeholder="__('pennantplus::pennantplus.all_features')"
+                                         :empty="__('pennantplus::pennantplus.no_features')" data-testid="pennant-filter-feature" />
                 <x-atrium::form.select name="scope" id="atrium-pennant-filter-scope" :label="__('pennantplus::pennantplus.scope')"
                                        :options="$scopeOptions" :selected="$filters['scope']" />
                 <x-atrium::form.input name="scope_id" id="atrium-pennant-filter-scope-id" :label="__('pennantplus::pennantplus.scope_id')" :value="$filters['scope_id']" />
@@ -199,45 +186,18 @@
                 @endpennantplusManages
             @endif
         @endif
+
+        {{--
+            Flag changes are about no model, so the history is the package's
+            own, whichever feature is filtered. Renders nothing until an audit
+            log (jayi/keen) is installed.
+        --}}
+        <x-atrium::audit-trail source="pennantplus" />
     </div>
 
     @once
         @push('atrium-scripts')
             <script>
-                window.atriumPennantFeature = function (features, value) {
-                    return {
-                        features: features,
-                        query: value ?? '',
-                        open: false,
-                        active: -1,
-                        get matches() {
-                            const needle = this.query.trim().toLowerCase()
-
-                            return needle === '' ? this.features : this.features.filter((feature) => feature.toLowerCase().includes(needle))
-                        },
-                        show() {
-                            this.open = true
-                            this.active = -1
-                        },
-                        move(step) {
-                            if (! this.open) { this.show() }
-                            const count = this.matches.length
-                            if (count === 0) { return }
-                            this.active = (this.active + step + count) % count
-                        },
-                        choose(event) {
-                            if (! this.open || this.active < 0 || ! this.matches[this.active]) { return }
-                            event.preventDefault()
-                            this.pick(this.matches[this.active])
-                        },
-                        pick(feature) {
-                            this.query = feature
-                            this.open = false
-                            this.active = -1
-                        },
-                    }
-                }
-
                 window.atriumPennantScope = function (url, type) {
                     return {
                         type: type,

@@ -18,6 +18,12 @@ The package follows the mono domain-module layout. Code lives in `src/Domains/{D
 - `Domains/Scope`: `ScopeModel` (`Data/`), the scope validation rules and MCP argument schema, and the scope-type actions, HTTP API and MCP tools.
 - Package-wide pieces stay at the top level: `PennantPlusServiceProvider`, the base `Http\Request` and `Mcp\Request` (each extends jayi/foundation's and adds only the `pennantplus.ability` check), the MCP server and `Mcp\Tools\ListPennantPlusHistoryTool`.
 - The Atrium integration spans both domains, so it keeps its own top-level directory: `src/Atrium` (the Feature flags screen).
+
+## Frontend
+
+Atrium owns every component and style of the suite. PennantPlus ships no stylesheet, no `Atrium::css()` call and no component namespace: `resources/views` uses only `x-atrium::*` components and the utilities Atrium's compiled stylesheet ships, with no `<style>` block or `style` attribute. `tests/Feature/Ui/StylesTest.php` checks this with `JayI\Atrium\Testing\AtriumStyles`. If a screen needs something Atrium lacks, add it to Atrium, not here. Requests flash `status` for `x-atrium::flash`. The scope picker's inline `atriumPennantScope` Alpine script stays here because it searches PennantPlus's own endpoint.
+
+Atrium's shared screen helpers (`ScreenAccess`, `AuthorizesScreens`, `Plugin::featuresFromConfig()`) ask a package's model policies; feature flags have no models or policies, so the screen keeps `FeatureFlagAccess`, which asks the plugin's `pennantplus.ability` check.
 - `config/pennantplus.php` stays one file; domains read from it.
 
 ## Foundation
