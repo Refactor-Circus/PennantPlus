@@ -51,7 +51,14 @@ jobs:
           composer run prepare
 
       - name: PHPStan
+        if: runner.os != 'Windows'
         run: composer analyse
+
+      # Larastan boots Testbench in every worker; on Windows they race on its
+      # cache file, so analyse there in one process.
+      - name: PHPStan (Windows)
+        if: runner.os == 'Windows'
+        run: vendor/bin/phpstan analyse --configuration=phpstan.windows.neon --no-progress
 
       - name: Linter
         run: composer lint:check
