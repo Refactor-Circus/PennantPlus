@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/jayjfletcher/PennantPlus/compare/v0.1.0...main)
 
+### Added
+
+- `Atrium\Features\ThemeSwitcherFeature`, the Pennant feature Atrium's theme switcher shows behind: on until turned off, globally or per user.
+
 ### Breaking
 
 - PennantPlus now stands on `jayi/foundation`, the suite's shared runtime, and requires it. The package's own copies of the shared pieces are gone in favour of Foundation's; update any imports:
