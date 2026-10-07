@@ -6,6 +6,7 @@ namespace JayI\PennantPlus\Atrium;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use JayI\Atrium\Domains\Navigation\Data\NavGroup;
 use JayI\Atrium\Domains\Navigation\Data\NavItem;
 use JayI\Atrium\Domains\Plugins\Support\Plugin;
 use JayI\Atrium\Support\Icons;
@@ -38,6 +39,16 @@ class PennantPlugin extends Plugin
     public function authorize(Request $request): bool
     {
         return app(FeatureFlagManager::class)->allowsManagement($request->user());
+    }
+
+    /**
+     * The package's section in the sidebar rail: its icon and its place.
+     */
+    public function navigationGroups(): array
+    {
+        return [
+            NavGroup::make(__('pennantplus::pennantplus.group'))->icon(Icons::svg('flag'))->sort(90),
+        ];
     }
 
     public function navigation(): array
