@@ -48,6 +48,9 @@ class PennantPlugin extends Plugin
                 ->icon(Icons::svg('flag'))
                 ->group(__('pennantplus::pennantplus.group'))
                 ->sort(900),
+
+            // The package's own audit log, while an audit log is installed.
+            $this->historyNavItem('pennantplus')->group(__('pennantplus::pennantplus.group'))->sort(910),
         ];
     }
 

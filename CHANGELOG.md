@@ -4,6 +4,7 @@
 
 ### Added
 
+- An **Audit log** link in the package's sidebar group, opening its own audit log in Atrium (`/atrium/history/pennantplus`), shown while an audit log (jayi/keen) is installed and to those who may read the package's history.
 - `Atrium\Features\ThemeSwitcherFeature`, the Pennant feature Atrium's theme switcher shows behind: on until turned off, globally or per user.
 
 ### Breaking
