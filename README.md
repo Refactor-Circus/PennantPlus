@@ -24,6 +24,13 @@ Point your Pennant store at the `pennantplus` driver. It takes the same `connect
 
 For a non-null scope with no stored value, the driver resolves the feature and compares it with the global (null-scope) value. When they match nothing is written, so the scope keeps following the global value. Only a value that differs from global is stored. Explicit `activate()` / `deactivate()` calls store as usual.
 
+The driver reads stored values one scope at a time:
+
+- The first check against a scope loads every value stored for it in one query. Later checks against that scope are answered from memory.
+- Checking many features for one user costs two queries: the user's values and the global ones. A gate in front of many routes or MCP tools stays cheap.
+- Pennant flushes the loaded values with its own cache: `Feature::flushCache()`, which runs at the start of each Octane request, task and tick and after each queued job.
+- Every write through the driver flushes them too.
+
 Pair it with features whose user value follows the global one:
 
 ```php

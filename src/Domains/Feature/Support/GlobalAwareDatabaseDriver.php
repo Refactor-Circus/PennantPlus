@@ -9,6 +9,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Query\Builder;
+use Laravel\Pennant\Contracts\HasFlushableCache;
 use Laravel\Pennant\Drivers\DatabaseDriver;
 use Laravel\Pennant\Feature;
 
@@ -22,11 +23,28 @@ use Laravel\Pennant\Feature;
  * differs from global is stored. Explicit writes (`activate()`,
  * `deactivate()`) are unaffected.
  *
+ * Stored values are read one scope at a time: the first check against a
+ * scope loads every value stored for it in one query, and later checks
+ * against that scope are answered from memory. Checking many features for
+ * one user therefore costs two queries (the user's values and the global
+ * ones), not one or two per feature. Pennant flushes this along with its own
+ * cache (`Feature::flushCache()`, which Pennant calls as each Octane request,
+ * task and tick starts and after each queued job), and every write through
+ * the driver flushes it too.
+ *
  * Registered as the `pennantplus` driver. A store using it takes the same
  * `connection` and `table` options as the `database` driver.
  */
-class GlobalAwareDatabaseDriver extends DatabaseDriver
+class GlobalAwareDatabaseDriver extends DatabaseDriver implements HasFlushableCache
 {
+    /**
+     * The stored values loaded so far, as JSON, keyed by serialized scope
+     * and then feature name.
+     *
+     * @var array<string, array<string, string>>
+     */
+    private array $storedValues = [];
+
     /**
      * @param  array{connection?: string|null, table?: string|null}  $store
      */
@@ -41,17 +59,21 @@ class GlobalAwareDatabaseDriver extends DatabaseDriver
      */
     public function get($feature, $scope): mixed
     {
-        if ($scope === null) {
-            return parent::get($feature, null);
+        $serializedScope = Feature::serializeScope($scope);
+        $stored = $this->storedValues($serializedScope)[$feature] ?? null;
+
+        if ($stored !== null) {
+            return json_decode($stored, flags: JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR);
         }
 
-        $stored = $this->newQuery()
-            ->where('name', $feature)
-            ->where('scope', Feature::serializeScope($scope))
-            ->value('value');
+        if ($scope === null) {
+            $value = parent::get($feature, null);
 
-        if (is_string($stored)) {
-            return json_decode($stored, flags: JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR);
+            if (array_key_exists($feature, $this->featureStateResolvers)) {
+                $this->remember($serializedScope, $feature, $value);
+            }
+
+            return $value;
         }
 
         $value = $this->resolveValue($feature, $scope);
@@ -60,8 +82,10 @@ class GlobalAwareDatabaseDriver extends DatabaseDriver
             return false;
         }
 
-        if ($value !== parent::get($feature, null)) {
-            $this->set($feature, $scope, $value);
+        if ($value !== $this->get($feature, null)) {
+            parent::set($feature, $scope, $value);
+
+            $this->remember($serializedScope, $feature, $value);
         }
 
         return $value;
@@ -82,6 +106,69 @@ class GlobalAwareDatabaseDriver extends DatabaseDriver
         return $values;
     }
 
+    /**
+     * @param  string  $feature
+     * @param  mixed  $scope
+     * @param  mixed  $value
+     */
+    public function set($feature, $scope, $value): void
+    {
+        parent::set($feature, $scope, $value);
+
+        $this->flushCache();
+    }
+
+    /**
+     * @param  list<array{feature: string, scope: mixed, value: mixed}>  $features
+     */
+    public function setAll(array $features): void
+    {
+        parent::setAll($features);
+
+        $this->flushCache();
+    }
+
+    /**
+     * @param  string  $feature
+     * @param  mixed  $value
+     */
+    public function setForAllScopes($feature, $value): void
+    {
+        parent::setForAllScopes($feature, $value);
+
+        $this->flushCache();
+    }
+
+    /**
+     * @param  string  $feature
+     * @param  mixed  $scope
+     */
+    public function delete($feature, $scope): void
+    {
+        parent::delete($feature, $scope);
+
+        $this->flushCache();
+    }
+
+    /**
+     * @param  array<int, string>|null  $features
+     */
+    public function purge($features): void
+    {
+        parent::purge($features);
+
+        $this->flushCache();
+    }
+
+    /**
+     * Forget the stored values loaded so far, so the next check against each
+     * scope reads it again.
+     */
+    public function flushCache(): void
+    {
+        $this->storedValues = [];
+    }
+
     protected function newQuery(): Builder
     {
         return $this->connection()->table($this->store['table'] ?? 'features');
@@ -90,5 +177,30 @@ class GlobalAwareDatabaseDriver extends DatabaseDriver
     protected function connection(): Connection
     {
         return $this->db->connection($this->store['connection'] ?? null);
+    }
+
+    /**
+     * Every value stored for the scope, loaded in one query the first time
+     * the scope is checked.
+     *
+     * @return array<string, string>
+     */
+    private function storedValues(string $serializedScope): array
+    {
+        return $this->storedValues[$serializedScope] ??= $this->newQuery()
+            ->where('scope', $serializedScope)
+            ->pluck('value', 'name')
+            ->map(fn (mixed $value): string => (string) $value)
+            ->all();
+    }
+
+    /**
+     * Record a value just stored for the scope, so the scope is not read again.
+     */
+    private function remember(string $serializedScope, string $feature, mixed $value): void
+    {
+        if (array_key_exists($serializedScope, $this->storedValues)) {
+            $this->storedValues[$serializedScope][$feature] = json_encode($value, flags: JSON_THROW_ON_ERROR);
+        }
     }
 }

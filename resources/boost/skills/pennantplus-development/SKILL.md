@@ -35,6 +35,8 @@ php artisan vendor:publish --tag="pennantplus-config"
 
 A scope (user) with no stored value is resolved and compared with the global (null-scope) value; when they match nothing is written, so the scope keeps following the global value. Only a value that differs from global (an explicit `activate()`/`deactivate()` for that scope, or a resolver rule that treats it differently) is stored.
 
+The driver loads each scope's stored values in one query the first time the scope is checked, then answers from memory. Checking many features for one user therefore costs two queries. `Feature::flushCache()` (run by Pennant per Octane request and per queued job) and every write through the driver clear it. A row written straight to the table shows up only after that flush.
+
 ### 2. Write features whose users follow the global value
 
 ```php

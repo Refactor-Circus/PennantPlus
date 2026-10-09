@@ -82,6 +82,11 @@
 
 ### Fixed
 
+- The `pennantplus` driver no longer runs a query for every feature it checks.
+  - It loads every value stored for a scope in one query, the first time that scope is checked, and answers later checks from memory. Checking many features for one user now costs two queries: the user's values and the global ones.
+  - Before, each user check cost two or three queries. The global value was read again without going through Pennant's cache.
+  - The driver implements `HasFlushableCache`. Pennant flushes it along with its own cache, at the start of each Octane request, task and tick and after each queued job.
+  - Every write through the driver flushes it too. A value written straight to the table by another process shows up after the next flush, the same as with Pennant's own in-memory cache.
 - The Feature flags page uses only Atrium's components and the utilities Atrium's stylesheet ships, so every class takes effect. PennantPlus no longer ships `resources/css/atrium.css` or adds styles through `Atrium::css()`.
 
 ### Added
