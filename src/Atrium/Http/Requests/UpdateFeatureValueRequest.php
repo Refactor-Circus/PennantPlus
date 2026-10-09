@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Atrium\Http\Requests;
+namespace RefactorCircus\PennantPlus\Atrium\Http\Requests;
 
 use Illuminate\Http\RedirectResponse;
-use JayI\Atrium\Http\Requests\Request;
-use JayI\PennantPlus\Atrium\Http\Requests\Concerns\AuthorizesFeatureFlags;
-use JayI\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use JayI\PennantPlus\Domains\Scope\Support\ScopeRules;
+use RefactorCircus\Atrium\Http\Requests\Request;
+use RefactorCircus\PennantPlus\Atrium\Http\Requests\Concerns\AuthorizesFeatureFlags;
+use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Scope\Support\ScopeRules;
 
 /**
  * Stores a feature flag value for a scope from the dashboard form.

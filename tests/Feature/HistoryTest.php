@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Gate;
-use JayI\PennantPlus\Mcp\PennantPlusServer;
-use JayI\PennantPlus\Mcp\Tools\ListPennantPlusHistoryTool;
+use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
+use RefactorCircus\PennantPlus\Mcp\Tools\ListPennantPlusHistoryTool;
 
 it('answers the history route with 404 while no audit log is installed', function (): void {
     $this->getJson(route('pennantplus.history.index'))
         ->assertNotFound()
-        ->assertJsonPath('message', 'No audit log is installed. Install jayi/keen to record history.');
+        ->assertJsonPath('message', 'No audit log is installed. Install refactor-circus/keen to record history.');
 });
 
 it('lists the history tool on the MCP server under the package name', function (): void {

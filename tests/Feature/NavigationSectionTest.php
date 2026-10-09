@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use JayI\Atrium\Support\Icons;
-use JayI\PennantPlus\Atrium\PennantPlugin;
+use RefactorCircus\Atrium\Support\Icons;
+use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
 
 it('gives its sidebar section its own icon', function (): void {
     [$group] = app(PennantPlugin::class)->navigationGroups();

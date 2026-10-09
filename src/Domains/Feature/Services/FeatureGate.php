@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Services;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Services;
 
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;

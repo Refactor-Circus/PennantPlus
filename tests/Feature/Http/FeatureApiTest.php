@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use JayI\PennantPlus\Tests\Fixtures\Features\Billing\InvoicingFeature;
+use RefactorCircus\PennantPlus\Tests\Fixtures\Features\Billing\InvoicingFeature;
 use Laravel\Pennant\Feature;
 
 beforeEach(function (): void {

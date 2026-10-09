@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
-use JayI\Atrium\Domains\Navigation\Data\NavItem;
-use JayI\Atrium\Domains\Navigation\Services\NavigationRegistry;
-use JayI\Atrium\Facades\Atrium;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
+use RefactorCircus\Atrium\Domains\Navigation\Data\NavItem;
+use RefactorCircus\Atrium\Domains\Navigation\Services\NavigationRegistry;
+use RefactorCircus\Atrium\Facades\Atrium;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate;
 use Laravel\Pennant\Feature;
 
 beforeEach(function (): void {

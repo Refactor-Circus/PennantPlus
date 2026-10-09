@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Mcp;
+namespace RefactorCircus\PennantPlus\Mcp;
 
-use JayI\Foundation\Mcp\Requests\Request as FoundationRequest;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\Foundation\Mcp\Requests\Request as FoundationRequest;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
  * Base MCP request: mirrors the HTTP request's `persist()` pattern so tools

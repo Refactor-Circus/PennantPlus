@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Tests;
+namespace RefactorCircus\PennantPlus\Tests;
 
-use JayI\Cortex\CortexServiceProvider;
+use RefactorCircus\Cortex\CortexServiceProvider;
 use Laravel\Ai\AiServiceProvider;
 
 /**
@@ -35,6 +35,6 @@ abstract class CortexTestCase extends TestCase
     {
         parent::defineDatabaseMigrations();
 
-        $this->loadMigrationsFrom(dirname(__DIR__).'/vendor/jayi/cortex/database/migrations');
+        $this->loadMigrationsFrom(dirname(__DIR__).'/vendor/refactor-circus/cortex/database/migrations');
     }
 }

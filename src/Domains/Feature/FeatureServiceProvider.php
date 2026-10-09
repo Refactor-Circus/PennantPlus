@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature;
+namespace RefactorCircus\PennantPlus\Domains\Feature;
 
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
-use JayI\Foundation\Support\ServiceProvider;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
-use JayI\PennantPlus\Domains\Feature\Support\GlobalAwareDatabaseDriver;
+use RefactorCircus\Foundation\Support\ServiceProvider;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate;
+use RefactorCircus\PennantPlus\Domains\Feature\Support\GlobalAwareDatabaseDriver;
 use Laravel\Pennant\Feature;
 
 class FeatureServiceProvider extends ServiceProvider

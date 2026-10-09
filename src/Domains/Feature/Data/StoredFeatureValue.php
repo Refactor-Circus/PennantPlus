@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Data;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Data;
 
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Mcp\Tools;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use JayI\Foundation\Mcp\Tool;
-use JayI\PennantPlus\Domains\Feature\Mcp\Requests\CheckFeatureMcpRequest;
-use JayI\PennantPlus\Domains\Scope\Concerns\DescribesScope;
+use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\CheckFeatureMcpRequest;
+use RefactorCircus\PennantPlus\Domains\Scope\Concerns\DescribesScope;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;

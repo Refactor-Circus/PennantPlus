@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Events;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use JayI\Foundation\Contracts\ActionStartingEvent;
+use RefactorCircus\Foundation\Contracts\ActionStartingEvent;
 
 /**
  * Every stored value of a feature flag is about to be forgotten.

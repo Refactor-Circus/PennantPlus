@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Http\Requests;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Http\Requests;
 
 use Illuminate\Http\Response;
-use JayI\PennantPlus\Domains\Feature\Actions\PurgeFeatureAction;
-use JayI\PennantPlus\Http\Request;
+use RefactorCircus\PennantPlus\Domains\Feature\Actions\PurgeFeatureAction;
+use RefactorCircus\PennantPlus\Http\Request;
 
 final class PurgeFeatureRequest extends Request
 {

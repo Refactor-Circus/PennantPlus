@@ -13,18 +13,18 @@ metadata:
 
 # PennantPlus
 
-Use this skill when a Laravel application uses `jayi/pennantplus` to layer Pennant feature flags (one global value, per-user overrides), gate routes or MCP tools on them, or manage stored flag values through the API, MCP tools, or the Atrium page.
+Use this skill when a Laravel application uses `refactor-circus/pennantplus` to layer Pennant feature flags (one global value, per-user overrides), gate routes or MCP tools on them, or manage stored flag values through the API, MCP tools, or the Atrium page.
 
 ## Primary Goal
 
-- apply the `jayi/pennantplus` package's public API in the smallest correct way
+- apply the `refactor-circus/pennantplus` package's public API in the smallest correct way
 
 ## Workflow
 
 ### 1. Install and point Pennant at the driver
 
 ```bash
-composer require jayi/pennantplus
+composer require refactor-circus/pennantplus
 php artisan vendor:publish --tag="pennantplus-config"
 ```
 
@@ -40,8 +40,8 @@ The driver loads each scope's stored values in one query the first time the scop
 ### 2. Write features whose users follow the global value
 
 ```php
-use JayI\PennantPlus\Domains\Feature\Support\OffLayeredFeature;
-use JayI\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
+use RefactorCircus\PennantPlus\Domains\Feature\Support\OffLayeredFeature;
+use RefactorCircus\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
 
 class ReportsFeature extends OnLayeredFeature {}           // global default: on
 
@@ -54,9 +54,9 @@ Keep the global default `false` only for kill switches that must stay dark until
 
 ### 3. Gate entry surfaces with the FeatureGate
 
-- `JayI\PennantPlus\Domains\Feature\Services\FeatureGate::allows($feature, $user)`: features matching `pennantplus.gate.global_only` (default `*SupportFeature`) are checked globally only; every other feature must be active globally **and** for the user (globally only without a user).
+- `RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate::allows($feature, $user)`: features matching `pennantplus.gate.global_only` (default `*SupportFeature`) are checked globally only; every other feature must be active globally **and** for the user (globally only without a user).
 - Register a bypass once, e.g. in a service provider: `app(FeatureGate::class)->bypassUsing(fn (Authenticatable $user): bool => $user->hasRole('developer'));`
-- Routes: alias `feature` to `JayI\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive` and use `->middleware('feature:'.ReportsFeature::class)`; it aborts 403 when the gate refuses.
+- Routes: alias `feature` to `RefactorCircus\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive` and use `->middleware('feature:'.ReportsFeature::class)`; it aborts 403 when the gate refuses.
 - MCP tools: return `app(FeatureGate::class)->allows($feature, auth()->user())` from `shouldRegister()`.
 
 ### 4. Secure the management surface before exposing it
@@ -73,7 +73,7 @@ The API, MCP server and dashboard change flags for **every** user. Routes ship o
 ],
 ```
 
-Or register `JayI\PennantPlus\Mcp\PennantPlusServer` yourself in `routes/ai.php` behind your own auth group.
+Or register `RefactorCircus\PennantPlus\Mcp\PennantPlusServer` yourself in `routes/ai.php` behind your own auth group.
 
 ### 5. Manage flags via the API (or the matching MCP tools)
 
@@ -88,7 +88,7 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 - `DELETE /pennantplus/values` `{feature, scope|scope_type+scope_id}` — forget one scope's value so it follows global again. MCP `forget-feature-value-tool`.
 - `GET /pennantplus/scopes` — scope types. MCP `list-scope-types-tool`.
 - `GET /pennantplus/scopes/{type}/models?q=` — find models of a configured type, with the serialized `scope` to reuse. MCP `search-scope-models-tool`.
-- `GET /pennantplus/history?subject_type=&subject_id=&action=&cursor=&per_page=` — the package's audit entries, newest first; 404 until jayi/keen is installed. MCP `list-pennantplus-history-tool`.
+- `GET /pennantplus/history?subject_type=&subject_id=&action=&cursor=&per_page=` — the package's audit entries, newest first; 404 until refactor-circus/keen is installed. MCP `list-pennantplus-history-tool`.
 
 Class-based feature names contain backslashes; URL-encode them in paths.
 
@@ -101,21 +101,21 @@ Class-based feature names contain backslashes; URL-encode them in paths.
 
 ### 7. The Atrium page
 
-With `jayi/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`, routes `atrium.pennant.*`). Hide it with `atrium.disabled => ['pennant']`.
+With `refactor-circus/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`, routes `atrium.pennant.*`). Hide it with `atrium.disabled => ['pennant']`.
 
-The page uses Atrium icon buttons and status dots (`data-status="active|inactive"`, assert on that and on `data-testid`, not on button text) and a `flag` nav icon. Its navigation item and every control (set value, toggle, forget, purge) show only when `JayI\PennantPlus\Atrium\FeatureFlagAccess::allows()` passes - the same `pennantplus.ability` check the controller and form requests refuse with; published views can use `@pennantplusManages ... @endpennantplusManages`. Do not gate the page behind a Pennant feature: that could lock admins out of turning it back on.
+The page uses Atrium icon buttons and status dots (`data-status="active|inactive"`, assert on that and on `data-testid`, not on button text) and a `flag` nav icon. Its navigation item and every control (set value, toggle, forget, purge) show only when `RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess::allows()` passes - the same `pennantplus.ability` check the controller and form requests refuse with; published views can use `@pennantplusManages ... @endpennantplusManages`. Do not gate the page behind a Pennant feature: that could lock admins out of turning it back on.
 
-The page uses only `x-atrium::*` components and Atrium's safelisted utilities (no package stylesheet): `x-atrium::form.combobox` for the feature fields (`data-testid="pennant-feature"` / `"pennant-filter-feature"`, free text allowed), `x-atrium::flash` for status (`data-testid="flash-status"`), and `x-atrium::audit-trail source="pennantplus"`, which shows the package-wide history once jayi/keen is installed. A stored value's audit entry has no subject and carries `feature`, `scope` and `value` context (`FeatureValueUpdatedActionEvent` implements `JayI\Foundation\Audit\Contracts\Auditable`).
+The page uses only `x-atrium::*` components and Atrium's safelisted utilities (no package stylesheet): `x-atrium::form.combobox` for the feature fields (`data-testid="pennant-feature"` / `"pennant-filter-feature"`, free text allowed), `x-atrium::flash` for status (`data-testid="flash-status"`), and `x-atrium::audit-trail source="pennantplus"`, which shows the package-wide history once refactor-circus/keen is installed. A stored value's audit entry has no subject and carries `feature`, `scope` and `value` context (`FeatureValueUpdatedActionEvent` implements `RefactorCircus\Foundation\Audit\Contracts\Auditable`).
 
 PennantPlus also registers Atrium's feature resolver, so `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware ask `FeatureGate::allows($feature, $request->user())`. `pennantplus.gate.global_only => ['*']` makes Pennant decide only global visibility, leaving per-user visibility to Atrium's `can()` permissions. `pennantplus.atrium.resolve_features => false` opts out.
 
 ### 8. Cortex
 
-With `jayi/cortex` installed, the MCP server registers with Cortex as `pennantplus` and every tool joins its tool registry tagged with the server name, so Cortex agents can use them; published instruction and tool description overrides are served to MCP clients and agents. Nothing to register in the app. Configure under `pennantplus.cortex`: `enabled` (false leaves Cortex alone), `server` (the name in Cortex), `tools` (null for all, or a list of tool names). Names already registered in the app's `config/cortex.php` are left alone.
+With `refactor-circus/cortex` installed, the MCP server registers with Cortex as `pennantplus` and every tool joins its tool registry tagged with the server name, so Cortex agents can use them; published instruction and tool description overrides are served to MCP clients and agents. Nothing to register in the app. Configure under `pennantplus.cortex`: `enabled` (false leaves Cortex alone), `server` (the name in Cortex), `tools` (null for all, or a list of tool names). Names already registered in the app's `config/cortex.php` are left alone.
 
 ### 9. React to changes
 
-Every write fires an action event pair from `JayI\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `JayI\Foundation\Contracts\ActionFinishedEvent` (from jayi/foundation) for all of them; finished events fire after commit.
+Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `RefactorCircus\Foundation\Contracts\ActionFinishedEvent` (from refactor-circus/foundation) for all of them; finished events fire after commit.
 
 ## Rules, References, and Templates
 

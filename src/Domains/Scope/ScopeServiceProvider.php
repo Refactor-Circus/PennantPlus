@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Scope;
+namespace RefactorCircus\PennantPlus\Domains\Scope;
 
-use JayI\Foundation\Support\ServiceProvider;
+use RefactorCircus\Foundation\Support\ServiceProvider;
 
 class ScopeServiceProvider extends ServiceProvider
 {

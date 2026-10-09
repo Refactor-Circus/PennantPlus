@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Scope\Exceptions;
+namespace RefactorCircus\PennantPlus\Domains\Scope\Exceptions;
 
 use InvalidArgumentException;
 

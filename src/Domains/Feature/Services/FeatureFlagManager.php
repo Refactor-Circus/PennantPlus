@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Services;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Services;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use JayI\PennantPlus\Domains\Feature\Data\StoredFeatureValue;
-use JayI\PennantPlus\Domains\Scope\Data\ScopeModel;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\StoredFeatureValue;
+use RefactorCircus\PennantPlus\Domains\Scope\Data\ScopeModel;
 use Laravel\Pennant\Drivers\Decorator;
 use Laravel\Pennant\Feature;
 use ReflectionClass;

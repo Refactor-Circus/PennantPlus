@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Tests\Fixtures\Features\Shipping;
+namespace RefactorCircus\PennantPlus\Tests\Fixtures\Features\Shipping;
 
 class TrackingFeature
 {

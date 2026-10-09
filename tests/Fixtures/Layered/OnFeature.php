@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Tests\Fixtures\Layered;
+namespace RefactorCircus\PennantPlus\Tests\Fixtures\Layered;
 
-use JayI\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
+use RefactorCircus\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
 
 class OnFeature extends OnLayeredFeature {}

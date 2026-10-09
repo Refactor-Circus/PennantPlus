@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus;
+namespace RefactorCircus\PennantPlus;
 
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
-use JayI\Atrium\Domains\Access\Services\Gatekeeper;
-use JayI\Atrium\Domains\Plugins\Services\PluginRegistry;
-use JayI\Foundation\Packages\Package;
-use JayI\Foundation\Support\PackageServiceProvider;
-use JayI\PennantPlus\Atrium\FeatureFlagAccess;
-use JayI\PennantPlus\Domains\DomainServiceProvider;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
-use JayI\PennantPlus\Mcp\PennantPlusServer;
+use RefactorCircus\Atrium\Domains\Access\Services\Gatekeeper;
+use RefactorCircus\Atrium\Domains\Plugins\Services\PluginRegistry;
+use RefactorCircus\Foundation\Packages\Package;
+use RefactorCircus\Foundation\Support\PackageServiceProvider;
+use RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess;
+use RefactorCircus\PennantPlus\Domains\DomainServiceProvider;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate;
+use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
 
 class PennantPlusServiceProvider extends PackageServiceProvider
 {

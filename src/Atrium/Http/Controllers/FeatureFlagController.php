@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Atrium\Http\Controllers;
+namespace RefactorCircus\PennantPlus\Atrium\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use JayI\PennantPlus\Atrium\FeatureFlagAccess;
-use JayI\PennantPlus\Atrium\Http\Requests\DeleteFeatureValueRequest;
-use JayI\PennantPlus\Atrium\Http\Requests\PurgeFeatureRequest;
-use JayI\PennantPlus\Atrium\Http\Requests\UpdateFeatureValueRequest;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess;
+use RefactorCircus\PennantPlus\Atrium\Http\Requests\DeleteFeatureValueRequest;
+use RefactorCircus\PennantPlus\Atrium\Http\Requests\PurgeFeatureRequest;
+use RefactorCircus\PennantPlus\Atrium\Http\Requests\UpdateFeatureValueRequest;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 class FeatureFlagController
 {

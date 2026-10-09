@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Http\Requests;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Http\Requests;
 
 use Illuminate\Http\Response;
-use JayI\PennantPlus\Domains\Feature\Actions\DeleteFeatureValueAction;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use JayI\PennantPlus\Http\Request;
+use RefactorCircus\PennantPlus\Domains\Feature\Actions\DeleteFeatureValueAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Http\Request;
 
 final class DeleteFeatureValueRequest extends Request
 {

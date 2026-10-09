@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Scope\Mcp\Requests;
+namespace RefactorCircus\PennantPlus\Domains\Scope\Mcp\Requests;
 
-use JayI\PennantPlus\Domains\Scope\Actions\ListScopeTypesAction;
-use JayI\PennantPlus\Mcp\Request;
+use RefactorCircus\PennantPlus\Domains\Scope\Actions\ListScopeTypesAction;
+use RefactorCircus\PennantPlus\Mcp\Request;
 use Laravel\Mcp\ResponseFactory;
 
 final class ListScopeTypesMcpRequest extends Request

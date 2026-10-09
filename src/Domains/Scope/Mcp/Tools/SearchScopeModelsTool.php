@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Scope\Mcp\Tools;
+namespace RefactorCircus\PennantPlus\Domains\Scope\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use JayI\Foundation\Mcp\Tool;
-use JayI\PennantPlus\Domains\Scope\Mcp\Requests\SearchScopeModelsMcpRequest;
+use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Scope\Mcp\Requests\SearchScopeModelsMcpRequest;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;

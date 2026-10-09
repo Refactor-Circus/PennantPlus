@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Tests\Feature;
+namespace RefactorCircus\PennantPlus\Tests\Feature;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use JayI\Atrium\Domains\Plugins\Services\PluginRegistry;
-use JayI\Atrium\Facades\Atrium;
-use JayI\PennantPlus\Atrium\PennantPlugin;
-use JayI\PennantPlus\Domains\Feature\Data\StoredFeatureValue;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use JayI\PennantPlus\Tests\Fixtures\Features\Billing\InvoicingFeature;
-use JayI\PennantPlus\Tests\Fixtures\Features\Shipping\TrackingRates;
-use JayI\PennantPlus\Tests\TestCase;
+use RefactorCircus\Atrium\Domains\Plugins\Services\PluginRegistry;
+use RefactorCircus\Atrium\Facades\Atrium;
+use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\StoredFeatureValue;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Tests\Fixtures\Features\Billing\InvoicingFeature;
+use RefactorCircus\PennantPlus\Tests\Fixtures\Features\Shipping\TrackingRates;
+use RefactorCircus\PennantPlus\Tests\TestCase;
 use Laravel\Pennant\Feature;
 use Orchestra\Testbench\Attributes\DefineEnvironment;
 

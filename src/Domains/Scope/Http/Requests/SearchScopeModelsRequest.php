@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Scope\Http\Requests;
+namespace RefactorCircus\PennantPlus\Domains\Scope\Http\Requests;
 
 use Illuminate\Http\JsonResponse;
-use JayI\PennantPlus\Domains\Scope\Actions\SearchScopeModelsAction;
-use JayI\PennantPlus\Http\Request;
+use RefactorCircus\PennantPlus\Domains\Scope\Actions\SearchScopeModelsAction;
+use RefactorCircus\PennantPlus\Http\Request;
 
 final class SearchScopeModelsRequest extends Request
 {

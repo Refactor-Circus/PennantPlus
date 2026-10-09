@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use JayI\Foundation\Cortex\CortexIntegration;
-use JayI\Foundation\Packages\PackageRegistry;
-use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
-use JayI\PennantPlus\Mcp\PennantPlusServer;
+use RefactorCircus\Foundation\Cortex\CortexIntegration;
+use RefactorCircus\Foundation\Packages\PackageRegistry;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
+use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
 use Laravel\Mcp\Server\Transport\FakeTransporter;
 
 it('serves the declared instructions and descriptions without Cortex loaded', function (): void {

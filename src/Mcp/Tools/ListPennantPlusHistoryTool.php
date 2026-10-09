@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Mcp\Tools;
+namespace RefactorCircus\PennantPlus\Mcp\Tools;
 
-use JayI\Foundation\Mcp\Tools\ListHistoryTool;
+use RefactorCircus\Foundation\Mcp\Tools\ListHistoryTool;
 
 final class ListPennantPlusHistoryTool extends ListHistoryTool {}

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Http\Controllers;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
-use JayI\PennantPlus\Domains\Feature\Http\Requests\CheckFeatureRequest;
-use JayI\PennantPlus\Domains\Feature\Http\Requests\IndexFeaturesRequest;
-use JayI\PennantPlus\Domains\Feature\Http\Requests\PurgeFeatureRequest;
-use JayI\PennantPlus\Domains\Feature\Http\Requests\ShowFeatureRequest;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\CheckFeatureRequest;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\IndexFeaturesRequest;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\PurgeFeatureRequest;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\ShowFeatureRequest;
 
 final class FeatureController
 {

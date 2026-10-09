@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Actions;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
 use Illuminate\Support\Facades\DB;
-use JayI\PennantPlus\Domains\Feature\Events\FeatureValueDeletedActionEvent;
-use JayI\PennantPlus\Domains\Feature\Events\FeatureValueDeletingActionEvent;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use JayI\PennantPlus\Domains\Scope\Support\ScopeRules;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueDeletedActionEvent;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueDeletingActionEvent;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Scope\Support\ScopeRules;
 use Laravel\Pennant\Feature;
 
 /**

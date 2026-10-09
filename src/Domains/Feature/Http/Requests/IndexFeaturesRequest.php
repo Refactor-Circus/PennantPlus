@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Http\Requests;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Http\Requests;
 
 use Illuminate\Http\JsonResponse;
-use JayI\PennantPlus\Domains\Feature\Actions\ListFeaturesAction;
-use JayI\PennantPlus\Domains\Feature\Http\Resources\FeatureResource;
-use JayI\PennantPlus\Http\Request;
+use RefactorCircus\PennantPlus\Domains\Feature\Actions\ListFeaturesAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Resources\FeatureResource;
+use RefactorCircus\PennantPlus\Http\Request;
 
 final class IndexFeaturesRequest extends Request
 {

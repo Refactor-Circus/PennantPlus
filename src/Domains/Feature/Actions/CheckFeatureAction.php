@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Actions;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
-use JayI\PennantPlus\Domains\Scope\Support\ScopeRules;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate;
+use RefactorCircus\PennantPlus\Domains\Scope\Support\ScopeRules;
 
 /**
  * Resolve a feature for one scope: the global value, the scope's value, and

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Scope\Support;
+namespace RefactorCircus\PennantPlus\Domains\Scope\Support;
 
 use Illuminate\Validation\Rule;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
  * Validation for picking a scope: `scope` as Pennant serializes it, or a

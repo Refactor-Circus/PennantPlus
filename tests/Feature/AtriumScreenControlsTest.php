@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Tests\Feature;
+namespace RefactorCircus\PennantPlus\Tests\Feature;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
-use JayI\Atrium\Domains\Navigation\Data\NavItem;
-use JayI\Atrium\Domains\Navigation\Services\NavigationRegistry;
-use JayI\Atrium\Support\Icons;
-use JayI\PennantPlus\Tests\TestCase;
+use RefactorCircus\Atrium\Domains\Navigation\Data\NavItem;
+use RefactorCircus\Atrium\Domains\Navigation\Services\NavigationRegistry;
+use RefactorCircus\Atrium\Support\Icons;
+use RefactorCircus\PennantPlus\Tests\TestCase;
 use Laravel\Pennant\Feature;
 use Orchestra\Testbench\Attributes\DefineEnvironment;
 

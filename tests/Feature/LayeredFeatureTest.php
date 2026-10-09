@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\DB;
-use JayI\PennantPlus\Tests\Fixtures\Layered\OffFeature;
-use JayI\PennantPlus\Tests\Fixtures\Layered\OnFeature;
+use RefactorCircus\PennantPlus\Tests\Fixtures\Layered\OffFeature;
+use RefactorCircus\PennantPlus\Tests\Fixtures\Layered\OnFeature;
 use Laravel\Pennant\Feature;
 
 beforeEach(function (): void {

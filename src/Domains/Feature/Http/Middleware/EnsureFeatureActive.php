@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Http\Middleware;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureGate;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

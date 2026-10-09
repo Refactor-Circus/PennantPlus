@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Mcp\Requests;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests;
 
-use JayI\PennantPlus\Domains\Feature\Actions\CheckFeatureAction;
-use JayI\PennantPlus\Mcp\Request;
+use RefactorCircus\PennantPlus\Domains\Feature\Actions\CheckFeatureAction;
+use RefactorCircus\PennantPlus\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 

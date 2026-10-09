@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Tests;
+namespace RefactorCircus\PennantPlus\Tests;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use JayI\Atrium\AtriumServiceProvider;
-use JayI\PennantPlus\Atrium\PennantPlugin;
-use JayI\PennantPlus\PennantPlusServiceProvider;
+use RefactorCircus\Atrium\AtriumServiceProvider;
+use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
+use RefactorCircus\PennantPlus\PennantPlusServiceProvider;
 use Laravel\Mcp\Server\McpServiceProvider;
 use Laravel\Pennant\PennantServiceProvider;
 use Orchestra\Testbench\Concerns\WithLaravelMigrations;
@@ -36,7 +36,7 @@ abstract class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
-        // jayi/cortex is a dev dependency, so Atrium discovers its plugin here
+        // refactor-circus/cortex is a dev dependency, so Atrium discovers its plugin here
         // without its migrations; its navigation would query missing tables.
         $app['config']->set('atrium.disabled', ['cortex']);
 

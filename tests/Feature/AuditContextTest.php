@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Event;
-use JayI\Foundation\Audit\Contracts\Auditable;
-use JayI\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
-use JayI\PennantPlus\Domains\Feature\Events\FeatureValueUpdatedActionEvent;
+use RefactorCircus\Foundation\Audit\Contracts\Auditable;
+use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueUpdatedActionEvent;
 use Laravel\Pennant\Feature;
 
 it('records a stored flag value as an entry about no model, with the feature, scope and value', function (): void {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Scope\Actions;
+namespace RefactorCircus\PennantPlus\Domains\Scope\Actions;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
  * Models of a configured scope type whose key or search columns match a term.

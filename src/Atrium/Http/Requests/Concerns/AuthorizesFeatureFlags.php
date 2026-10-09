@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Atrium\Http\Requests\Concerns;
+namespace RefactorCircus\PennantPlus\Atrium\Http\Requests\Concerns;
 
-use JayI\PennantPlus\Atrium\FeatureFlagAccess;
+use RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess;
 
 /**
  * Feature flags have no model to hold a policy, so their requests defer to

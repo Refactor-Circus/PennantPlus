@@ -3,16 +3,16 @@ laravel: '@testbench'
 providers:
   - Laravel\Pennant\PennantServiceProvider
   - Laravel\Mcp\Server\McpServiceProvider
-  - JayI\Atrium\AtriumServiceProvider
-  - JayI\PennantPlus\PennantPlusServiceProvider
+  - RefactorCircus\Atrium\AtriumServiceProvider
+  - RefactorCircus\PennantPlus\PennantPlusServiceProvider
   - Workbench\App\Providers\WorkbenchServiceProvider
 
 migrations:
   - workbench/database/migrations
   # Pennant's features table, which the `pennantplus` store writes to.
   - vendor/laravel/pennant/database/migrations
-  # jayi/cortex is a dev dependency and auto-discovered, so the demo runs with it.
-  - vendor/jayi/cortex/database/migrations
+  # refactor-circus/cortex is a dev dependency and auto-discovered, so the demo runs with it.
+  - vendor/refactor-circus/cortex/database/migrations
 
 seeders:
   - Workbench\Database\Seeders\DatabaseSeeder

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Actions;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use Laravel\Pennant\Feature;
 
 /**

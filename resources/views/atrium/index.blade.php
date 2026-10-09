@@ -1,5 +1,5 @@
 @php
-    use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+    use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
     $scopeOptions = ['' => __('pennantplus::pennantplus.all_scopes'), FeatureFlagManager::GLOBAL => __('pennantplus::pennantplus.global')]
         + $scopeFilterOptions
@@ -190,7 +190,7 @@
         {{--
             Flag changes are about no model, so the history is the package's
             own, whichever feature is filtered. Renders nothing until an audit
-            log (jayi/keen) is installed.
+            log (refactor-circus/keen) is installed.
         --}}
         <x-atrium::audit-trail source="pennantplus" />
     </div>

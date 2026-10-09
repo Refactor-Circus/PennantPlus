@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use JayI\Cortex\Domains\McpServer\Actions\CreateMcpInstructionVersionAction;
-use JayI\Cortex\Domains\McpServer\Services\McpServerRegistry;
-use JayI\Cortex\Domains\Tool\Actions\CreateToolDescriptionVersionAction;
-use JayI\Cortex\Domains\Tool\Services\ToolRegistry;
-use JayI\Foundation\Cortex\CortexIntegration;
-use JayI\Foundation\Packages\PackageRegistry;
-use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
-use JayI\PennantPlus\Mcp\PennantPlusServer;
+use RefactorCircus\Cortex\Domains\McpServer\Actions\CreateMcpInstructionVersionAction;
+use RefactorCircus\Cortex\Domains\McpServer\Services\McpServerRegistry;
+use RefactorCircus\Cortex\Domains\Tool\Actions\CreateToolDescriptionVersionAction;
+use RefactorCircus\Cortex\Domains\Tool\Services\ToolRegistry;
+use RefactorCircus\Foundation\Cortex\CortexIntegration;
+use RefactorCircus\Foundation\Packages\PackageRegistry;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
+use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
 use Laravel\Ai\Contracts\Tool as AgentTool;
 use Laravel\Ai\Tools\Request;
 use Laravel\Mcp\Server\Transport\FakeTransporter;

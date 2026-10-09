@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Support;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Support;
 
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;

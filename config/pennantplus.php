@@ -98,7 +98,7 @@ return [
     | Atrium
     |--------------------------------------------------------------------------
     |
-    | When jayi/atrium is installed, PennantPlus answers whether the features
+    | When refactor-circus/atrium is installed, PennantPlus answers whether the features
     | Atrium's navigation, plugins and `atrium.feature` middleware name are
     | on, using the feature gate above - so `gate.global_only` and the bypass
     | callback apply there too. To have Pennant decide only global
@@ -156,7 +156,7 @@ return [
     | Cortex
     |--------------------------------------------------------------------------
     |
-    | When jayi/cortex is installed, the MCP server is registered with it, so
+    | When refactor-circus/cortex is installed, the MCP server is registered with it, so
     | its instructions can be overridden, and the tools join its registry,
     | so Cortex agents can inspect and change feature flags. Set `tools` to
     | a list of tool names, such as ['list-features-tool',

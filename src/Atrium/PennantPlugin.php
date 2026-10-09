@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Atrium;
+namespace RefactorCircus\PennantPlus\Atrium;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use JayI\Atrium\Domains\Navigation\Data\NavGroup;
-use JayI\Atrium\Domains\Navigation\Data\NavItem;
-use JayI\Atrium\Domains\Plugins\Support\Plugin;
-use JayI\Atrium\Support\Icons;
-use JayI\PennantPlus\Atrium\Http\Controllers\FeatureFlagController;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\Atrium\Domains\Navigation\Data\NavGroup;
+use RefactorCircus\Atrium\Domains\Navigation\Data\NavItem;
+use RefactorCircus\Atrium\Domains\Plugins\Support\Plugin;
+use RefactorCircus\Atrium\Support\Icons;
+use RefactorCircus\PennantPlus\Atrium\Http\Controllers\FeatureFlagController;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
  * Manages the feature flag values Pennant has stored.
  *
- * Atrium discovers it from composer.json when jayi/atrium is installed. Hide
+ * Atrium discovers it from composer.json when refactor-circus/atrium is installed. Hide
  * it like any other plugin by listing its `pennant` key under
  * `atrium.disabled`.
  */

@@ -1,84 +1,88 @@
 # Release Notes
 
-## [Unreleased](https://github.com/jayjfletcher/PennantPlus/compare/v0.1.0...main)
+## [Unreleased](https://github.com/Refactor-Circus/PennantPlus/commits/main)
+
+### Breaking
+
+- Moved to the Refactor Circus organisation: the package is now `refactor-circus/pennantplus` with the PHP namespace `RefactorCircus\PennantPlus` (it was `jayi/pennantplus` and `JayI\PennantPlus`). Update `composer.json` requirements and `use` statements. Old class names are not kept as aliases, so stored values written under them - polymorphic `*_type` columns, audit subjects, Pennant feature names - need updating to the new names.
 
 ### Added
 
 - The package's section in Atrium's sidebar rail has its own icon (`flag`) and a fixed place in the rail.
-- An **Audit log** link in the package's sidebar group, opening its own audit log in Atrium (`/atrium/history/pennantplus`), shown while an audit log (jayi/keen) is installed and to those who may read the package's history.
+- An **Audit log** link in the package's sidebar group, opening its own audit log in Atrium (`/atrium/history/pennantplus`), shown while an audit log (refactor-circus/keen) is installed and to those who may read the package's history.
 
 ### Breaking
 
-- PennantPlus now stands on `jayi/foundation`, the suite's shared runtime, and requires it. The package's own copies of the shared pieces are gone in favour of Foundation's; update any imports:
-  - `JayI\PennantPlus\Contracts\ActionStartingEvent` → `JayI\Foundation\Contracts\ActionStartingEvent`
-  - `JayI\PennantPlus\Contracts\ActionFinishedEvent` → `JayI\Foundation\Contracts\ActionFinishedEvent`
-  - `JayI\PennantPlus\Mcp\Tool` → `JayI\Foundation\Mcp\Tool`
-  - `JayI\PennantPlus\Support\ServiceProvider` → `JayI\Foundation\Support\ServiceProvider`
-  - `JayI\PennantPlus\Cortex\CortexIntegration` → `JayI\Foundation\Cortex\CortexIntegration` (built with `CortexIntegration::for($package)` rather than resolved from the container)
+- PennantPlus now stands on `refactor-circus/foundation`, the suite's shared runtime, and requires it. The package's own copies of the shared pieces are gone in favour of Foundation's; update any imports:
+  - `RefactorCircus\PennantPlus\Contracts\ActionStartingEvent` → `RefactorCircus\Foundation\Contracts\ActionStartingEvent`
+  - `RefactorCircus\PennantPlus\Contracts\ActionFinishedEvent` → `RefactorCircus\Foundation\Contracts\ActionFinishedEvent`
+  - `RefactorCircus\PennantPlus\Mcp\Tool` → `RefactorCircus\Foundation\Mcp\Tool`
+  - `RefactorCircus\PennantPlus\Support\ServiceProvider` → `RefactorCircus\Foundation\Support\ServiceProvider`
+  - `RefactorCircus\PennantPlus\Cortex\CortexIntegration` → `RefactorCircus\Foundation\Cortex\CortexIntegration` (built with `CortexIntegration::for($package)` rather than resolved from the container)
 
-  `PennantPlusServiceProvider` extends Foundation's `PackageServiceProvider` and registers the package as `pennantplus`; `PennantPlusServer` extends `JayI\Foundation\Mcp\Server`; the base `Http\Request` and `Mcp\Request` extend Foundation's and keep the `pennantplus.ability` check. MCP calls now run inside Foundation's `mcp` surface, and changes a Cortex agent makes through a PennantPlus tool are marked with the `cortex` surface. Config keys, route names, tool names and behaviour are otherwise unchanged.
+  `PennantPlusServiceProvider` extends Foundation's `PackageServiceProvider` and registers the package as `pennantplus`; `PennantPlusServer` extends `RefactorCircus\Foundation\Mcp\Server`; the base `Http\Request` and `Mcp\Request` extend Foundation's and keep the `pennantplus.ability` check. MCP calls now run inside Foundation's `mcp` surface, and changes a Cortex agent makes through a PennantPlus tool are marked with the `cortex` surface. Config keys, route names, tool names and behaviour are otherwise unchanged.
 
 - The package is reorganised into domain modules (`src/Domains/Feature`, `src/Domains/Scope`), mirroring the mono application's layout. Classes move namespaces; there are no aliases for the old names, so update imports. Config keys, route names and paths, MCP tool names, publish tags, views, translations, the `pennantplus` driver name and the Atrium plugin are unchanged, and nothing PennantPlus stores is keyed by its own class names, so stored feature values are untouched. The management API routes now load from each domain (`routes/pennantplus.php` is gone). Old → new:
-  - `JayI\PennantPlus\Actions\CheckFeatureAction` → `JayI\PennantPlus\Domains\Feature\Actions\CheckFeatureAction`
-  - `JayI\PennantPlus\Actions\DeleteFeatureValueAction` → `JayI\PennantPlus\Domains\Feature\Actions\DeleteFeatureValueAction`
-  - `JayI\PennantPlus\Actions\ListFeatureValuesAction` → `JayI\PennantPlus\Domains\Feature\Actions\ListFeatureValuesAction`
-  - `JayI\PennantPlus\Actions\ListFeaturesAction` → `JayI\PennantPlus\Domains\Feature\Actions\ListFeaturesAction`
-  - `JayI\PennantPlus\Actions\ListScopeTypesAction` → `JayI\PennantPlus\Domains\Scope\Actions\ListScopeTypesAction`
-  - `JayI\PennantPlus\Actions\PurgeFeatureAction` → `JayI\PennantPlus\Domains\Feature\Actions\PurgeFeatureAction`
-  - `JayI\PennantPlus\Actions\SearchScopeModelsAction` → `JayI\PennantPlus\Domains\Scope\Actions\SearchScopeModelsAction`
-  - `JayI\PennantPlus\Actions\ShowFeatureAction` → `JayI\PennantPlus\Domains\Feature\Actions\ShowFeatureAction`
-  - `JayI\PennantPlus\Actions\UpdateFeatureValueAction` → `JayI\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction`
-  - `JayI\PennantPlus\Drivers\GlobalAwareDatabaseDriver` → `JayI\PennantPlus\Domains\Feature\Support\GlobalAwareDatabaseDriver`
-  - `JayI\PennantPlus\Events\Action\FeaturePurgedActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeaturePurgedActionEvent`
-  - `JayI\PennantPlus\Events\Action\FeaturePurgingActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeaturePurgingActionEvent`
-  - `JayI\PennantPlus\Events\Action\FeatureValueDeletedActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeatureValueDeletedActionEvent`
-  - `JayI\PennantPlus\Events\Action\FeatureValueDeletingActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeatureValueDeletingActionEvent`
-  - `JayI\PennantPlus\Events\Action\FeatureValueUpdatedActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeatureValueUpdatedActionEvent`
-  - `JayI\PennantPlus\Events\Action\FeatureValueUpdatingActionEvent` → `JayI\PennantPlus\Domains\Feature\Events\FeatureValueUpdatingActionEvent`
-  - `JayI\PennantPlus\Exceptions\InvalidScopeModelException` → `JayI\PennantPlus\Domains\Scope\Exceptions\InvalidScopeModelException`
-  - `JayI\PennantPlus\FeatureFlagManager` → `JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager`
-  - `JayI\PennantPlus\FeatureGate` → `JayI\PennantPlus\Domains\Feature\Services\FeatureGate`
-  - `JayI\PennantPlus\Http\Controllers\FeatureController` → `JayI\PennantPlus\Domains\Feature\Http\Controllers\FeatureController`
-  - `JayI\PennantPlus\Http\Controllers\FeatureValueController` → `JayI\PennantPlus\Domains\Feature\Http\Controllers\FeatureValueController`
-  - `JayI\PennantPlus\Http\Controllers\ScopeController` → `JayI\PennantPlus\Domains\Scope\Http\Controllers\ScopeController`
-  - `JayI\PennantPlus\Http\Middleware\EnsureFeatureActive` → `JayI\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive`
-  - `JayI\PennantPlus\Http\Requests\CheckFeatureRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\CheckFeatureRequest`
-  - `JayI\PennantPlus\Http\Requests\DeleteFeatureValueRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\DeleteFeatureValueRequest`
-  - `JayI\PennantPlus\Http\Requests\IndexFeatureValuesRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\IndexFeatureValuesRequest`
-  - `JayI\PennantPlus\Http\Requests\IndexFeaturesRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\IndexFeaturesRequest`
-  - `JayI\PennantPlus\Http\Requests\IndexScopeTypesRequest` → `JayI\PennantPlus\Domains\Scope\Http\Requests\IndexScopeTypesRequest`
-  - `JayI\PennantPlus\Http\Requests\PurgeFeatureRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\PurgeFeatureRequest`
-  - `JayI\PennantPlus\Http\Requests\SearchScopeModelsRequest` → `JayI\PennantPlus\Domains\Scope\Http\Requests\SearchScopeModelsRequest`
-  - `JayI\PennantPlus\Http\Requests\ShowFeatureRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\ShowFeatureRequest`
-  - `JayI\PennantPlus\Http\Requests\UpdateFeatureValueRequest` → `JayI\PennantPlus\Domains\Feature\Http\Requests\UpdateFeatureValueRequest`
-  - `JayI\PennantPlus\Http\Resources\FeatureResource` → `JayI\PennantPlus\Domains\Feature\Http\Resources\FeatureResource`
-  - `JayI\PennantPlus\Http\Resources\FeatureValueResource` → `JayI\PennantPlus\Domains\Feature\Http\Resources\FeatureValueResource`
-  - `JayI\PennantPlus\LayeredFeature` → `JayI\PennantPlus\Domains\Feature\Support\LayeredFeature`
-  - `JayI\PennantPlus\Mcp\Requests\CheckFeatureMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\CheckFeatureMcpRequest`
-  - `JayI\PennantPlus\Mcp\Requests\ForgetFeatureValueMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\ForgetFeatureValueMcpRequest`
-  - `JayI\PennantPlus\Mcp\Requests\ListFeatureValuesMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\ListFeatureValuesMcpRequest`
-  - `JayI\PennantPlus\Mcp\Requests\ListFeaturesMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\ListFeaturesMcpRequest`
-  - `JayI\PennantPlus\Mcp\Requests\ListScopeTypesMcpRequest` → `JayI\PennantPlus\Domains\Scope\Mcp\Requests\ListScopeTypesMcpRequest`
-  - `JayI\PennantPlus\Mcp\Requests\PurgeFeatureMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\PurgeFeatureMcpRequest`
-  - `JayI\PennantPlus\Mcp\Requests\SearchScopeModelsMcpRequest` → `JayI\PennantPlus\Domains\Scope\Mcp\Requests\SearchScopeModelsMcpRequest`
-  - `JayI\PennantPlus\Mcp\Requests\SetFeatureValueMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\SetFeatureValueMcpRequest`
-  - `JayI\PennantPlus\Mcp\Requests\ShowFeatureMcpRequest` → `JayI\PennantPlus\Domains\Feature\Mcp\Requests\ShowFeatureMcpRequest`
-  - `JayI\PennantPlus\Mcp\Tools\CheckFeatureTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\CheckFeatureTool`
-  - `JayI\PennantPlus\Mcp\Tools\Concerns\DescribesScope` → `JayI\PennantPlus\Domains\Scope\Concerns\DescribesScope`
-  - `JayI\PennantPlus\Mcp\Tools\ForgetFeatureValueTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\ForgetFeatureValueTool`
-  - `JayI\PennantPlus\Mcp\Tools\ListFeatureValuesTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeatureValuesTool`
-  - `JayI\PennantPlus\Mcp\Tools\ListFeaturesTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool`
-  - `JayI\PennantPlus\Mcp\Tools\ListScopeTypesTool` → `JayI\PennantPlus\Domains\Scope\Mcp\Tools\ListScopeTypesTool`
-  - `JayI\PennantPlus\Mcp\Tools\PurgeFeatureTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\PurgeFeatureTool`
-  - `JayI\PennantPlus\Mcp\Tools\SearchScopeModelsTool` → `JayI\PennantPlus\Domains\Scope\Mcp\Tools\SearchScopeModelsTool`
-  - `JayI\PennantPlus\Mcp\Tools\SetFeatureValueTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\SetFeatureValueTool`
-  - `JayI\PennantPlus\Mcp\Tools\ShowFeatureTool` → `JayI\PennantPlus\Domains\Feature\Mcp\Tools\ShowFeatureTool`
-  - `JayI\PennantPlus\OffLayeredFeature` → `JayI\PennantPlus\Domains\Feature\Support\OffLayeredFeature`
-  - `JayI\PennantPlus\OnLayeredFeature` → `JayI\PennantPlus\Domains\Feature\Support\OnLayeredFeature`
-  - `JayI\PennantPlus\ScopeModel` → `JayI\PennantPlus\Domains\Scope\Data\ScopeModel`
-  - `JayI\PennantPlus\StoredFeatureValue` → `JayI\PennantPlus\Domains\Feature\Data\StoredFeatureValue`
-  - `JayI\PennantPlus\Support\ScopeRules` → `JayI\PennantPlus\Domains\Scope\Support\ScopeRules`
-- Requires the domain-module release of `jayi/atrium` (`JayI\Atrium\Domains\...`).
+  - `RefactorCircus\PennantPlus\Actions\CheckFeatureAction` → `RefactorCircus\PennantPlus\Domains\Feature\Actions\CheckFeatureAction`
+  - `RefactorCircus\PennantPlus\Actions\DeleteFeatureValueAction` → `RefactorCircus\PennantPlus\Domains\Feature\Actions\DeleteFeatureValueAction`
+  - `RefactorCircus\PennantPlus\Actions\ListFeatureValuesAction` → `RefactorCircus\PennantPlus\Domains\Feature\Actions\ListFeatureValuesAction`
+  - `RefactorCircus\PennantPlus\Actions\ListFeaturesAction` → `RefactorCircus\PennantPlus\Domains\Feature\Actions\ListFeaturesAction`
+  - `RefactorCircus\PennantPlus\Actions\ListScopeTypesAction` → `RefactorCircus\PennantPlus\Domains\Scope\Actions\ListScopeTypesAction`
+  - `RefactorCircus\PennantPlus\Actions\PurgeFeatureAction` → `RefactorCircus\PennantPlus\Domains\Feature\Actions\PurgeFeatureAction`
+  - `RefactorCircus\PennantPlus\Actions\SearchScopeModelsAction` → `RefactorCircus\PennantPlus\Domains\Scope\Actions\SearchScopeModelsAction`
+  - `RefactorCircus\PennantPlus\Actions\ShowFeatureAction` → `RefactorCircus\PennantPlus\Domains\Feature\Actions\ShowFeatureAction`
+  - `RefactorCircus\PennantPlus\Actions\UpdateFeatureValueAction` → `RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction`
+  - `RefactorCircus\PennantPlus\Drivers\GlobalAwareDatabaseDriver` → `RefactorCircus\PennantPlus\Domains\Feature\Support\GlobalAwareDatabaseDriver`
+  - `RefactorCircus\PennantPlus\Events\Action\FeaturePurgedActionEvent` → `RefactorCircus\PennantPlus\Domains\Feature\Events\FeaturePurgedActionEvent`
+  - `RefactorCircus\PennantPlus\Events\Action\FeaturePurgingActionEvent` → `RefactorCircus\PennantPlus\Domains\Feature\Events\FeaturePurgingActionEvent`
+  - `RefactorCircus\PennantPlus\Events\Action\FeatureValueDeletedActionEvent` → `RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueDeletedActionEvent`
+  - `RefactorCircus\PennantPlus\Events\Action\FeatureValueDeletingActionEvent` → `RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueDeletingActionEvent`
+  - `RefactorCircus\PennantPlus\Events\Action\FeatureValueUpdatedActionEvent` → `RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueUpdatedActionEvent`
+  - `RefactorCircus\PennantPlus\Events\Action\FeatureValueUpdatingActionEvent` → `RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueUpdatingActionEvent`
+  - `RefactorCircus\PennantPlus\Exceptions\InvalidScopeModelException` → `RefactorCircus\PennantPlus\Domains\Scope\Exceptions\InvalidScopeModelException`
+  - `RefactorCircus\PennantPlus\FeatureFlagManager` → `RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager`
+  - `RefactorCircus\PennantPlus\FeatureGate` → `RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate`
+  - `RefactorCircus\PennantPlus\Http\Controllers\FeatureController` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Controllers\FeatureController`
+  - `RefactorCircus\PennantPlus\Http\Controllers\FeatureValueController` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Controllers\FeatureValueController`
+  - `RefactorCircus\PennantPlus\Http\Controllers\ScopeController` → `RefactorCircus\PennantPlus\Domains\Scope\Http\Controllers\ScopeController`
+  - `RefactorCircus\PennantPlus\Http\Middleware\EnsureFeatureActive` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive`
+  - `RefactorCircus\PennantPlus\Http\Requests\CheckFeatureRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\CheckFeatureRequest`
+  - `RefactorCircus\PennantPlus\Http\Requests\DeleteFeatureValueRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\DeleteFeatureValueRequest`
+  - `RefactorCircus\PennantPlus\Http\Requests\IndexFeatureValuesRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\IndexFeatureValuesRequest`
+  - `RefactorCircus\PennantPlus\Http\Requests\IndexFeaturesRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\IndexFeaturesRequest`
+  - `RefactorCircus\PennantPlus\Http\Requests\IndexScopeTypesRequest` → `RefactorCircus\PennantPlus\Domains\Scope\Http\Requests\IndexScopeTypesRequest`
+  - `RefactorCircus\PennantPlus\Http\Requests\PurgeFeatureRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\PurgeFeatureRequest`
+  - `RefactorCircus\PennantPlus\Http\Requests\SearchScopeModelsRequest` → `RefactorCircus\PennantPlus\Domains\Scope\Http\Requests\SearchScopeModelsRequest`
+  - `RefactorCircus\PennantPlus\Http\Requests\ShowFeatureRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\ShowFeatureRequest`
+  - `RefactorCircus\PennantPlus\Http\Requests\UpdateFeatureValueRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Requests\UpdateFeatureValueRequest`
+  - `RefactorCircus\PennantPlus\Http\Resources\FeatureResource` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Resources\FeatureResource`
+  - `RefactorCircus\PennantPlus\Http\Resources\FeatureValueResource` → `RefactorCircus\PennantPlus\Domains\Feature\Http\Resources\FeatureValueResource`
+  - `RefactorCircus\PennantPlus\LayeredFeature` → `RefactorCircus\PennantPlus\Domains\Feature\Support\LayeredFeature`
+  - `RefactorCircus\PennantPlus\Mcp\Requests\CheckFeatureMcpRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\CheckFeatureMcpRequest`
+  - `RefactorCircus\PennantPlus\Mcp\Requests\ForgetFeatureValueMcpRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ForgetFeatureValueMcpRequest`
+  - `RefactorCircus\PennantPlus\Mcp\Requests\ListFeatureValuesMcpRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ListFeatureValuesMcpRequest`
+  - `RefactorCircus\PennantPlus\Mcp\Requests\ListFeaturesMcpRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ListFeaturesMcpRequest`
+  - `RefactorCircus\PennantPlus\Mcp\Requests\ListScopeTypesMcpRequest` → `RefactorCircus\PennantPlus\Domains\Scope\Mcp\Requests\ListScopeTypesMcpRequest`
+  - `RefactorCircus\PennantPlus\Mcp\Requests\PurgeFeatureMcpRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\PurgeFeatureMcpRequest`
+  - `RefactorCircus\PennantPlus\Mcp\Requests\SearchScopeModelsMcpRequest` → `RefactorCircus\PennantPlus\Domains\Scope\Mcp\Requests\SearchScopeModelsMcpRequest`
+  - `RefactorCircus\PennantPlus\Mcp\Requests\SetFeatureValueMcpRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\SetFeatureValueMcpRequest`
+  - `RefactorCircus\PennantPlus\Mcp\Requests\ShowFeatureMcpRequest` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ShowFeatureMcpRequest`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\CheckFeatureTool` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\CheckFeatureTool`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\Concerns\DescribesScope` → `RefactorCircus\PennantPlus\Domains\Scope\Concerns\DescribesScope`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\ForgetFeatureValueTool` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ForgetFeatureValueTool`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\ListFeatureValuesTool` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ListFeatureValuesTool`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\ListFeaturesTool` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\ListScopeTypesTool` → `RefactorCircus\PennantPlus\Domains\Scope\Mcp\Tools\ListScopeTypesTool`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\PurgeFeatureTool` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\PurgeFeatureTool`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\SearchScopeModelsTool` → `RefactorCircus\PennantPlus\Domains\Scope\Mcp\Tools\SearchScopeModelsTool`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\SetFeatureValueTool` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\SetFeatureValueTool`
+  - `RefactorCircus\PennantPlus\Mcp\Tools\ShowFeatureTool` → `RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ShowFeatureTool`
+  - `RefactorCircus\PennantPlus\OffLayeredFeature` → `RefactorCircus\PennantPlus\Domains\Feature\Support\OffLayeredFeature`
+  - `RefactorCircus\PennantPlus\OnLayeredFeature` → `RefactorCircus\PennantPlus\Domains\Feature\Support\OnLayeredFeature`
+  - `RefactorCircus\PennantPlus\ScopeModel` → `RefactorCircus\PennantPlus\Domains\Scope\Data\ScopeModel`
+  - `RefactorCircus\PennantPlus\StoredFeatureValue` → `RefactorCircus\PennantPlus\Domains\Feature\Data\StoredFeatureValue`
+  - `RefactorCircus\PennantPlus\Support\ScopeRules` → `RefactorCircus\PennantPlus\Domains\Scope\Support\ScopeRules`
+- Requires the domain-module release of `refactor-circus/atrium` (`RefactorCircus\Atrium\Domains\...`).
 
 ### Fixed
 
@@ -91,20 +95,20 @@
 
 ### Added
 
-- `GET pennantplus/history` (route `pennantplus.history.index`) and the `list-pennantplus-history-tool` MCP tool, from jayi/foundation: PennantPlus's audit entries, newest first. Both answer "not found" until jayi/keen is installed.
+- `GET pennantplus/history` (route `pennantplus.history.index`) and the `list-pennantplus-history-tool` MCP tool, from refactor-circus/foundation: PennantPlus's audit entries, newest first. Both answer "not found" until refactor-circus/keen is installed.
 - `pennantplus` Pennant driver: stores a scope's value only when it differs from the global value.
 - `OnLayeredFeature` and `OffLayeredFeature` base classes (on `LayeredFeature`): the global scope resolves to the class's default, every other scope follows the global value.
 - `FeatureGate` and the `EnsureFeatureActive` middleware: global-only features, global-and-user checks for the rest, and a bypass callback.
 - A management API (`pennantplus.routes`) and an MCP server (`PennantPlusServer`) to list, show, check, set, forget and purge feature values and find scopes, sharing actions and an optional `pennantplus.ability`.
-- The Atrium **Feature flags** page, moved from `jayi/atrium` (`JayI\PennantPlus\Atrium`). Setting a global value purges every other scope's value of that feature.
+- The Atrium **Feature flags** page, moved from `refactor-circus/atrium` (`RefactorCircus\PennantPlus\Atrium`). Setting a global value purges every other scope's value of that feature.
 - Atrium's feature checks (`NavItem::feature()`, plugin `features()`, the `atrium.feature` middleware) are answered by the feature gate when Atrium is installed. Turn it off with `pennantplus.atrium.resolve_features`.
 - The Atrium page's feature field and feature filter are searchable comboboxes over the discovered features (Atrium's `x-atrium::form.combobox`; the package's own combobox partial and `atriumPennantFeature` script are gone).
-- The Feature flags page shows PennantPlus's history through `<x-atrium::audit-trail source="pennantplus" />` once an audit log (jayi/keen) is installed, package-wide even when one feature is filtered.
-- `FeatureValueUpdatedActionEvent` implements jayi/foundation's `Auditable`, so its audit entry has no subject and records the `feature`, `scope` and `value`.
-- Cortex integration: when `jayi/cortex` is installed, the MCP server registers with it as `pennantplus` and every tool joins its tool registry (tagged `pennantplus`), so agents can use them. Published instruction and tool description overrides are served to MCP clients and agents. Configured under `pennantplus.cortex`; Cortex stays optional.
+- The Feature flags page shows PennantPlus's history through `<x-atrium::audit-trail source="pennantplus" />` once an audit log (refactor-circus/keen) is installed, package-wide even when one feature is filtered.
+- `FeatureValueUpdatedActionEvent` implements refactor-circus/foundation's `Auditable`, so its audit entry has no subject and records the `feature`, `scope` and `value`.
+- Cortex integration: when `refactor-circus/cortex` is installed, the MCP server registers with it as `pennantplus` and every tool joins its tool registry (tagged `pennantplus`), so agents can use them. Published instruction and tool description overrides are served to MCP clients and agents. Configured under `pennantplus.cortex`; Cortex stays optional.
 
 ### Changed
 
-- The Atrium **Feature flags** page follows Atrium's screen conventions: every action is an icon button with its label as tooltip, a value's active state is a status dot (`data-status="active|inactive"`), and the navigation item uses the Heroicons `flag` icon. Requires `jayi/atrium` with the icon-button and status-dot components.
+- The Atrium **Feature flags** page follows Atrium's screen conventions: every action is an icon button with its label as tooltip, a value's active state is a status dot (`data-status="active|inactive"`), and the navigation item uses the Heroicons `flag` icon. Requires `refactor-circus/atrium` with the icon-button and status-dot components.
 - Status and validation messages on the Feature flags page show through `x-atrium::flash`; the Atrium form requests flash `status` instead of `atrium.status`, and the status alert's test id is `flash-status` instead of `pennant-status`.
-- The set-value form, each row's toggle and forget buttons, and the purge button are shown only to viewers `pennantplus.ability` allows, through one check (`JayI\PennantPlus\Atrium\FeatureFlagAccess`, `@pennantplusManages` in views) that the controller and form requests also refuse with. PennantPlus does not gate its own page behind a Pennant feature, so admins cannot lock themselves out of it.
+- The set-value form, each row's toggle and forget buttons, and the purge button are shown only to viewers `pennantplus.ability` allows, through one check (`RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess`, `@pennantplusManages` in views) that the controller and form requests also refuse with. PennantPlus does not gate its own page behind a Pennant feature, so admins cannot lock themselves out of it.

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains;
+namespace RefactorCircus\PennantPlus\Domains;
 
 use Illuminate\Support\ServiceProvider;
-use JayI\PennantPlus\Domains\Feature\FeatureServiceProvider;
-use JayI\PennantPlus\Domains\Scope\ScopeServiceProvider;
+use RefactorCircus\PennantPlus\Domains\Feature\FeatureServiceProvider;
+use RefactorCircus\PennantPlus\Domains\Scope\ScopeServiceProvider;
 
 class DomainServiceProvider extends ServiceProvider
 {

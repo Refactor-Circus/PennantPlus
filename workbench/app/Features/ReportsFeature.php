@@ -2,7 +2,7 @@
 
 namespace Workbench\App\Features;
 
-use JayI\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
+use RefactorCircus\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
 
 /**
  * Demo: the reports area, on for everyone until switched off.

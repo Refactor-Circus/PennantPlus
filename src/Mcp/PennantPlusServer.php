@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Mcp;
+namespace RefactorCircus\PennantPlus\Mcp;
 
-use JayI\Foundation\Mcp\Server;
-use JayI\PennantPlus\Domains\Feature\Mcp\Tools\CheckFeatureTool;
-use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ForgetFeatureValueTool;
-use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
-use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ListFeatureValuesTool;
-use JayI\PennantPlus\Domains\Feature\Mcp\Tools\PurgeFeatureTool;
-use JayI\PennantPlus\Domains\Feature\Mcp\Tools\SetFeatureValueTool;
-use JayI\PennantPlus\Domains\Feature\Mcp\Tools\ShowFeatureTool;
-use JayI\PennantPlus\Domains\Scope\Mcp\Tools\ListScopeTypesTool;
-use JayI\PennantPlus\Domains\Scope\Mcp\Tools\SearchScopeModelsTool;
-use JayI\PennantPlus\Mcp\Tools\ListPennantPlusHistoryTool;
+use RefactorCircus\Foundation\Mcp\Server;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\CheckFeatureTool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ForgetFeatureValueTool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ListFeatureValuesTool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\PurgeFeatureTool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\SetFeatureValueTool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ShowFeatureTool;
+use RefactorCircus\PennantPlus\Domains\Scope\Mcp\Tools\ListScopeTypesTool;
+use RefactorCircus\PennantPlus\Domains\Scope\Mcp\Tools\SearchScopeModelsTool;
+use RefactorCircus\PennantPlus\Mcp\Tools\ListPennantPlusHistoryTool;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;

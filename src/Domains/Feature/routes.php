@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use JayI\PennantPlus\Domains\Feature\Http\Controllers\FeatureController;
-use JayI\PennantPlus\Domains\Feature\Http\Controllers\FeatureValueController;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Controllers\FeatureController;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Controllers\FeatureValueController;
 
 // Feature names are class names: allow backslashes, never slashes.
 Route::get('features', [FeatureController::class, 'index'])->name('features.index');

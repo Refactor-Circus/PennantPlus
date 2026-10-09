@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Scope\Actions;
+namespace RefactorCircus\PennantPlus\Domains\Scope\Actions;
 
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
  * The scope types a value can target: `global`, the configured models, any

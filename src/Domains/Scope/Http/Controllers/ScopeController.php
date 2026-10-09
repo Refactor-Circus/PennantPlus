@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Scope\Http\Controllers;
+namespace RefactorCircus\PennantPlus\Domains\Scope\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use JayI\PennantPlus\Domains\Scope\Http\Requests\IndexScopeTypesRequest;
-use JayI\PennantPlus\Domains\Scope\Http\Requests\SearchScopeModelsRequest;
+use RefactorCircus\PennantPlus\Domains\Scope\Http\Requests\IndexScopeTypesRequest;
+use RefactorCircus\PennantPlus\Domains\Scope\Http\Requests\SearchScopeModelsRequest;
 
 final class ScopeController
 {

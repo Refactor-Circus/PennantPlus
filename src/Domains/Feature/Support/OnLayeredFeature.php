@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Support;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Support;
 
 /**
  * A layered feature that is on globally until its global value is set.

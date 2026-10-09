@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Domains\Feature\Actions;
+namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
 use Illuminate\Support\Facades\DB;
-use JayI\PennantPlus\Domains\Feature\Events\FeaturePurgedActionEvent;
-use JayI\PennantPlus\Domains\Feature\Events\FeaturePurgingActionEvent;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeaturePurgedActionEvent;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeaturePurgingActionEvent;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
  * Forget every stored value of a feature, for every scope.

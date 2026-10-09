@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace JayI\PennantPlus\Http;
+namespace RefactorCircus\PennantPlus\Http;
 
-use JayI\Foundation\Http\Requests\Request as FoundationRequest;
-use JayI\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\Foundation\Http\Requests\Request as FoundationRequest;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
  * Base HTTP request.

@@ -1,11 +1,11 @@
 # PennantPlus
 
-Layered [Laravel Pennant](https://laravel.com/docs/pennant) feature flags: one global value per feature with per-user overrides, a gate for entry surfaces (routes, MCP tools), and an optional [Atrium](https://github.com/jayjfletcher/Atrium) page for managing stored values.
+Layered [Laravel Pennant](https://laravel.com/docs/pennant) feature flags: one global value per feature with per-user overrides, a gate for entry surfaces (routes, MCP tools), and an optional [Atrium](https://github.com/Refactor-Circus/Atrium) page for managing stored values.
 
 ## Installation
 
 ```bash
-composer require jayi/pennantplus
+composer require refactor-circus/pennantplus
 php artisan vendor:publish --tag="pennantplus-config"
 ```
 
@@ -34,8 +34,8 @@ The driver reads stored values one scope at a time:
 Pair it with features whose user value follows the global one:
 
 ```php
-use JayI\PennantPlus\Domains\Feature\Support\OffLayeredFeature;
-use JayI\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
+use RefactorCircus\PennantPlus\Domains\Feature\Support\OffLayeredFeature;
+use RefactorCircus\PennantPlus\Domains\Feature\Support\OnLayeredFeature;
 
 class ReportsFeature extends OnLayeredFeature {}           // global default: on
 
@@ -46,7 +46,7 @@ Both extend `LayeredFeature`, whose `resolve()` returns the default for the glob
 
 ## The feature gate
 
-`JayI\PennantPlus\Domains\Feature\Services\FeatureGate::allows($feature, $user)`:
+`RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate::allows($feature, $user)`:
 
 - features matching `pennantplus.gate.global_only` (default `*SupportFeature`) are checked against the global scope only;
 - every other feature must be active globally **and** for the user (globally only when there is no user);
@@ -60,7 +60,7 @@ Use it on routes through the bundled middleware:
 
 ```php
 ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->alias(['feature' => \JayI\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive::class]);
+    $middleware->alias(['feature' => \RefactorCircus\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive::class]);
 })
 
 Route::get('/reports', ReportController::class)->middleware('feature:'.ReportsFeature::class);
@@ -88,15 +88,15 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 
 Feature names that are class names contain backslashes: URL-encode them.
 
-`GET history` serves PennantPlus's audit entries, newest first, through jayi/foundation (route name `pennantplus.history.index`). It answers 404 until `jayi/keen` is installed.
+`GET history` serves PennantPlus's audit entries, newest first, through refactor-circus/foundation (route name `pennantplus.history.index`). It answers 404 until `refactor-circus/keen` is installed.
 
 ## MCP server
 
-`JayI\PennantPlus\Mcp\PennantPlusServer` exposes the same operations as ten tools behind ToolSearch: `list-features-tool`, `show-feature-tool`, `check-feature-tool`, `purge-feature-tool`, `list-feature-values-tool`, `set-feature-value-tool` (value JSON-encoded), `forget-feature-value-tool`, `list-scope-types-tool`, `search-scope-models-tool`, and `list-pennantplus-history-tool` (the audit history, when jayi/keen is installed). Enable its transports under `pennantplus.mcp`, or register it yourself behind your own auth.
+`RefactorCircus\PennantPlus\Mcp\PennantPlusServer` exposes the same operations as ten tools behind ToolSearch: `list-features-tool`, `show-feature-tool`, `check-feature-tool`, `purge-feature-tool`, `list-feature-values-tool`, `set-feature-value-tool` (value JSON-encoded), `forget-feature-value-tool`, `list-scope-types-tool`, `search-scope-models-tool`, and `list-pennantplus-history-tool` (the audit history, when refactor-circus/keen is installed). Enable its transports under `pennantplus.mcp`, or register it yourself behind your own auth.
 
 ## Cortex
 
-When [`jayi/cortex`](https://github.com/jayjfletcher/cortex) is installed, PennantPlus connects its MCP server to it. Nothing needs registering in your app.
+When [`refactor-circus/cortex`](https://github.com/Refactor-Circus/cortex) is installed, PennantPlus connects its MCP server to it. Nothing needs registering in your app.
 
 - **Agents can manage flags.** Every PennantPlus MCP tool joins Cortex's tool registry under its own name (`list-features-tool`, `check-feature-tool`, `set-feature-value-tool`, ...), so an agent can inspect and change feature flags. They are tagged with the server name (`pennantplus`), so they filter together in the Cortex dashboard.
 - **Agent changes are marked.** Changes an agent makes through one of the tools record `cortex` as their surface, so an audit log tells agents and people apart.
@@ -121,27 +121,27 @@ About how it works:
 
 ## Shared runtime
 
-PennantPlus stands on [`jayi/foundation`](https://github.com/jayjfletcher/Foundation), the shared runtime of the jayi package suite, which Composer installs with it. Its action events implement `JayI\Foundation\Contracts\ActionStartingEvent` and `ActionFinishedEvent`, so one listener can follow every package in the suite.
+PennantPlus stands on [`refactor-circus/foundation`](https://github.com/Refactor-Circus/Foundation), the shared runtime of the Refactor Circus package suite, which Composer installs with it. Its action events implement `RefactorCircus\Foundation\Contracts\ActionStartingEvent` and `ActionFinishedEvent`, so one listener can follow every package in the suite.
 
 ## Atrium dashboard
 
-With `jayi/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`). It lists stored values by feature and scope, sets a value for the global scope, a configured model or any string scope, forgets a value, and purges a feature. Setting a **global** value forgets every other scope's value of that feature (`pennantplus.purge_scopes_on_global_update`). It uses the same `store`, `ability`, `features` and `scopes` settings as the API.
+With `refactor-circus/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`). It lists stored values by feature and scope, sets a value for the global scope, a configured model or any string scope, forgets a value, and purges a feature. Setting a **global** value forgets every other scope's value of that feature (`pennantplus.purge_scopes_on_global_update`). It uses the same `store`, `ability`, `features` and `scopes` settings as the API.
 
-The page follows Atrium's screen conventions: actions are icon buttons (the label is the tooltip and accessible name), a value's state is a status dot (`success` active, `neutral` inactive; read it from `data-status`), and the navigation item uses the Heroicons `flag` icon. The navigation item, the set-value form, each row's toggle and forget buttons, and the purge button are shown only when `pennantplus.ability` allows the viewer - asked through `JayI\PennantPlus\Atrium\FeatureFlagAccess::allows()`, the same check the page's controller and form requests refuse with. Your own published views can use it as `@pennantplusManages ... @endpennantplusManages`.
+The page follows Atrium's screen conventions: actions are icon buttons (the label is the tooltip and accessible name), a value's state is a status dot (`success` active, `neutral` inactive; read it from `data-status`), and the navigation item uses the Heroicons `flag` icon. The navigation item, the set-value form, each row's toggle and forget buttons, and the purge button are shown only when `pennantplus.ability` allows the viewer - asked through `RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess::allows()`, the same check the page's controller and form requests refuse with. Your own published views can use it as `@pennantplusManages ... @endpennantplusManages`.
 
 The page is built only from Atrium's components and the utilities Atrium's stylesheet ships; PennantPlus has no stylesheet of its own. The feature field and filter are Atrium's `x-atrium::form.combobox` over the discovered features (free text still allowed), status and validation messages show through `x-atrium::flash` (requests flash `status`), and the scope picker searches PennantPlus's own scope endpoint.
 
-With an audit log installed (jayi/keen), the page ends with PennantPlus's history (`<x-atrium::audit-trail source="pennantplus" />`); without one it renders nothing. Flag values are about no model, so the history is package-wide even when one feature is filtered. `FeatureValueUpdatedActionEvent` implements jayi/foundation's `Auditable`: its entry has no subject and records `feature`, `scope` and `value` as context, while the forget and purge events' `feature` and `scope` properties are recorded as they are.
+With an audit log installed (refactor-circus/keen), the page ends with PennantPlus's history (`<x-atrium::audit-trail source="pennantplus" />`); without one it renders nothing. Flag values are about no model, so the history is package-wide even when one feature is filtered. `FeatureValueUpdatedActionEvent` implements refactor-circus/foundation's `Auditable`: its entry has no subject and records `feature`, `scope` and `value` as context, while the forget and purge events' `feature` and `scope` properties are recorded as they are.
 
 PennantPlus deliberately has no Pennant feature switch of its own for the Feature flags page: gating the feature-flag manager behind a feature flag could lock admins out of turning it back on. Restrict it with `pennantplus.ability`, or hide it with `atrium.disabled`.
 
 PennantPlus also answers Atrium's feature checks - `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware - through the feature gate, so `global_only` and the bypass callback apply in the dashboard exactly as they do on routes and MCP tools. To have Pennant decide only global visibility and leave per-user visibility to permissions (`NavItem::can()`), set `pennantplus.gate.global_only` to `['*']`. Set `pennantplus.atrium.resolve_features` to `false` to leave Atrium's feature resolver alone.
 
-Every write fires an action event pair from `JayI\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, and `FeaturePurging`/`FeaturePurged` (each suffixed `ActionEvent`).
+Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, and `FeaturePurging`/`FeaturePurged` (each suffixed `ActionEvent`).
 
 ### Atrium's theme switcher
 
-Atrium shows its theme switcher behind its own Pennant feature, `JayI\Atrium\Domains\Themes\Features\ThemeSwitcherFeature` (`atrium.themes.switcher_feature`). With PennantPlus installed, Atrium's feature checks go through the feature gate, so the feature is on until you set its global value and is checked per user too: you can hide the switcher for everyone or only for some people. With the `pennantplus` driver, users who follow the global value store nothing. It appears on the feature flags screen once the dashboard has first asked for it. While it is off, everyone sees Atrium's default theme.
+Atrium shows its theme switcher behind its own Pennant feature, `RefactorCircus\Atrium\Domains\Themes\Features\ThemeSwitcherFeature` (`atrium.themes.switcher_feature`). With PennantPlus installed, Atrium's feature checks go through the feature gate, so the feature is on until you set its global value and is checked per user too: you can hide the switcher for everyone or only for some people. With the `pennantplus` driver, users who follow the global value store nothing. It appears on the feature flags screen once the dashboard has first asked for it. While it is off, everyone sees Atrium's default theme.
 
 ## Testing
 

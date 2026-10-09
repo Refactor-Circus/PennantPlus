@@ -1,14 +1,14 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "jayi/pennantplus",
+    "name": "refactor-circus/pennantplus",
     "description": "Layered Pennant feature flags: a global value with per-user overrides, an entry-surface gate, and an Atrium dashboard for stored values.",
     "keywords": [
         "laravel",
-        "jayi",
+        "refactor-circus",
         "pennant",
         "feature-flags"
     ],
-    "homepage": "https://github.com/jayjfletcher/PennantPlus",
+    "homepage": "https://github.com/Refactor-Circus/PennantPlus",
     "license": "MIT",
     "authors": [
         {
@@ -19,14 +19,14 @@
     ],
     "require": {
         "php": "^8.4",
-        "jayi/foundation": "dev-main",
+        "refactor-circus/foundation": "dev-main",
         "laravel/framework": "^13.0",
         "laravel/mcp": "^1.0",
         "laravel/pennant": "^1.26"
     },
     "require-dev": {
-        "jayi/atrium": "dev-main",
-        "jayi/cortex": "dev-main",
+        "refactor-circus/atrium": "dev-main",
+        "refactor-circus/cortex": "dev-main",
         "larastan/larastan": "^3.12",
         "laravel/pao": "^1.0",
         "laravel/pint": "^1.29",
@@ -37,17 +37,17 @@
         "phpstan/extension-installer": "^1.4"
     },
     "suggest": {
-        "jayi/atrium": "Manage stored feature flag values from the Atrium dashboard (dev-main).",
-        "jayi/cortex": "Let Cortex agents use the PennantPlus tools and manage the MCP instructions and tool descriptions (dev-main)."
+        "refactor-circus/atrium": "Manage stored feature flag values from the Atrium dashboard (dev-main).",
+        "refactor-circus/cortex": "Let Cortex agents use the PennantPlus tools and manage the MCP instructions and tool descriptions (dev-main)."
     },
     "autoload": {
         "psr-4": {
-            "JayI\\PennantPlus\\": "src/"
+            "RefactorCircus\\PennantPlus\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "JayI\\PennantPlus\\Tests\\": "tests/",
+            "RefactorCircus\\PennantPlus\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/",
             "Workbench\\Database\\Factories\\": "workbench/database/factories/",
             "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
@@ -98,12 +98,12 @@
     "extra": {
         "laravel": {
             "providers": [
-                "JayI\\PennantPlus\\PennantPlusServiceProvider"
+                "RefactorCircus\\PennantPlus\\PennantPlusServiceProvider"
             ]
         },
         "atrium": {
             "plugins": [
-                "JayI\\PennantPlus\\Atrium\\PennantPlugin"
+                "RefactorCircus\\PennantPlus\\Atrium\\PennantPlugin"
             ]
         }
     },
@@ -119,15 +119,15 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/jayjfletcher/Atrium.git"
+            "url": "https://github.com/Refactor-Circus/Atrium.git"
         },
         {
             "type": "vcs",
-            "url": "https://github.com/jayjfletcher/cortex.git"
+            "url": "https://github.com/Refactor-Circus/Cortex.git"
         },
         {
             "type": "vcs",
-            "url": "https://github.com/jayjfletcher/Foundation.git"
+            "url": "https://github.com/Refactor-Circus/Foundation.git"
         }
     ]
 }

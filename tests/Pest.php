@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Illuminate\Foundation\Auth\User;
-use JayI\PennantPlus\Mcp\PennantPlusServer;
-use JayI\PennantPlus\Tests\CortexTestCase;
-use JayI\PennantPlus\Tests\TestCase;
+use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
+use RefactorCircus\PennantPlus\Tests\CortexTestCase;
+use RefactorCircus\PennantPlus\Tests\TestCase;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Server\Testing\TestResponse;
 use Laravel\Mcp\Server\Tool;
