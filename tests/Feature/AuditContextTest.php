@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Event;
 use Laravel\Pennant\Feature;
-use RefactorCircus\Foundation\Audit\Contracts\Auditable;
+use RefactorCircus\Keystone\Audit\Contracts\Auditable;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueUpdatedActionEvent;
 

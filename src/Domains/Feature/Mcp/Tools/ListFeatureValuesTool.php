@@ -8,7 +8,7 @@ use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
-use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\Keystone\Mcp\Tool;
 use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ListFeatureValuesMcpRequest;
 
 #[Description('List stored feature flag values, newest first. Filter by feature and by scope: "global", "other", or a model type (optionally one model key). Paginated.')]

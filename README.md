@@ -88,7 +88,7 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 
 Feature names that are class names contain backslashes: URL-encode them.
 
-`GET history` serves PennantPlus's audit entries, newest first, through refactor-circus/foundation (route name `pennantplus.history.index`). It answers 404 until `refactor-circus/keen` is installed.
+`GET history` serves PennantPlus's audit entries, newest first, through refactor-circus/keystone (route name `pennantplus.history.index`). It answers 404 until `refactor-circus/keen` is installed.
 
 ## MCP server
 
@@ -121,7 +121,7 @@ About how it works:
 
 ## Shared runtime
 
-PennantPlus stands on [`refactor-circus/foundation`](https://github.com/Refactor-Circus/Foundation), the shared runtime of the Refactor Circus package suite, which Composer installs with it. Its action events implement `RefactorCircus\Foundation\Contracts\ActionStartingEvent` and `ActionFinishedEvent`, so one listener can follow every package in the suite.
+PennantPlus stands on [`refactor-circus/keystone`](https://github.com/Refactor-Circus/Keystone), the shared runtime of the Refactor Circus package suite, which Composer installs with it. Its action events implement `RefactorCircus\Keystone\Contracts\ActionStartingEvent` and `ActionFinishedEvent`, so one listener can follow every package in the suite.
 
 ## Atrium dashboard
 
@@ -131,7 +131,7 @@ The page follows Atrium's screen conventions: actions are icon buttons (the labe
 
 The page is built only from Atrium's components and the utilities Atrium's stylesheet ships; PennantPlus has no stylesheet of its own. The feature field and filter are Atrium's `x-atrium::form.combobox` over the discovered features (free text still allowed), status and validation messages show through `x-atrium::flash` (requests flash `status`), and the scope picker searches PennantPlus's own scope endpoint.
 
-With an audit log installed (refactor-circus/keen), the page ends with PennantPlus's history (`<x-atrium::audit-trail source="pennantplus" />`); without one it renders nothing. Flag values are about no model, so the history is package-wide even when one feature is filtered. `FeatureValueUpdatedActionEvent` implements refactor-circus/foundation's `Auditable`: its entry has no subject and records `feature`, `scope` and `value` as context, while the forget and purge events' `feature` and `scope` properties are recorded as they are.
+With an audit log installed (refactor-circus/keen), the page ends with PennantPlus's history (`<x-atrium::audit-trail source="pennantplus" />`); without one it renders nothing. Flag values are about no model, so the history is package-wide even when one feature is filtered. `FeatureValueUpdatedActionEvent` implements refactor-circus/keystone's `Auditable`: its entry has no subject and records `feature`, `scope` and `value` as context, while the forget and purge events' `feature` and `scope` properties are recorded as they are.
 
 PennantPlus deliberately has no Pennant feature switch of its own for the Feature flags page: gating the feature-flag manager behind a feature flag could lock admins out of turning it back on. Restrict it with `pennantplus.ability`, or hide it with `atrium.disabled`.
 

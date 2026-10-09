@@ -8,7 +8,7 @@ use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
-use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\Keystone\Mcp\Tool;
 use RefactorCircus\PennantPlus\Domains\Scope\Mcp\Requests\ListScopeTypesMcpRequest;
 
 #[Description('List the scope types a feature flag value can target: global, configured models, other model types with stored values, and plain string scopes.')]

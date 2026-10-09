@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Mcp;
 
-use RefactorCircus\Foundation\Mcp\Requests\Request as FoundationRequest;
+use RefactorCircus\Keystone\Mcp\Requests\Request as KeystoneRequest;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
@@ -13,9 +13,9 @@ use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
  *
  * Feature flags have no model to hold a policy, so every tool call is
  * authorized against the `pennantplus.ability` Gate ability when one is
- * configured, rather than through the Foundation authorizer.
+ * configured, rather than through the Keystone authorizer.
  */
-abstract class Request extends FoundationRequest
+abstract class Request extends KeystoneRequest
 {
     protected function authorize(): bool
     {

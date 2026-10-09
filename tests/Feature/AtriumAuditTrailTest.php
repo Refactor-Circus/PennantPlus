@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
-use RefactorCircus\Foundation\Audit\Contracts\AuditTrail;
-use RefactorCircus\Foundation\Audit\Data\AuditEntry;
-use RefactorCircus\Foundation\Audit\Data\AuditFilter;
-use RefactorCircus\Foundation\Audit\Data\AuditPage;
+use RefactorCircus\Keystone\Audit\Contracts\AuditTrail;
+use RefactorCircus\Keystone\Audit\Data\AuditEntry;
+use RefactorCircus\Keystone\Audit\Data\AuditFilter;
+use RefactorCircus\Keystone\Audit\Data\AuditPage;
 
 beforeEach(function (): void {
     Gate::define('viewAtrium', fn (): bool => true);

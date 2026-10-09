@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Laravel\Mcp\Server\Transport\FakeTransporter;
-use RefactorCircus\Foundation\Cortex\CortexIntegration;
-use RefactorCircus\Foundation\Packages\PackageRegistry;
+use RefactorCircus\Keystone\Cortex\CortexIntegration;
+use RefactorCircus\Keystone\Packages\PackageRegistry;
 use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
 use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
 

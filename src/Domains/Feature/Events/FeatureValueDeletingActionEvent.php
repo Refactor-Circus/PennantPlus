@@ -6,7 +6,7 @@ namespace RefactorCircus\PennantPlus\Domains\Feature\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use RefactorCircus\Foundation\Contracts\ActionStartingEvent;
+use RefactorCircus\Keystone\Contracts\ActionStartingEvent;
 
 /**
  * A feature flag's stored value is about to be forgotten for a scope.

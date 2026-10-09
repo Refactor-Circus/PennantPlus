@@ -105,7 +105,7 @@ With `refactor-circus/atrium` installed, Atrium discovers a **Feature flags** pa
 
 The page uses Atrium icon buttons and status dots (`data-status="active|inactive"`, assert on that and on `data-testid`, not on button text) and a `flag` nav icon. Its navigation item and every control (set value, toggle, forget, purge) show only when `RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess::allows()` passes - the same `pennantplus.ability` check the controller and form requests refuse with; published views can use `@pennantplusManages ... @endpennantplusManages`. Do not gate the page behind a Pennant feature: that could lock admins out of turning it back on.
 
-The page uses only `x-atrium::*` components and Atrium's safelisted utilities (no package stylesheet): `x-atrium::form.combobox` for the feature fields (`data-testid="pennant-feature"` / `"pennant-filter-feature"`, free text allowed), `x-atrium::flash` for status (`data-testid="flash-status"`), and `x-atrium::audit-trail source="pennantplus"`, which shows the package-wide history once refactor-circus/keen is installed. A stored value's audit entry has no subject and carries `feature`, `scope` and `value` context (`FeatureValueUpdatedActionEvent` implements `RefactorCircus\Foundation\Audit\Contracts\Auditable`).
+The page uses only `x-atrium::*` components and Atrium's safelisted utilities (no package stylesheet): `x-atrium::form.combobox` for the feature fields (`data-testid="pennant-feature"` / `"pennant-filter-feature"`, free text allowed), `x-atrium::flash` for status (`data-testid="flash-status"`), and `x-atrium::audit-trail source="pennantplus"`, which shows the package-wide history once refactor-circus/keen is installed. A stored value's audit entry has no subject and carries `feature`, `scope` and `value` context (`FeatureValueUpdatedActionEvent` implements `RefactorCircus\Keystone\Audit\Contracts\Auditable`).
 
 PennantPlus also registers Atrium's feature resolver, so `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware ask `FeatureGate::allows($feature, $request->user())`. `pennantplus.gate.global_only => ['*']` makes Pennant decide only global visibility, leaving per-user visibility to Atrium's `can()` permissions. `pennantplus.atrium.resolve_features => false` opts out.
 
@@ -115,7 +115,7 @@ With `refactor-circus/cortex` installed, the MCP server registers with Cortex as
 
 ### 9. React to changes
 
-Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `RefactorCircus\Foundation\Contracts\ActionFinishedEvent` (from refactor-circus/foundation) for all of them; finished events fire after commit.
+Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `RefactorCircus\Keystone\Contracts\ActionFinishedEvent` (from refactor-circus/keystone) for all of them; finished events fire after commit.
 
 ## Rules, References, and Templates
 

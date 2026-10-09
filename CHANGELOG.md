@@ -13,14 +13,14 @@
 
 ### Breaking
 
-- PennantPlus now stands on `refactor-circus/foundation`, the suite's shared runtime, and requires it. The package's own copies of the shared pieces are gone in favour of Foundation's; update any imports:
-  - `RefactorCircus\PennantPlus\Contracts\ActionStartingEvent` → `RefactorCircus\Foundation\Contracts\ActionStartingEvent`
-  - `RefactorCircus\PennantPlus\Contracts\ActionFinishedEvent` → `RefactorCircus\Foundation\Contracts\ActionFinishedEvent`
-  - `RefactorCircus\PennantPlus\Mcp\Tool` → `RefactorCircus\Foundation\Mcp\Tool`
-  - `RefactorCircus\PennantPlus\Support\ServiceProvider` → `RefactorCircus\Foundation\Support\ServiceProvider`
-  - `RefactorCircus\PennantPlus\Cortex\CortexIntegration` → `RefactorCircus\Foundation\Cortex\CortexIntegration` (built with `CortexIntegration::for($package)` rather than resolved from the container)
+- PennantPlus now stands on `refactor-circus/keystone`, the suite's shared runtime, and requires it. The package's own copies of the shared pieces are gone in favour of Keystone's; update any imports:
+  - `RefactorCircus\PennantPlus\Contracts\ActionStartingEvent` → `RefactorCircus\Keystone\Contracts\ActionStartingEvent`
+  - `RefactorCircus\PennantPlus\Contracts\ActionFinishedEvent` → `RefactorCircus\Keystone\Contracts\ActionFinishedEvent`
+  - `RefactorCircus\PennantPlus\Mcp\Tool` → `RefactorCircus\Keystone\Mcp\Tool`
+  - `RefactorCircus\PennantPlus\Support\ServiceProvider` → `RefactorCircus\Keystone\Support\ServiceProvider`
+  - `RefactorCircus\PennantPlus\Cortex\CortexIntegration` → `RefactorCircus\Keystone\Cortex\CortexIntegration` (built with `CortexIntegration::for($package)` rather than resolved from the container)
 
-  `PennantPlusServiceProvider` extends Foundation's `PackageServiceProvider` and registers the package as `pennantplus`; `PennantPlusServer` extends `RefactorCircus\Foundation\Mcp\Server`; the base `Http\Request` and `Mcp\Request` extend Foundation's and keep the `pennantplus.ability` check. MCP calls now run inside Foundation's `mcp` surface, and changes a Cortex agent makes through a PennantPlus tool are marked with the `cortex` surface. Config keys, route names, tool names and behaviour are otherwise unchanged.
+  `PennantPlusServiceProvider` extends Keystone's `PackageServiceProvider` and registers the package as `pennantplus`; `PennantPlusServer` extends `RefactorCircus\Keystone\Mcp\Server`; the base `Http\Request` and `Mcp\Request` extend Keystone's and keep the `pennantplus.ability` check. MCP calls now run inside Keystone's `mcp` surface, and changes a Cortex agent makes through a PennantPlus tool are marked with the `cortex` surface. Config keys, route names, tool names and behaviour are otherwise unchanged.
 
 - The package is reorganised into domain modules (`src/Domains/Feature`, `src/Domains/Scope`), mirroring the mono application's layout. Classes move namespaces; there are no aliases for the old names, so update imports. Config keys, route names and paths, MCP tool names, publish tags, views, translations, the `pennantplus` driver name and the Atrium plugin are unchanged, and nothing PennantPlus stores is keyed by its own class names, so stored feature values are untouched. The management API routes now load from each domain (`routes/pennantplus.php` is gone). Old → new:
   - `RefactorCircus\PennantPlus\Actions\CheckFeatureAction` → `RefactorCircus\PennantPlus\Domains\Feature\Actions\CheckFeatureAction`
@@ -95,7 +95,7 @@
 
 ### Added
 
-- `GET pennantplus/history` (route `pennantplus.history.index`) and the `list-pennantplus-history-tool` MCP tool, from refactor-circus/foundation: PennantPlus's audit entries, newest first. Both answer "not found" until refactor-circus/keen is installed.
+- `GET pennantplus/history` (route `pennantplus.history.index`) and the `list-pennantplus-history-tool` MCP tool, from refactor-circus/keystone: PennantPlus's audit entries, newest first. Both answer "not found" until refactor-circus/keen is installed.
 - `pennantplus` Pennant driver: stores a scope's value only when it differs from the global value.
 - `OnLayeredFeature` and `OffLayeredFeature` base classes (on `LayeredFeature`): the global scope resolves to the class's default, every other scope follows the global value.
 - `FeatureGate` and the `EnsureFeatureActive` middleware: global-only features, global-and-user checks for the rest, and a bypass callback.
@@ -104,7 +104,7 @@
 - Atrium's feature checks (`NavItem::feature()`, plugin `features()`, the `atrium.feature` middleware) are answered by the feature gate when Atrium is installed. Turn it off with `pennantplus.atrium.resolve_features`.
 - The Atrium page's feature field and feature filter are searchable comboboxes over the discovered features (Atrium's `x-atrium::form.combobox`; the package's own combobox partial and `atriumPennantFeature` script are gone).
 - The Feature flags page shows PennantPlus's history through `<x-atrium::audit-trail source="pennantplus" />` once an audit log (refactor-circus/keen) is installed, package-wide even when one feature is filtered.
-- `FeatureValueUpdatedActionEvent` implements refactor-circus/foundation's `Auditable`, so its audit entry has no subject and records the `feature`, `scope` and `value`.
+- `FeatureValueUpdatedActionEvent` implements refactor-circus/keystone's `Auditable`, so its audit entry has no subject and records the `feature`, `scope` and `value`.
 - Cortex integration: when `refactor-circus/cortex` is installed, the MCP server registers with it as `pennantplus` and every tool joins its tool registry (tagged `pennantplus`), so agents can use them. Published instruction and tool description overrides are served to MCP clients and agents. Configured under `pennantplus.cortex`; Cortex stays optional.
 
 ### Changed

@@ -8,7 +8,7 @@ use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
-use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\Keystone\Mcp\Tool;
 use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ListFeaturesMcpRequest;
 
 #[Description('List every feature flag that is defined, discoverable, or has a stored value, with its stored global value and how many other scopes hold a value.')]

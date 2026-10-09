@@ -7,8 +7,8 @@ namespace RefactorCircus\PennantPlus\Domains\Feature\Events;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use RefactorCircus\Foundation\Audit\Contracts\Auditable;
-use RefactorCircus\Foundation\Contracts\ActionFinishedEvent;
+use RefactorCircus\Keystone\Audit\Contracts\Auditable;
+use RefactorCircus\Keystone\Contracts\ActionFinishedEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Data\StoredFeatureValue;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Domains\Scope;
 
-use RefactorCircus\Foundation\Support\ServiceProvider;
+use RefactorCircus\Keystone\Support\ServiceProvider;
 
 class ScopeServiceProvider extends ServiceProvider
 {
