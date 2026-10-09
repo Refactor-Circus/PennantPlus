@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use Laravel\Ai\Contracts\Tool as AgentTool;
+use Laravel\Ai\Tools\Request;
+use Laravel\Mcp\Server\Transport\FakeTransporter;
+use Laravel\Pennant\Feature;
 use RefactorCircus\Cortex\Domains\McpServer\Actions\CreateMcpInstructionVersionAction;
 use RefactorCircus\Cortex\Domains\McpServer\Services\McpServerRegistry;
 use RefactorCircus\Cortex\Domains\Tool\Actions\CreateToolDescriptionVersionAction;
@@ -10,10 +14,6 @@ use RefactorCircus\Foundation\Cortex\CortexIntegration;
 use RefactorCircus\Foundation\Packages\PackageRegistry;
 use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ListFeaturesTool;
 use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
-use Laravel\Ai\Contracts\Tool as AgentTool;
-use Laravel\Ai\Tools\Request;
-use Laravel\Mcp\Server\Transport\FakeTransporter;
-use Laravel\Pennant\Feature;
 
 it('registers the MCP server with Cortex', function (): void {
     $servers = app(McpServerRegistry::class);

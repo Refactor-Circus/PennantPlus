@@ -6,12 +6,12 @@ namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Laravel\Pennant\Feature;
 use RefactorCircus\PennantPlus\Domains\Feature\Data\StoredFeatureValue;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueUpdatedActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueUpdatingActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use RefactorCircus\PennantPlus\Domains\Scope\Support\ScopeRules;
-use Laravel\Pennant\Feature;
 
 /**
  * Store a feature's value for one serialized scope, through Pennant, so its

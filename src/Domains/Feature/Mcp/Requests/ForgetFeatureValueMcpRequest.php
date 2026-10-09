@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests;
 
+use Laravel\Mcp\Response;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\DeleteFeatureValueAction;
 use RefactorCircus\PennantPlus\Mcp\Request;
-use Laravel\Mcp\Response;
 
 final class ForgetFeatureValueMcpRequest extends Request
 {

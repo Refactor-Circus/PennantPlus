@@ -6,13 +6,13 @@ namespace RefactorCircus\PennantPlus\Tests;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use RefactorCircus\Atrium\AtriumServiceProvider;
-use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
-use RefactorCircus\PennantPlus\PennantPlusServiceProvider;
 use Laravel\Mcp\Server\McpServiceProvider;
 use Laravel\Pennant\PennantServiceProvider;
 use Orchestra\Testbench\Concerns\WithLaravelMigrations;
 use Orchestra\Testbench\TestCase as Orchestra;
+use RefactorCircus\Atrium\AtriumServiceProvider;
+use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
+use RefactorCircus\PennantPlus\PennantPlusServiceProvider;
 
 abstract class TestCase extends Orchestra
 {

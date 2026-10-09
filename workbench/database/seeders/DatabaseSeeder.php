@@ -3,8 +3,8 @@
 namespace Workbench\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
 use Laravel\Pennant\Feature;
+use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
 use Workbench\App\Features\BetaDashboardFeature;
 use Workbench\App\Features\BillingSupportFeature;
 use Workbench\App\Features\ExternalWritesFeature;

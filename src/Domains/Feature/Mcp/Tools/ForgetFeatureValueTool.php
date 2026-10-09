@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use RefactorCircus\Foundation\Mcp\Tool;
-use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ForgetFeatureValueMcpRequest;
-use RefactorCircus\PennantPlus\Domains\Scope\Concerns\DescribesScope;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
+use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ForgetFeatureValueMcpRequest;
+use RefactorCircus\PennantPlus\Domains\Scope\Concerns\DescribesScope;
 
 #[Description('Forget the stored value of a feature flag for one scope, so that scope follows the global value again.')]
 final class ForgetFeatureValueTool extends Tool

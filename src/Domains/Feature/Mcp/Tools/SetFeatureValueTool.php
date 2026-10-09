@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use RefactorCircus\Foundation\Mcp\Tool;
-use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\SetFeatureValueMcpRequest;
-use RefactorCircus\PennantPlus\Domains\Scope\Concerns\DescribesScope;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
+use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\SetFeatureValueMcpRequest;
+use RefactorCircus\PennantPlus\Domains\Scope\Concerns\DescribesScope;
 
 #[Description('Store a feature flag value for a scope. Setting the global value forgets every other scope value of that feature, so they follow the new global value.')]
 final class SetFeatureValueTool extends Tool

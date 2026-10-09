@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Laravel\Pennant\Feature;
 use RefactorCircus\Atrium\Domains\Navigation\Data\NavItem;
 use RefactorCircus\Atrium\Domains\Navigation\Services\NavigationRegistry;
 use RefactorCircus\Atrium\Facades\Atrium;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate;
-use Laravel\Pennant\Feature;
 
 beforeEach(function (): void {
     Feature::define('BillingSupportFeature', fn (): bool => true);

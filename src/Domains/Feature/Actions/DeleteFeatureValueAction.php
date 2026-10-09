@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
 use Illuminate\Support\Facades\DB;
+use Laravel\Pennant\Feature;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueDeletedActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueDeletingActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use RefactorCircus\PennantPlus\Domains\Scope\Support\ScopeRules;
-use Laravel\Pennant\Feature;
 
 /**
  * Forget a feature's stored value for one serialized scope, so Pennant

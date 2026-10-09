@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Tests;
 
-use RefactorCircus\Cortex\CortexServiceProvider;
 use Laravel\Ai\AiServiceProvider;
+use RefactorCircus\Cortex\CortexServiceProvider;
 
 /**
  * The package with Cortex installed and loaded.

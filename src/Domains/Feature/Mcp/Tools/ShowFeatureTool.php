@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use RefactorCircus\Foundation\Mcp\Tool;
-use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ShowFeatureMcpRequest;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
+use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ShowFeatureMcpRequest;
 
 #[Description('Show one feature flag: its stored global value, override count, and resolved global value.')]
 final class ShowFeatureTool extends Tool

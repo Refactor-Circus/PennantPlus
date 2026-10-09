@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 use Illuminate\Foundation\Auth\User;
-use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
-use RefactorCircus\PennantPlus\Tests\CortexTestCase;
-use RefactorCircus\PennantPlus\Tests\TestCase;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Server\Testing\TestResponse;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Transport\FakeTransporter;
 use Laravel\Mcp\Transport\JsonRpcResponse;
+use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
+use RefactorCircus\PennantPlus\Tests\CortexTestCase;
+use RefactorCircus\PennantPlus\Tests\TestCase;
 
 uses(TestCase::class)->in('Feature');
 uses(CortexTestCase::class)->in('Cortex');

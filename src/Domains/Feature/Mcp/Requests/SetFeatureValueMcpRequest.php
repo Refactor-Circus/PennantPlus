@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests;
 
+use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
 use RefactorCircus\PennantPlus\Domains\Feature\Http\Resources\FeatureValueResource;
 use RefactorCircus\PennantPlus\Mcp\Request;
-use Laravel\Mcp\Response;
-use Laravel\Mcp\ResponseFactory;
 
 /**
  * The value arrives JSON-encoded, so booleans and richer values share one

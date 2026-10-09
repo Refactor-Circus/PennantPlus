@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\DB;
+use Laravel\Pennant\Feature;
 use RefactorCircus\PennantPlus\Tests\Fixtures\Layered\OffFeature;
 use RefactorCircus\PennantPlus\Tests\Fixtures\Layered\OnFeature;
-use Laravel\Pennant\Feature;
 
 beforeEach(function (): void {
     config(['pennant.stores.database.driver' => 'pennantplus']);

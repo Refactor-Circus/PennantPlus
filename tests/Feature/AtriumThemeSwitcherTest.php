@@ -5,9 +5,9 @@ declare(strict_types=1);
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Laravel\Pennant\Feature;
 use RefactorCircus\Atrium\Domains\Themes\Features\ThemeSwitcherFeature;
 use RefactorCircus\Atrium\Domains\Themes\Services\ThemeRegistry;
-use Laravel\Pennant\Feature;
 
 function themeRequest(?Authenticatable $user = null): Request
 {

@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use RefactorCircus\PennantPlus\Domains\Scope\Exceptions\InvalidScopeModelException;
 use Laravel\Pennant\Feature;
+use RefactorCircus\PennantPlus\Domains\Scope\Exceptions\InvalidScopeModelException;
 
 /**
  * A model that feature flag values can be scoped to, from

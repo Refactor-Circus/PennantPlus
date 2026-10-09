@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use RefactorCircus\Foundation\Mcp\Tool;
-use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\CheckFeatureMcpRequest;
-use RefactorCircus\PennantPlus\Domains\Scope\Concerns\DescribesScope;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
+use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\CheckFeatureMcpRequest;
+use RefactorCircus\PennantPlus\Domains\Scope\Concerns\DescribesScope;
 
 #[Description('Resolve a feature flag for one scope (global when none is given): the global value, the scope value, and whether the feature gate lets that scope through.')]
 final class CheckFeatureTool extends Tool

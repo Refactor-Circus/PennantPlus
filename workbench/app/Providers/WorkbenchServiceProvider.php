@@ -6,8 +6,8 @@ use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
-use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
 use Laravel\Pennant\Feature;
+use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
 use Workbench\App\Http\Middleware\SignInWorkbenchUser;
 use Workbench\App\Models\User;
 

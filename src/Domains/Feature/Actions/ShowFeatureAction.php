@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
-use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use Laravel\Pennant\Feature;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
  * One feature: its stored summary plus its resolved global value.

@@ -9,12 +9,12 @@ use Illuminate\Foundation\Auth\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
+use Laravel\Pennant\Feature;
+use Orchestra\Testbench\Attributes\DefineEnvironment;
 use RefactorCircus\Atrium\Domains\Navigation\Data\NavItem;
 use RefactorCircus\Atrium\Domains\Navigation\Services\NavigationRegistry;
 use RefactorCircus\Atrium\Support\Icons;
 use RefactorCircus\PennantPlus\Tests\TestCase;
-use Laravel\Pennant\Feature;
-use Orchestra\Testbench\Attributes\DefineEnvironment;
 
 /**
  * The Feature flags screen shows its navigation item and each control only

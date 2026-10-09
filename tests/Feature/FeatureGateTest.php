@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Route;
+use Laravel\Pennant\Feature;
 use RefactorCircus\PennantPlus\Domains\Feature\Http\Middleware\EnsureFeatureActive;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate;
-use Laravel\Pennant\Feature;
 
 beforeEach(function (): void {
     Feature::define('BillingSupportFeature', fn (): bool => true);

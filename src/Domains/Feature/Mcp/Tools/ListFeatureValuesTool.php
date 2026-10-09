@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use RefactorCircus\Foundation\Mcp\Tool;
-use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ListFeatureValuesMcpRequest;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
+use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ListFeatureValuesMcpRequest;
 
 #[Description('List stored feature flag values, newest first. Filter by feature and by scope: "global", "other", or a model type (optionally one model key). Paginated.')]
 final class ListFeatureValuesTool extends Tool

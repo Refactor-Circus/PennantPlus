@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use Laravel\Pennant\Feature;
+use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 beforeEach(function (): void {
     config(['pennant.stores.database.driver' => 'pennantplus']);

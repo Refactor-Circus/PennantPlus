@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Mcp;
 
+use Laravel\Mcp\Server\Attributes\Instructions;
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Attributes\Version;
+use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\ToolSearch;
 use RefactorCircus\Foundation\Mcp\Server;
 use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\CheckFeatureTool;
 use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ForgetFeatureValueTool;
@@ -15,11 +20,6 @@ use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Tools\ShowFeatureTool;
 use RefactorCircus\PennantPlus\Domains\Scope\Mcp\Tools\ListScopeTypesTool;
 use RefactorCircus\PennantPlus\Domains\Scope\Mcp\Tools\SearchScopeModelsTool;
 use RefactorCircus\PennantPlus\Mcp\Tools\ListPennantPlusHistoryTool;
-use Laravel\Mcp\Server\Attributes\Instructions;
-use Laravel\Mcp\Server\Attributes\Name;
-use Laravel\Mcp\Server\Attributes\Version;
-use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\ToolSearch;
 
 #[Name('PennantPlus')]
 #[Version('1.0.0')]

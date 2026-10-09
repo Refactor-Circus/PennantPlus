@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Scope\Mcp\Tools;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use RefactorCircus\Foundation\Mcp\Tool;
-use RefactorCircus\PennantPlus\Domains\Scope\Mcp\Requests\SearchScopeModelsMcpRequest;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
+use RefactorCircus\Foundation\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Scope\Mcp\Requests\SearchScopeModelsMcpRequest;
 
 #[Description('Find models of a searchable scope type by key or search columns, with the serialized scope to use in other tools.')]
 final class SearchScopeModelsTool extends Tool

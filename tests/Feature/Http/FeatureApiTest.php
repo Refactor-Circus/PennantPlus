@@ -5,8 +5,8 @@ declare(strict_types=1);
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use RefactorCircus\PennantPlus\Tests\Fixtures\Features\Billing\InvoicingFeature;
 use Laravel\Pennant\Feature;
+use RefactorCircus\PennantPlus\Tests\Fixtures\Features\Billing\InvoicingFeature;
 
 beforeEach(function (): void {
     config(['pennantplus.scopes' => [User::class => ['search' => ['name', 'email'], 'title' => 'email']]]);

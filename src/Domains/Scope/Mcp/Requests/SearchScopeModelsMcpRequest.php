@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Domains\Scope\Mcp\Requests;
 
+use Laravel\Mcp\ResponseFactory;
 use RefactorCircus\PennantPlus\Domains\Scope\Actions\SearchScopeModelsAction;
 use RefactorCircus\PennantPlus\Mcp\Request;
-use Laravel\Mcp\ResponseFactory;
 
 final class SearchScopeModelsMcpRequest extends Request
 {
