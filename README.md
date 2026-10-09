@@ -134,7 +134,7 @@ Every write fires an action event pair from `JayI\PennantPlus\Domains\Feature\Ev
 
 ### Atrium's theme switcher
 
-`JayI\PennantPlus\Atrium\Features\ThemeSwitcherFeature` decides whether Atrium shows its theme switcher beside the light/dark toggle; Atrium names it in `atrium.themes.switcher_feature`. It is on until you set its global value, and the feature gate checks it per user too, so you can hide the switcher for everyone or only for some people. It appears on the feature flags screen once the dashboard has first asked for it. While it is off, everyone sees Atrium's default theme.
+Atrium shows its theme switcher behind its own Pennant feature, `JayI\Atrium\Domains\Themes\Features\ThemeSwitcherFeature` (`atrium.themes.switcher_feature`). With PennantPlus installed, Atrium's feature checks go through the feature gate, so the feature is on until you set its global value and is checked per user too: you can hide the switcher for everyone or only for some people. With the `pennantplus` driver, users who follow the global value store nothing. It appears on the feature flags screen once the dashboard has first asked for it. While it is off, everyone sees Atrium's default theme.
 
 ## Testing
 
