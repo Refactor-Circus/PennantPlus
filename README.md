@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="art/icon.png" width="160" alt="PennantPlus icon">
+</p>
+
 # PennantPlus
 
 Layered [Laravel Pennant](https://laravel.com/docs/pennant) feature flags: one global value per feature with per-user overrides, a gate for entry surfaces (routes, MCP tools), and an optional [Atrium](https://github.com/Refactor-Circus/Atrium) page for managing stored values.
