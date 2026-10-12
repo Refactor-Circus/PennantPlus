@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Domains\Feature\Services;
 
+use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -13,6 +14,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\MySqlGrammar;
 use Illuminate\Database\Query\Grammars\PostgresGrammar;
 use Illuminate\Database\Query\Grammars\SqlServerGrammar;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -24,6 +26,8 @@ use RefactorCircus\PennantPlus\Domains\Scope\Data\ScopeModel;
 use ReflectionClass;
 use stdClass;
 use Symfony\Component\Finder\Finder;
+use Throwable;
+use WeakMap;
 
 /**
  * Reads the feature flag values Pennant has stored.
@@ -45,6 +49,40 @@ class FeatureFlagManager
     public const string OTHER = 'other';
 
     /**
+     * How many scoped rows `forgetScopedValues()` deletes per query.
+     */
+    public const int FORGET_CHUNK = 1000;
+
+    /**
+     * The feature classes found in each set of `pennantplus.features`
+     * directories. Process-wide: the classes only change on deploy.
+     *
+     * @var array<string, array<int, class-string>>
+     */
+    private array $featureClasses = [];
+
+    /**
+     * The Pennant stores the feature classes have been defined on, so each
+     * store is only told about them once.
+     *
+     * @var WeakMap<Decorator, string>
+     */
+    private WeakMap $discovered;
+
+    /**
+     * The scope models built from `pennantplus.scopes`, with the config they
+     * were built from, so they are rebuilt only when the config changes.
+     *
+     * @var array{config: mixed, models: array<class-string, ScopeModel>, lookup: array<string, ScopeModel>}|null
+     */
+    private ?array $scopeModels = null;
+
+    public function __construct()
+    {
+        $this->discovered = new WeakMap;
+    }
+
+    /**
      * The Pennant store being managed, null for Pennant's default.
      */
     public function storeName(): ?string
@@ -57,6 +95,29 @@ class FeatureFlagManager
     public function store(): Decorator
     {
         return Feature::store($this->storeName());
+    }
+
+    /**
+     * Run feature value writes in one transaction on the managed store's
+     * connection, so a failure part way leaves every stored value as it was.
+     *
+     * Pennant caches what it writes in memory; the cache is flushed when the
+     * transaction rolls back, so no value that was never stored is answered.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $callback
+     * @return TResult
+     */
+    public function transaction(Closure $callback): mixed
+    {
+        try {
+            return DB::connection($this->storeConfig()['connection'])->transaction($callback);
+        } catch (Throwable $exception) {
+            $this->store()->flushCache();
+
+            throw $exception;
+        }
     }
 
     /**
@@ -80,15 +141,31 @@ class FeatureFlagManager
 
     /**
      * Forget a feature's stored values for every scope but the global one.
+     *
+     * The rows go in chunks of `FORGET_CHUNK` ids, each its own short
+     * delete, so a feature with many overrides never holds one long lock.
      */
     public function forgetScopedValues(string $feature): void
     {
-        $this->query()
-            ->where('name', $feature)
-            ->where('scope', '!=', Feature::serializeScope(null))
-            ->delete();
+        $global = Feature::serializeScope(null);
+
+        do {
+            $ids = $this->query()
+                ->where('name', $feature)
+                ->where('scope', '!=', $global)
+                ->orderBy('id')
+                ->limit(self::FORGET_CHUNK)
+                ->pluck('id')
+                ->all();
+
+            if ($ids !== []) {
+                $this->query()->whereIn('id', $ids)->delete();
+            }
+        } while (count($ids) === self::FORGET_CHUNK);
 
         $this->store()->flushCache();
+
+        $this->forgetScopeTypes();
     }
 
     /**
@@ -153,9 +230,17 @@ class FeatureFlagManager
     {
         $store = $this->store();
 
+        $paths = $this->featurePathsKey();
+
+        if (($this->discovered[$store] ?? null) === $paths) {
+            return;
+        }
+
         foreach ($this->featureClasses() as $class) {
             $store->define($class);
         }
+
+        $this->discovered[$store] = $paths;
     }
 
     /**
@@ -165,7 +250,23 @@ class FeatureFlagManager
      */
     public function scopeModels(): array
     {
+        return $this->scopeModelIndex()['models'];
+    }
+
+    /**
+     * The configured scope models, keyed by class, and the same models
+     * keyed by both class and type for lookups; rebuilt when the config
+     * changes.
+     *
+     * @return array{config: mixed, models: array<class-string, ScopeModel>, lookup: array<string, ScopeModel>}
+     */
+    protected function scopeModelIndex(): array
+    {
         $configured = config('pennantplus.scopes', []);
+
+        if ($this->scopeModels !== null && $this->scopeModels['config'] === $configured) {
+            return $this->scopeModels;
+        }
 
         $models = [];
 
@@ -184,7 +285,15 @@ class FeatureFlagManager
             $models[$scope->class] = $scope;
         }
 
-        return $models;
+        $lookup = [];
+
+        // The first model matching by class or type wins, as listed.
+        foreach ($models as $scope) {
+            $lookup[$scope->class] ??= $scope;
+            $lookup[$scope->type] ??= $scope;
+        }
+
+        return $this->scopeModels = ['config' => $configured, 'models' => $models, 'lookup' => $lookup];
     }
 
     /**
@@ -192,13 +301,7 @@ class FeatureFlagManager
      */
     public function scopeModel(string $classOrType): ?ScopeModel
     {
-        foreach ($this->scopeModels() as $scope) {
-            if ($scope->class === $classOrType || $scope->type === $classOrType) {
-                return $scope;
-            }
-        }
-
-        return null;
+        return $this->scopeModelIndex()['lookup'][$classOrType] ?? null;
     }
 
     /**
@@ -233,6 +336,31 @@ class FeatureFlagManager
             return [];
         }
 
+        $seconds = config('pennantplus.scope_types_cache_seconds', 300);
+        $seconds = is_numeric($seconds) ? (int) $seconds : 0;
+
+        if ($seconds <= 0) {
+            return $this->queryScopeTypes();
+        }
+
+        return Cache::remember($this->scopeTypesCacheKey(), $seconds, fn (): array => $this->queryScopeTypes());
+    }
+
+    /**
+     * Forget the cached model types, after values were written or forgotten.
+     */
+    public function forgetScopeTypes(): void
+    {
+        Cache::forget($this->scopeTypesCacheKey());
+    }
+
+    /**
+     * The model types that have at least one stored value, read afresh.
+     *
+     * @return array<int, string>
+     */
+    protected function queryScopeTypes(): array
+    {
         $query = $this->query();
 
         $type = $this->typeExpression($query);
@@ -246,6 +374,13 @@ class FeatureFlagManager
             ->filter(fn (mixed $type): bool => is_string($type) && $type !== '')
             ->values()
             ->all();
+    }
+
+    protected function scopeTypesCacheKey(): string
+    {
+        $config = $this->storeConfig();
+
+        return 'pennantplus:scope-types:'.hash('xxh128', ($config['connection'] ?? '').'|'.$config['table']);
     }
 
     /**
@@ -362,23 +497,58 @@ class FeatureFlagManager
      */
     public function summary(string $feature): array
     {
+        return $this->summaries([$feature])[0];
+    }
+
+    /**
+     * Each feature summarised as `summary()` does, in the given order, read
+     * with two queries however many features there are.
+     *
+     * @param  array<int, string>  $features
+     * @return array<int, array{name: string, defined: bool, global: mixed, global_stored: bool, overrides: int}>
+     */
+    public function summaries(array $features): array
+    {
+        if ($features === []) {
+            return [];
+        }
+
         $this->discoverFeatures();
 
         $global = Feature::serializeScope(null);
+        $defined = array_flip($this->store()->defined());
 
-        $stored = $this->supportsListing()
-            ? $this->query()->where('name', $feature)->where('scope', $global)->value('value')
-            : null;
+        $stored = [];
+        $overrides = [];
 
-        return [
-            'name' => $feature,
-            'defined' => in_array($feature, $this->store()->defined(), true),
-            'global' => is_string($stored) ? json_decode($stored, true, flags: JSON_THROW_ON_ERROR) : null,
-            'global_stored' => is_string($stored),
-            'overrides' => $this->supportsListing()
-                ? $this->query()->where('name', $feature)->where('scope', '!=', $global)->count()
-                : 0,
-        ];
+        if ($this->supportsListing()) {
+            $stored = $this->query()
+                ->whereIn('name', $features)
+                ->where('scope', $global)
+                ->pluck('value', 'name')
+                ->all();
+
+            $overrides = $this->query()
+                ->whereIn('name', $features)
+                ->where('scope', '!=', $global)
+                ->groupBy('name')
+                ->selectRaw('name, count(*) as aggregate')
+                ->pluck('aggregate', 'name')
+                ->all();
+        }
+
+        return array_map(function (string $feature) use ($defined, $stored, $overrides): array {
+            $value = $stored[$feature] ?? null;
+            $count = $overrides[$feature] ?? 0;
+
+            return [
+                'name' => $feature,
+                'defined' => array_key_exists($feature, $defined),
+                'global' => is_string($value) ? json_decode($value, true, flags: JSON_THROW_ON_ERROR) : null,
+                'global_stored' => is_string($value),
+                'overrides' => is_numeric($count) ? (int) $count : 0,
+            ];
+        }, array_values($features));
     }
 
     protected function query(): Builder
@@ -468,6 +638,24 @@ class FeatureFlagManager
      * @return array<int, class-string>
      */
     protected function featureClasses(): array
+    {
+        return $this->featureClasses[$this->featurePathsKey()] ??= $this->findFeatureClasses();
+    }
+
+    /**
+     * The `pennantplus.features` setting as a memo key.
+     */
+    protected function featurePathsKey(): string
+    {
+        return json_encode(config('pennantplus.features', []), JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * Scan the configured feature directories for feature classes.
+     *
+     * @return array<int, class-string>
+     */
+    protected function findFeatureClasses(): array
     {
         $paths = config('pennantplus.features', []);
 

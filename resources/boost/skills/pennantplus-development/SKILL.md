@@ -37,6 +37,8 @@ A scope (user) with no stored value is resolved and compared with the global (nu
 
 The driver loads each scope's stored values in one query the first time the scope is checked, then answers from memory. Checking many features for one user therefore costs two queries. `Feature::flushCache()` (run by Pennant per Octane request and per queued job) and every write through the driver clear it. A row written straight to the table shows up only after that flush.
 
+Recommend the optional indexes (never auto-run; PennantPlus owns no tables): `php artisan vendor:publish --tag="pennantplus-migrations" && php artisan migrate` adds `(scope, name)`, `(updated_at)` and `(name, updated_at)` to the managed store's table.
+
 ### 2. Write features whose users follow the global value
 
 ```php
@@ -80,17 +82,27 @@ Or register `RefactorCircus\PennantPlus\Mcp\PennantPlusServer` yourself in `rout
 A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Models\User|5`, or any string) or with `scope_type` (`global`, `other`, or a configured model type) plus `scope_id`. Without either, the global scope.
 
 - `GET /pennantplus/features` — every defined, discoverable or stored feature: `name`, `defined`, `global` (stored), `global_stored`, `overrides`. MCP `list-features-tool`.
-- `GET /pennantplus/features/{feature}` — the same plus the resolved global `value`. MCP `show-feature-tool`.
+- `GET /pennantplus/features/{feature}` — the same plus the resolved global `value`. MCP `show-feature-tool` (under `data`, as over HTTP).
 - `GET /pennantplus/features/{feature}/check?scope_type=&scope_id=` — `global`, the scope's `value`, `active`, and `gate` (FeatureGate result; null for non-user scopes). MCP `check-feature-tool`.
 - `DELETE /pennantplus/features/{feature}` — purge every stored value. MCP `purge-feature-tool`.
-- `GET /pennantplus/values?feature=&scope=&scope_id=&page=` — stored values, newest first (scope filter: `global`, `other`, or a model type). MCP `list-feature-values-tool`.
-- `PUT /pennantplus/values` `{feature, scope|scope_type+scope_id, value}` — store a value (any JSON). Setting the **global** value forgets every other scope's value of that feature (`purge_scopes_on_global_update`). MCP `set-feature-value-tool` takes `value` JSON-encoded (`"true"`, `"false"`, `"{...}"`).
+- `GET /pennantplus/values?feature=&scope=&scope_id=&page=&per_page=` — stored values, newest first (scope filter: `global`, `other`, or a model type). MCP `list-feature-values-tool`.
+- `PUT /pennantplus/values` `{feature, scope|scope_type+scope_id, value}` — store a value (any JSON). Setting the **global** value forgets every other scope's value of that feature (`purge_scopes_on_global_update`), in id chunks after the global value commits. MCP `set-feature-value-tool` takes `value` JSON-encoded (`"true"`, `"false"`, `"{...}"`) and answers the stored value under `data`.
 - `DELETE /pennantplus/values` `{feature, scope|scope_type+scope_id}` — forget one scope's value so it follows global again. MCP `forget-feature-value-tool`.
 - `GET /pennantplus/scopes` — scope types. MCP `list-scope-types-tool`.
 - `GET /pennantplus/scopes/{type}/models?q=` — find models of a configured type, with the serialized `scope` to reuse. MCP `search-scope-models-tool`.
-- `GET /pennantplus/history?subject_type=&subject_id=&action=&cursor=&per_page=` — the package's audit entries, newest first; 404 until refactor-circus/keen is installed. MCP `list-pennantplus-history-tool`.
+- `GET /pennantplus/history?subject_type=&subject_id=&action=&cursor=&per_page=` — the package's audit entries, newest first; 404 until refactor-circus/keen is installed (or while `pennantplus.audit.enabled` is false). MCP `list-pennantplus-history-tool`.
 
-Class-based feature names contain backslashes; URL-encode them in paths.
+Class-based feature names contain backslashes; URL-encode them in paths. Guests get 401, signed-in users the ability refuses 403. Every MCP tool with structured content declares an `outputSchema()`.
+
+From code, call the Actions with Data objects (`RefactorCircus\Keystone\Data\Data`) - never arrays:
+
+```php
+app(UpdateFeatureValueAction::class)->execute(new UpdateFeatureValueData('new-checkout', true, scope: Feature::serializeScope($user)));
+app(DeleteFeatureValueAction::class)->execute(new DeleteFeatureValueData('new-checkout', scopeType: 'global'));
+app(ListFeatureValuesAction::class)->execute(ListFeatureValuesData::from($request->all())); // from() validates untrusted input
+```
+
+The Data classes live in `RefactorCircus\PennantPlus\Domains\Feature\Data` (`CheckFeatureData`, `ShowFeatureData`, `PurgeFeatureData`, `ListFeatureValuesData`, `UpdateFeatureValueData`, `DeleteFeatureValueData`) and `Domains\Scope\Data\SearchScopeModelsData`.
 
 ### 6. Configure discovery and scope models
 
@@ -115,7 +127,7 @@ With `refactor-circus/cortex` installed, the MCP server registers with Cortex as
 
 ### 9. React to changes
 
-Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Listen to `RefactorCircus\Keystone\Contracts\ActionFinishedEvent` (from refactor-circus/keystone) for all of them; finished events fire after commit.
+Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Reads fire pairs too (`FeaturesListing`, `FeatureShowing`, `FeatureChecking`, `FeatureValuesListing`, and in `Domains\Scope\Events` `ScopeTypesListing`, `ScopeModelsSearching`, with their `-ed`/`Shown` partners); the audit log skips them. Listen to `RefactorCircus\Keystone\Contracts\ActionFinishedEvent` (from refactor-circus/keystone) for all of them; writes run in one transaction on the Pennant store's connection (`FeatureFlagManager::transaction()`) and finished events fire after commit. Starting events carry the input Data (`$event->data`), plus the serialized `$event->scope` on the value events.
 
 ## Rules, References, and Templates
 

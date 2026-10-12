@@ -7,6 +7,7 @@ namespace RefactorCircus\PennantPlus\Domains\Feature\Events;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use RefactorCircus\Keystone\Contracts\ActionStartingEvent;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\PurgeFeatureData;
 
 /**
  * Every stored value of a feature flag is about to be forgotten.
@@ -17,6 +18,6 @@ final class FeaturePurgingActionEvent implements ActionStartingEvent
     use SerializesModels;
 
     public function __construct(
-        public string $feature,
+        public PurgeFeatureData $data,
     ) {}
 }

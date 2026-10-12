@@ -10,9 +10,9 @@ use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 /**
  * Base HTTP request.
  *
- * Validation rules come from the Action the request wraps, and `persist()`
- * calls that same Action. Feature flags have no model to hold a policy, so
- * every request is authorized against the `pennantplus.ability` Gate ability
+ * Validation rules come from the Data of the Action the request wraps, and
+ * `persist()` calls that same Action. Feature flags have no model to hold a
+ * policy, so every request is authorized against the `pennantplus.ability` Gate ability
  * when one is configured, rather than through the Keystone authorizer.
  */
 abstract class Request extends KeystoneRequest

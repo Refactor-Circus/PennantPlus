@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Scope\Actions;
 
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Scope\Events\ScopeTypesListedActionEvent;
+use RefactorCircus\PennantPlus\Domains\Scope\Events\ScopeTypesListingActionEvent;
 
 /**
  * The scope types a value can target: `global`, the configured models, any
@@ -15,18 +17,12 @@ final class ListScopeTypesAction
     public function __construct(private readonly FeatureFlagManager $features) {}
 
     /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
-    {
-        return [];
-    }
-
-    /**
      * @return array<int, array{type: string, label: string, searchable: bool}>
      */
     public function execute(): array
     {
+        ScopeTypesListingActionEvent::dispatch();
+
         $types = [[
             'type' => FeatureFlagManager::GLOBAL,
             'label' => __('pennantplus::pennantplus.global'),
@@ -46,6 +42,8 @@ final class ListScopeTypesAction
             'label' => __('pennantplus::pennantplus.other'),
             'searchable' => false,
         ];
+
+        ScopeTypesListedActionEvent::dispatch();
 
         return $types;
     }

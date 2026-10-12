@@ -11,11 +11,6 @@ use RefactorCircus\PennantPlus\Http\Request;
 
 final class IndexFeaturesRequest extends Request
 {
-    public function rules(): array
-    {
-        return ListFeaturesAction::rules();
-    }
-
     public function persist(): JsonResponse
     {
         return FeatureResource::collection(app(ListFeaturesAction::class)->execute())->response();

@@ -48,6 +48,9 @@ class PennantPlusServiceProvider extends PackageServiceProvider
 
         $this->loadHistoryRoutes();
 
+        // A missing scope model answers the API with a plain JSON 404.
+        $this->registerNotFoundResponses();
+
         $this->registerAtriumFeatureResolver();
 
         $this->registerAtriumBladeConditional();
@@ -74,6 +77,13 @@ class PennantPlusServiceProvider extends PackageServiceProvider
         $this->publishes([
             __DIR__.'/../lang' => $this->app->langPath('vendor/pennantplus'),
         ], ['pennantplus', 'pennantplus-lang']);
+
+        // Optional indexes on Pennant's own table: never run unless published,
+        // and kept out of the `pennantplus` tag so publishing everything
+        // does not add them unasked.
+        $this->publishesMigrations([
+            __DIR__.'/../database/migrations' => database_path('migrations'),
+        ], 'pennantplus-migrations');
     }
 
     /**

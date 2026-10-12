@@ -5,6 +5,7 @@ namespace Workbench\Database\Seeders;
 use Illuminate\Database\Seeder;
 use Laravel\Pennant\Feature;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\UpdateFeatureValueData;
 use Workbench\App\Features\BetaDashboardFeature;
 use Workbench\App\Features\BillingSupportFeature;
 use Workbench\App\Features\ExternalWritesFeature;
@@ -33,25 +34,25 @@ class DatabaseSeeder extends Seeder
         $global = Feature::serializeScope(null);
 
         // Global values first: setting one forgets the feature's other scopes.
-        $set->execute(ReportsFeature::class, $global, true);
-        $set->execute(NewCheckoutFeature::class, $global, false);
-        $set->execute(ExternalWritesFeature::class, $global, false);
-        $set->execute(BetaDashboardFeature::class, $global, true);
-        $set->execute(BillingSupportFeature::class, $global, true);
-        $set->execute('dark-mode', $global, false);
-        $set->execute('checkout-button-color', $global, 'blue');
+        $set->execute(new UpdateFeatureValueData(ReportsFeature::class, true, scope: $global));
+        $set->execute(new UpdateFeatureValueData(NewCheckoutFeature::class, false, scope: $global));
+        $set->execute(new UpdateFeatureValueData(ExternalWritesFeature::class, false, scope: $global));
+        $set->execute(new UpdateFeatureValueData(BetaDashboardFeature::class, true, scope: $global));
+        $set->execute(new UpdateFeatureValueData(BillingSupportFeature::class, true, scope: $global));
+        $set->execute(new UpdateFeatureValueData('dark-mode', false, scope: $global));
+        $set->execute(new UpdateFeatureValueData('checkout-button-color', 'blue', scope: $global));
 
         // Per-user overrides that differ from the global value.
-        $set->execute(NewCheckoutFeature::class, Feature::serializeScope($admin), true);
-        $set->execute(NewCheckoutFeature::class, Feature::serializeScope($ada), true);
-        $set->execute(ReportsFeature::class, Feature::serializeScope($alan), false);
-        $set->execute(BetaDashboardFeature::class, Feature::serializeScope($grace), false);
-        $set->execute('dark-mode', Feature::serializeScope($admin), true);
-        $set->execute('dark-mode', Feature::serializeScope($grace), true);
-        $set->execute('checkout-button-color', Feature::serializeScope($ada), 'green');
+        $set->execute(new UpdateFeatureValueData(NewCheckoutFeature::class, true, scope: Feature::serializeScope($admin)));
+        $set->execute(new UpdateFeatureValueData(NewCheckoutFeature::class, true, scope: Feature::serializeScope($ada)));
+        $set->execute(new UpdateFeatureValueData(ReportsFeature::class, false, scope: Feature::serializeScope($alan)));
+        $set->execute(new UpdateFeatureValueData(BetaDashboardFeature::class, false, scope: Feature::serializeScope($grace)));
+        $set->execute(new UpdateFeatureValueData('dark-mode', true, scope: Feature::serializeScope($admin)));
+        $set->execute(new UpdateFeatureValueData('dark-mode', true, scope: Feature::serializeScope($grace)));
+        $set->execute(new UpdateFeatureValueData('checkout-button-color', 'green', scope: Feature::serializeScope($ada)));
 
         // Plain string scopes, such as a tenant or an API client.
-        $set->execute('checkout-button-color', 'tenant:acme', 'purple');
-        $set->execute(ExternalWritesFeature::class, 'tenant:acme', true);
+        $set->execute(new UpdateFeatureValueData('checkout-button-color', 'purple', scope: 'tenant:acme'));
+        $set->execute(new UpdateFeatureValueData(ExternalWritesFeature::class, true, scope: 'tenant:acme'));
     }
 }

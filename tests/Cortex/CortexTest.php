@@ -7,8 +7,10 @@ use Laravel\Ai\Tools\Request;
 use Laravel\Mcp\Server\Transport\FakeTransporter;
 use Laravel\Pennant\Feature;
 use RefactorCircus\Cortex\Domains\McpServer\Actions\CreateMcpInstructionVersionAction;
+use RefactorCircus\Cortex\Domains\McpServer\Data\CreateMcpInstructionVersionData;
 use RefactorCircus\Cortex\Domains\McpServer\Services\McpServerRegistry;
 use RefactorCircus\Cortex\Domains\Tool\Actions\CreateToolDescriptionVersionAction;
+use RefactorCircus\Cortex\Domains\Tool\Data\CreateToolDescriptionVersionData;
 use RefactorCircus\Cortex\Domains\Tool\Services\ToolRegistry;
 use RefactorCircus\Keystone\Cortex\CortexIntegration;
 use RefactorCircus\Keystone\Packages\PackageRegistry;
@@ -56,13 +58,13 @@ it('registers the server under the configured name', function (): void {
 });
 
 it('serves the instructions published in Cortex', function (): void {
-    app(CreateMcpInstructionVersionAction::class)->execute('pennantplus', ['content' => 'Never purge a feature.', 'publish' => true]);
+    app(CreateMcpInstructionVersionAction::class)->execute('pennantplus', new CreateMcpInstructionVersionData(content: 'Never purge a feature.', publish: true));
 
     expect((new PennantPlusServer(new FakeTransporter))->createContext()->instructions)->toBe('Never purge a feature.');
 });
 
 it('serves tool descriptions published in Cortex, to MCP clients and agents alike', function (): void {
-    app(CreateToolDescriptionVersionAction::class)->execute('list-features-tool', ['content' => 'List our rollout flags.', 'publish' => true]);
+    app(CreateToolDescriptionVersionAction::class)->execute('list-features-tool', new CreateToolDescriptionVersionData(content: 'List our rollout flags.', publish: true));
 
     expect(app(ListFeaturesTool::class)->description())->toBe('List our rollout flags.')
         ->and(app(ToolRegistry::class)->get('list-features-tool')->description())->toBe('List our rollout flags.');

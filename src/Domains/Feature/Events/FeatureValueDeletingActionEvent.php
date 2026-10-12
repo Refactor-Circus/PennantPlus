@@ -7,6 +7,7 @@ namespace RefactorCircus\PennantPlus\Domains\Feature\Events;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use RefactorCircus\Keystone\Contracts\ActionStartingEvent;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\DeleteFeatureValueData;
 
 /**
  * A feature flag's stored value is about to be forgotten for a scope.
@@ -17,7 +18,7 @@ final class FeatureValueDeletingActionEvent implements ActionStartingEvent
     use SerializesModels;
 
     public function __construct(
-        public string $feature,
+        public DeleteFeatureValueData $data,
         /** The scope as Pennant serializes it. */
         public string $scope,
     ) {}

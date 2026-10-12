@@ -248,7 +248,7 @@ class AtriumPluginTest extends TestCase
 
         $this->actingAs($ada)->getJson(route('atrium.pennant.scopes', ['type' => User::class, 'q' => 'bob']))
             ->assertOk()
-            ->assertExactJson(['data' => [['id' => (string) $bob->getKey(), 'title' => 'bob@example.com']]]);
+            ->assertExactJson(['data' => [['id' => (string) $bob->getKey(), 'title' => 'bob@example.com', 'scope' => Feature::serializeScope($bob)]]]);
 
         $this->actingAs($ada)->getJson(route('atrium.pennant.scopes', ['type' => User::class, 'q' => (string) $ada->getKey()]))
             ->assertJsonPath('data.0.id', (string) $ada->getKey());

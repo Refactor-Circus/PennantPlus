@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Atrium\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,7 +12,11 @@ use RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess;
 use RefactorCircus\PennantPlus\Atrium\Http\Requests\DeleteFeatureValueRequest;
 use RefactorCircus\PennantPlus\Atrium\Http\Requests\PurgeFeatureRequest;
 use RefactorCircus\PennantPlus\Atrium\Http\Requests\UpdateFeatureValueRequest;
+use RefactorCircus\PennantPlus\Domains\Feature\Actions\ListFeatureValuesAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\ListFeatureValuesData;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Scope\Actions\SearchScopeModelsAction;
+use RefactorCircus\PennantPlus\Domains\Scope\Data\SearchScopeModelsData;
 
 class FeatureFlagController
 {
@@ -21,7 +24,10 @@ class FeatureFlagController
 
     public function index(Request $request): View
     {
-        $this->authorize($request);
+        // Asked once: the page's controls are shown on the same answer.
+        $manages = FeatureFlagAccess::allows($request);
+
+        abort_unless($manages, 403);
 
         $filters = [
             'feature' => $request->string('feature')->toString(),
@@ -36,11 +42,14 @@ class FeatureFlagController
 
         return view($view, [
             'supported' => $supported,
+            'manages' => $manages,
             'filters' => $filters,
             'features' => $this->features->features(),
             'scopeModels' => $this->features->scopeModels(),
             'scopeFilterOptions' => $supported ? $this->features->scopeFilterOptions() : [],
-            'values' => $supported ? $this->features->paginate($filters)->withQueryString() : null,
+            'values' => $supported
+                ? app(ListFeatureValuesAction::class)->execute(ListFeatureValuesData::from($request->all()))->withQueryString()
+                : null,
         ]);
     }
 
@@ -52,20 +61,8 @@ class FeatureFlagController
     {
         $this->authorize($request);
 
-        $scope = $this->features->scopeModel($request->string('type')->toString());
-
-        abort_if($scope === null, 404);
-
-        $term = trim($request->string('q')->toString());
-
         return new JsonResponse([
-            'data' => $term === '' ? [] : $scope->find($term)
-                ->map(fn (Model $model): array => [
-                    'id' => $scope->keyOf($model),
-                    'title' => $scope->titleFor($model),
-                ])
-                ->values()
-                ->all(),
+            'data' => app(SearchScopeModelsAction::class)->execute(SearchScopeModelsData::from($request->all())),
         ]);
     }
 

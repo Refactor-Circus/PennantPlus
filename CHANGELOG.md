@@ -2,12 +2,34 @@
 
 ## [Unreleased](https://github.com/Refactor-Circus/PennantPlus/commits/main)
 
+### Changed
+
+- Faster listing: `ListFeaturesAction` (`GET features`, `list-features-tool`) summarises every feature with two queries via the new `FeatureFlagManager::summaries(array $features)` instead of two per feature; `summary()` uses it. Feature directory discovery is scanned once per process and each Pennant store is told about the classes once.
+- The model types that have stored values (`FeatureFlagManager::scopeTypes()`, the dashboard's scope filter, `GET scopes`) are cached for the new `pennantplus.scope_types_cache_seconds` (default 300, 0 disables); the update, delete and purge Actions forget the cache (`FeatureFlagManager::forgetScopeTypes()`).
+- Setting a global value forgets the other scopes' values after the global value commits, in chunks of `FeatureFlagManager::FORGET_CHUNK` (1000) ids, instead of one unbounded delete inside the transaction. Should it fail part way, the global value stands; run the update again.
+- The Atrium page asks `FeatureFlagAccess::allows()` once per page and passes `$manages` to its view, rather than once per table row; the `@pennantplusManages` directive is unchanged for published views.
+- The configured scope models are built once per `pennantplus.scopes` value and looked up by class or type in one step.
+- The `pennantplus` driver stores an unresolved global value without reading it a second time.
+
 ### Breaking
+
+- Actions take their input as `final readonly` Data objects (on `RefactorCircus\Keystone\Data\Data`) instead of strings and arrays, and their validation `rules()` move onto those Data classes: `CheckFeatureData`, `DeleteFeatureValueData`, `ListFeatureValuesData`, `PurgeFeatureData`, `ShowFeatureData` and `UpdateFeatureValueData` in `Domains\Feature\Data`, `SearchScopeModelsData` in `Domains\Scope\Data`. Build one with `new` for values you vouch for, or with `XData::from($input)` to validate untrusted input. The scope is picked on the Data the same way as over the API: `scope`, or `scopeType` with `scopeId`. For example, `$action->execute($feature, $scope, $value)` becomes `$action->execute(new UpdateFeatureValueData($feature, $value, scope: $scope))`. `ListFeaturesAction` and `ListScopeTypesAction` take no input and no longer declare `rules()`.
+- MCP tools answering with a resource wrap it under `data`: `show-feature-tool` and `set-feature-value-tool` answer `{"data": {...}}` (as the HTTP API does), and `list-feature-values-tool`'s `meta` also carries `per_page`.
+- The starting events of the write Actions carry the input Data: `FeatureValueUpdatingActionEvent($data, $scope)` (was `($feature, $scope, $value)`), `FeatureValueDeletingActionEvent($data, $scope)` (was `($feature, $scope)`) and `FeaturePurgingActionEvent($data)` (was `($feature)`); read the feature as `$event->data->feature`.
+- Guests are answered 401 instead of 403 when the `pennantplus.ability` check refuses them (Keystone's request base); signed-in users still get 403.
 
 - Moved to the Refactor Circus organisation: the package is now `refactor-circus/pennantplus` with the PHP namespace `RefactorCircus\PennantPlus` (it was `jayi/pennantplus` and `JayI\PennantPlus`). Update `composer.json` requirements and `use` statements. Old class names are not kept as aliases, so stored values written under them - polymorphic `*_type` columns, audit subjects, Pennant feature names - need updating to the new names.
 
 ### Added
 
+- An optional, publishable migration (`--tag=pennantplus-migrations`, not part of `--tag=pennantplus`, never auto-run) adding `(scope, name)`, `(updated_at)` and `(name, updated_at)` indexes to the managed store's Pennant table; recommended with the `pennantplus` driver.
+- Every Action now fires a starting and a finished event, reads included: `FeaturesListing`/`FeaturesListed`, `FeatureShowing`/`FeatureShown`, `FeatureChecking`/`FeatureChecked`, `FeatureValuesListing`/`FeatureValuesListed` (in `Domains\Feature\Events`) and `ScopeTypesListing`/`ScopeTypesListed`, `ScopeModelsSearching`/`ScopeModelsSearched` (in `Domains\Scope\Events`), each suffixed `ActionEvent`. They are reads, so the audit log does not record them; the check and search pairs say so by implementing Keystone's `Contracts\ReadActionEvent`.
+- `FeatureFlagManager::transaction()` runs feature value writes in one transaction on the managed Pennant store's connection (not the default connection), flushing Pennant's in-memory cache if it rolls back; the update, delete and purge Actions use it, so a failed write leaves every value as it was and fires no finished event.
+- Every list and show event implements Keystone's `Contracts\ReadActionEvent`, as the check and search events already did.
+- `tests/ArchTest.php` checks that Actions write inside a transaction and that any Eloquent model fires an event for every lifecycle hook.
+- Every MCP tool that answers with structured content declares an `outputSchema()`; the API resources extend `RefactorCircus\Keystone\Http\Resources\JsonResource` and describe their fields with `schema()`.
+- `list-feature-values-tool` and `GET values` accept `per_page` (1-100, default 25).
+- An `audit.enabled` config key: false keeps PennantPlus out of the audit log, and its history off, even while refactor-circus/keen is installed.
 - The package's section in Atrium's sidebar rail has its own icon (`flag`) and a fixed place in the rail.
 - An **Audit log** link in the package's sidebar group, opening its own audit log in Atrium (`/atrium/history/pennantplus`), shown while an audit log (refactor-circus/keen) is installed and to those who may read the package's history.
 
@@ -109,6 +131,7 @@
 
 ### Changed
 
+- The architecture test's transaction check counts Pennant's own write calls (`activate`, `deactivate`, `forget`, `purge`, ...), so a write Action without a transaction fails it.
 - Requires PHP 8.5 (it was 8.4). Dependency constraints are raised to their latest releases, including Laravel 13.35, Testbench 11.3 and Pest 5.3; CI tests PHP 8.5 only.
 - The Atrium **Feature flags** page follows Atrium's screen conventions: every action is an icon button with its label as tooltip, a value's active state is a status dot (`data-status="active|inactive"`), and the navigation item uses the Heroicons `flag` icon. Requires `refactor-circus/atrium` with the icon-button and status-dot components.
 - Status and validation messages on the Feature flags page show through `x-atrium::flash`; the Atrium form requests flash `status` instead of `atrium.status`, and the status alert's test id is `flash-status` instead of `pennant-status`.

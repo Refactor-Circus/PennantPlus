@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Gate;
+use Laravel\Mcp\Server\Transport\FakeTransporter;
 use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
 use RefactorCircus\PennantPlus\Mcp\Tools\ListPennantPlusHistoryTool;
 
@@ -17,13 +18,15 @@ it('lists the history tool on the MCP server under the package name', function (
         ->and(app(ListPennantPlusHistoryTool::class)->name())->toBe('list-pennantplus-history-tool');
 });
 
-it('reports through the history tool that no audit log is installed', function (): void {
-    mcpTool(ListPennantPlusHistoryTool::class)->assertHasErrors(['No audit log is installed']);
+it('offers the history tool only while PennantPlus audits', function (): void {
+    expect((new PennantPlusServer(new FakeTransporter))->createContext()->tools()->contains(fn (mixed $tool): bool => $tool instanceof ListPennantPlusHistoryTool))->toBeFalse();
 });
 
 it('guards the history with the management ability', function (): void {
     Gate::define('manage-flags', fn (): bool => false);
     config()->set('pennantplus.ability', 'manage-flags');
 
-    $this->getJson(route('pennantplus.history.index'))->assertForbidden();
+    $this->getJson(route('pennantplus.history.index'))->assertUnauthorized();
+
+    $this->actingAs(makeUser())->getJson(route('pennantplus.history.index'))->assertForbidden();
 });

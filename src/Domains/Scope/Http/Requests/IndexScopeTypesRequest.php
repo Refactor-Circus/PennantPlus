@@ -10,11 +10,6 @@ use RefactorCircus\PennantPlus\Http\Request;
 
 final class IndexScopeTypesRequest extends Request
 {
-    public function rules(): array
-    {
-        return ListScopeTypesAction::rules();
-    }
-
     public function persist(): JsonResponse
     {
         return new JsonResponse(['data' => app(ListScopeTypesAction::class)->execute()]);

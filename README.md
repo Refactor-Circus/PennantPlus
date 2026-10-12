@@ -35,6 +35,17 @@ The driver reads stored values one scope at a time:
 - Pennant flushes the loaded values with its own cache: `Feature::flushCache()`, which runs at the start of each Octane request, task and tick and after each queued job.
 - Every write through the driver flushes them too.
 
+### Recommended indexes
+
+Pennant's `features` table only has a unique index on `(name, scope)`, which cannot serve the driver's per-scope read (`where scope = ?`) or the dashboard's newest-first listing. PennantPlus owns no tables, so it ships the indexes as an optional migration that is never run unless you publish it:
+
+```bash
+php artisan vendor:publish --tag="pennantplus-migrations"
+php artisan migrate
+```
+
+It adds `(scope, name)`, `(updated_at)` and `(name, updated_at)` to the managed store's table (`pennantplus.store`, else Pennant's default store), named after the table (`features_scope_name_index`, ...). It is recommended for any store using the `pennantplus` driver. Publishing everything with `--tag=pennantplus` leaves it out.
+
 Pair it with features whose user value follows the global one:
 
 ```php
@@ -84,7 +95,7 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 | GET | `features/{feature}` | One feature, plus its resolved global value |
 | GET | `features/{feature}/check` | How the feature resolves for a scope, and whether the FeatureGate lets it through |
 | DELETE | `features/{feature}` | Purge every stored value |
-| GET | `values` | Stored values, filtered by `feature`, `scope`, `scope_id`; paginated |
+| GET | `values` | Stored values, filtered by `feature`, `scope`, `scope_id`; paginated (`page`, `per_page` up to 100, default 25) |
 | PUT | `values` | Store `{feature, scope…, value}`; a global value purges every other scope's value |
 | DELETE | `values` | Forget one scope's value |
 | GET | `scopes` | Scope types |
@@ -92,11 +103,13 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 
 Feature names that are class names contain backslashes: URL-encode them.
 
-`GET history` serves PennantPlus's audit entries, newest first, through refactor-circus/keystone (route name `pennantplus.history.index`). It answers 404 until `refactor-circus/keen` is installed.
+Guests are answered 401 and signed-in users the ability refuses 403.
+
+`GET history` serves PennantPlus's audit entries, newest first, through refactor-circus/keystone (route name `pennantplus.history.index`). It answers 404 until `refactor-circus/keen` is installed, or while `pennantplus.audit.enabled` is false.
 
 ## MCP server
 
-`RefactorCircus\PennantPlus\Mcp\PennantPlusServer` exposes the same operations as ten tools behind ToolSearch: `list-features-tool`, `show-feature-tool`, `check-feature-tool`, `purge-feature-tool`, `list-feature-values-tool`, `set-feature-value-tool` (value JSON-encoded), `forget-feature-value-tool`, `list-scope-types-tool`, `search-scope-models-tool`, and `list-pennantplus-history-tool` (the audit history, when refactor-circus/keen is installed). Enable its transports under `pennantplus.mcp`, or register it yourself behind your own auth.
+`RefactorCircus\PennantPlus\Mcp\PennantPlusServer` exposes the same operations as ten tools behind ToolSearch: `list-features-tool`, `show-feature-tool`, `check-feature-tool`, `purge-feature-tool`, `list-feature-values-tool`, `set-feature-value-tool` (value JSON-encoded), `forget-feature-value-tool`, `list-scope-types-tool`, `search-scope-models-tool`, and `list-pennantplus-history-tool` (the audit history, offered only while refactor-circus/keen is installed and `pennantplus.audit.enabled` is on). Every tool that answers with structured content declares its output schema; tools answering with one record or a list put it under `data`, as the HTTP API does. Enable its transports under `pennantplus.mcp`, or register it yourself behind your own auth.
 
 ## Cortex
 
@@ -127,9 +140,28 @@ About how it works:
 
 PennantPlus stands on [`refactor-circus/keystone`](https://github.com/Refactor-Circus/Keystone), the shared runtime of the Refactor Circus package suite, which Composer installs with it. Its action events implement `RefactorCircus\Keystone\Contracts\ActionStartingEvent` and `ActionFinishedEvent`, so one listener can follow every package in the suite.
 
+The Actions take their input as Data objects (`RefactorCircus\Keystone\Data\Data`) that carry their own validation rules. Build one with `new` for values your code vouches for, or with `from()` to validate untrusted input:
+
+```php
+use Laravel\Pennant\Feature;
+use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\UpdateFeatureValueData;
+
+app(UpdateFeatureValueAction::class)->execute(
+    new UpdateFeatureValueData('new-checkout', true, scope: Feature::serializeScope($user)),
+);
+
+// Validated, picking the scope by type and key as the API does:
+app(UpdateFeatureValueAction::class)->execute(UpdateFeatureValueData::from([
+    'feature' => 'new-checkout',
+    'scope_type' => 'global',
+    'value' => false,
+]));
+```
+
 ## Atrium dashboard
 
-With `refactor-circus/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`). It lists stored values by feature and scope, sets a value for the global scope, a configured model or any string scope, forgets a value, and purges a feature. Setting a **global** value forgets every other scope's value of that feature (`pennantplus.purge_scopes_on_global_update`). It uses the same `store`, `ability`, `features` and `scopes` settings as the API.
+With `refactor-circus/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`). It lists stored values by feature and scope, sets a value for the global scope, a configured model or any string scope, forgets a value, and purges a feature. Setting a **global** value forgets every other scope's value of that feature (`pennantplus.purge_scopes_on_global_update`); those values are deleted once the global value is committed, a thousand rows per query, so a heavily overridden feature never holds one long transaction. The scope filter's list of model types that have values is cached for `pennantplus.scope_types_cache_seconds` (300 by default, 0 to read it every time); writes through PennantPlus forget it at once. It uses the same `store`, `ability`, `features` and `scopes` settings as the API.
 
 The page follows Atrium's screen conventions: actions are icon buttons (the label is the tooltip and accessible name), a value's state is a status dot (`success` active, `neutral` inactive; read it from `data-status`), and the navigation item uses the Heroicons `flag` icon. The navigation item, the set-value form, each row's toggle and forget buttons, and the purge button are shown only when `pennantplus.ability` allows the viewer - asked through `RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess::allows()`, the same check the page's controller and form requests refuse with. Your own published views can use it as `@pennantplusManages ... @endpennantplusManages`.
 
@@ -141,7 +173,7 @@ PennantPlus deliberately has no Pennant feature switch of its own for the Featur
 
 PennantPlus also answers Atrium's feature checks - `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware - through the feature gate, so `global_only` and the bypass callback apply in the dashboard exactly as they do on routes and MCP tools. To have Pennant decide only global visibility and leave per-user visibility to permissions (`NavItem::can()`), set `pennantplus.gate.global_only` to `['*']`. Set `pennantplus.atrium.resolve_features` to `false` to leave Atrium's feature resolver alone.
 
-Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, and `FeaturePurging`/`FeaturePurged` (each suffixed `ActionEvent`).
+Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, and `FeaturePurging`/`FeaturePurged` (each suffixed `ActionEvent`). Reads fire a pair too - `FeaturesListing`/`FeaturesListed`, `FeatureShowing`/`FeatureShown`, `FeatureChecking`/`FeatureChecked`, `FeatureValuesListing`/`FeatureValuesListed`, and in `Domains\Scope\Events` `ScopeTypesListing`/`ScopeTypesListed` and `ScopeModelsSearching`/`ScopeModelsSearched` - which the audit log does not record. Every read pair implements Keystone's `ReadActionEvent` marker, which is how the audit log knows they only read. Starting events carry the action's input Data (`FeatureValueUpdating` and `FeatureValueDeleting` also the scope as Pennant serializes it). Each write runs in one database transaction on the Pennant store's connection; finished events fire only once it commits, and a failed write fires none.
 
 ### Atrium's theme switcher
 

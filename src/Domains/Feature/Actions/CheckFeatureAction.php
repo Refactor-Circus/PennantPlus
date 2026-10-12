@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\CheckFeatureData;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureCheckedActionEvent;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureCheckingActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureGate;
-use RefactorCircus\PennantPlus\Domains\Scope\Support\ScopeRules;
 
 /**
  * Resolve a feature for one scope: the global value, the scope's value, and
@@ -21,35 +23,40 @@ final class CheckFeatureAction
     ) {}
 
     /**
-     * @return array<string, mixed>
+     * @return array{feature: string, scope: string, global: mixed, value: mixed, active: bool, gate: bool|null}
      */
-    public static function rules(): array
+    public function execute(CheckFeatureData $data): array
     {
-        return [
-            'feature' => ['required', 'string', 'max:255'],
-            ...ScopeRules::optional(),
-        ];
+        FeatureCheckingActionEvent::dispatch($data);
+
+        $result = $this->perform($data);
+
+        FeatureCheckedActionEvent::dispatch($data);
+
+        return $result;
     }
 
     /**
      * @return array{feature: string, scope: string, global: mixed, value: mixed, active: bool, gate: bool|null}
      */
-    public function execute(string $feature, string $scope): array
+    private function perform(CheckFeatureData $data): array
     {
+        $scope = $this->features->scopeFromInput($data->toArray());
+
         $scopeValue = $this->features->scopeValue($scope);
 
         $store = $this->features->store();
 
-        $value = $store->for([$scopeValue])->value($feature);
+        $value = $store->for([$scopeValue])->value($data->feature);
 
         return [
-            'feature' => $feature,
+            'feature' => $data->feature,
             'scope' => $scope,
-            'global' => $store->for([null])->value($feature),
+            'global' => $store->for([null])->value($data->feature),
             'value' => $value,
             'active' => $value !== false,
             'gate' => $scopeValue === null || $scopeValue instanceof Authenticatable
-                ? $this->gate->allows($feature, $scopeValue)
+                ? $this->gate->allows($data->feature, $scopeValue)
                 : null,
         ];
     }

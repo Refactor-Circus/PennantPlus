@@ -20,7 +20,7 @@
             <x-atrium::alert variant="warning" data-testid="pennant-unsupported">{{ __('pennantplus::pennantplus.unsupported') }}</x-atrium::alert>
         @endunless
 
-        @pennantplusManages
+        @if ($manages)
         <x-atrium::card :title="__('pennantplus::pennantplus.set_value')">
             <form method="POST" action="{{ route('atrium.pennant.values.update') }}" class="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-5" data-testid="pennant-set-value">
                 @csrf
@@ -89,7 +89,7 @@
                 </x-atrium::form.actions>
             </form>
         </x-atrium::card>
-        @endpennantplusManages
+        @endif
 
         @if ($supported)
             <form method="GET" action="{{ route('atrium.pennant.index') }}" class="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennant-filters">
@@ -116,9 +116,9 @@
                             <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.scope') }}</x-atrium::table.cell>
                             <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.value') }}</x-atrium::table.cell>
                             <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.updated') }}</x-atrium::table.cell>
-                            @pennantplusManages
+                            @if ($manages)
                                 <x-atrium::table.cell heading />
-                            @endpennantplusManages
+                            @endif
                         </x-atrium::table.row>
                     </x-slot:head>
 
@@ -142,7 +142,7 @@
                                 </div>
                             </x-atrium::table.cell>
                             <x-atrium::table.cell>{{ $value->updatedAt?->diffForHumans() }}</x-atrium::table.cell>
-                            @pennantplusManages
+                            @if ($manages)
                             <x-atrium::table.cell>
                                 <div class="flex justify-end gap-2">
                                     <form method="POST" action="{{ route('atrium.pennant.values.update') }}">
@@ -165,7 +165,7 @@
                                     </form>
                                 </div>
                             </x-atrium::table.cell>
-                            @endpennantplusManages
+                            @endif
                         </x-atrium::table.row>
                     @endforeach
                 </x-atrium::table>
@@ -174,7 +174,7 @@
             @endif
 
             @if ($filters['feature'] !== '')
-                @pennantplusManages
+                @if ($manages)
                 <form method="POST" action="{{ route('atrium.pennant.features.purge') }}"
                       onsubmit="return confirm(@js(__('pennantplus::pennantplus.purge_confirm')))">
                     @csrf
@@ -183,7 +183,7 @@
                     <x-atrium::icon-button icon="trash" :label="__('pennantplus::pennantplus.purge').': '.$filters['feature']"
                                            type="submit" variant="danger" size="sm" tooltip="right" data-testid="pennant-purge" />
                 </form>
-                @endpennantplusManages
+                @endif
             @endif
         @endif
 

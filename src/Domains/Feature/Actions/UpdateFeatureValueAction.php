@@ -5,43 +5,35 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Laravel\Pennant\Feature;
 use RefactorCircus\PennantPlus\Domains\Feature\Data\StoredFeatureValue;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\UpdateFeatureValueData;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueUpdatedActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueUpdatingActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use RefactorCircus\PennantPlus\Domains\Scope\Support\ScopeRules;
 
 /**
- * Store a feature's value for one serialized scope, through Pennant, so its
+ * Store a feature's value for one scope, through Pennant, so its
  * cache and events stay in step with the write.
  *
  * Setting the global value forgets every other scope's stored value when
  * `pennantplus.purge_scopes_on_global_update` is on, so no scope keeps a
- * value from before the change.
+ * value from before the change. Those values are forgotten once the global
+ * value is committed, in chunks, so a feature with many overrides holds no
+ * long transaction; should forgetting fail part way, the global value stands
+ * and the action can simply be run again.
  */
 final class UpdateFeatureValueAction
 {
     public function __construct(private readonly FeatureFlagManager $features) {}
 
-    /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
+    public function execute(UpdateFeatureValueData $data): StoredFeatureValue
     {
-        return [
-            'feature' => ['required', 'string', 'max:255'],
-            ...ScopeRules::required(),
-            'value' => ['present'],
-        ];
-    }
+        $scope = $this->features->scopeFromInput($data->toArray());
 
-    public function execute(string $feature, string $scope, mixed $value): StoredFeatureValue
-    {
-        FeatureValueUpdatingActionEvent::dispatch($feature, $scope, $value);
+        FeatureValueUpdatingActionEvent::dispatch($data, $scope);
 
-        $result = $this->perform($feature, $scope, $value);
+        $result = $this->perform($data->feature, $scope, $data->value);
 
         FeatureValueUpdatedActionEvent::dispatch($result);
 
@@ -52,15 +44,17 @@ final class UpdateFeatureValueAction
     {
         $global = $scope === Feature::serializeScope(null);
 
-        DB::transaction(function () use ($feature, $scope, $value, $global): void {
+        $this->features->transaction(function () use ($feature, $scope, $value, $global): void {
             $this->features->store()
                 ->for([$global ? null : $scope])
                 ->activate($feature, $value);
-
-            if ($global && $this->features->purgesScopesOnGlobalUpdate()) {
-                $this->features->forgetScopedValues($feature);
-            }
         });
+
+        if ($global && $this->features->purgesScopesOnGlobalUpdate()) {
+            $this->features->forgetScopedValues($feature);
+        }
+
+        $this->features->forgetScopeTypes();
 
         return new StoredFeatureValue($feature, $scope, $value, Carbon::now());
     }

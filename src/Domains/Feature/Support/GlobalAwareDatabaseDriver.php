@@ -9,9 +9,11 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Laravel\Pennant\Contracts\HasFlushableCache;
 use Laravel\Pennant\Drivers\DatabaseDriver;
 use Laravel\Pennant\Feature;
+use RuntimeException;
 
 /**
  * Pennant's database driver, minus the rows that only repeat the global value.
@@ -67,13 +69,7 @@ class GlobalAwareDatabaseDriver extends DatabaseDriver implements HasFlushableCa
         }
 
         if ($scope === null) {
-            $value = parent::get($feature, null);
-
-            if (array_key_exists($feature, $this->featureStateResolvers)) {
-                $this->remember($serializedScope, $feature, $value);
-            }
-
-            return $value;
+            return $this->resolveGlobal($feature, $serializedScope);
         }
 
         $value = $this->resolveValue($feature, $scope);
@@ -192,6 +188,37 @@ class GlobalAwareDatabaseDriver extends DatabaseDriver implements HasFlushableCa
             ->pluck('value', 'name')
             ->map(fn (mixed $value): string => (string) $value)
             ->all();
+    }
+
+    /**
+     * Resolve and store a global value known not to be stored yet: the
+     * global scope's stored values were just read, so it is inserted without
+     * asking the database again. Should another process store it first, its
+     * value is read back and answered instead.
+     */
+    private function resolveGlobal(string $feature, string $serializedScope): mixed
+    {
+        $value = $this->resolveValue($feature, null);
+
+        if ($value === $this->unknownFeatureValue) {
+            return false;
+        }
+
+        try {
+            $this->insert($feature, null, $value);
+        } catch (UniqueConstraintViolationException $exception) {
+            $record = $this->retrieve($feature, null);
+
+            if (! is_object($record) || ! isset($record->value) || ! is_string($record->value)) {
+                throw new RuntimeException('Unable to insert feature value into the database.', previous: $exception);
+            }
+
+            $value = json_decode($record->value, flags: JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR);
+        }
+
+        $this->remember($serializedScope, $feature, $value);
+
+        return $value;
     }
 
     /**

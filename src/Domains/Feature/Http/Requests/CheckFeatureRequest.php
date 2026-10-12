@@ -6,24 +6,20 @@ namespace RefactorCircus\PennantPlus\Domains\Feature\Http\Requests;
 
 use Illuminate\Http\JsonResponse;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\CheckFeatureAction;
-use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\CheckFeatureData;
 use RefactorCircus\PennantPlus\Http\Request;
 
 final class CheckFeatureRequest extends Request
 {
     public function rules(): array
     {
-        return CheckFeatureAction::rules();
+        return CheckFeatureData::rules();
     }
 
     public function persist(): JsonResponse
     {
-        /** @var array<string, mixed> $data */
-        $data = $this->validated();
-
         return new JsonResponse(['data' => app(CheckFeatureAction::class)->execute(
-            $this->string('feature')->toString(),
-            app(FeatureFlagManager::class)->scopeFromInput($data),
+            CheckFeatureData::fromValidated($this->validated()),
         )]);
     }
 

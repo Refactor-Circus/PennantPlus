@@ -9,6 +9,7 @@ use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use RefactorCircus\Keystone\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Resources\FeatureResource;
 use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ShowFeatureMcpRequest;
 
 #[Description('Show one feature flag: its stored global value, override count, and resolved global value.')]
@@ -24,5 +25,10 @@ final class ShowFeatureTool extends Tool
         return [
             'feature' => $schema->string()->description('The feature name, e.g. a feature class name.')->required(),
         ];
+    }
+
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return FeatureResource::structuredSchema($schema);
     }
 }

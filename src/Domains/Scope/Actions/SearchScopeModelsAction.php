@@ -7,6 +7,9 @@ namespace RefactorCircus\PennantPlus\Domains\Scope\Actions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
+use RefactorCircus\PennantPlus\Domains\Scope\Data\SearchScopeModelsData;
+use RefactorCircus\PennantPlus\Domains\Scope\Events\ScopeModelsSearchedActionEvent;
+use RefactorCircus\PennantPlus\Domains\Scope\Events\ScopeModelsSearchingActionEvent;
 
 /**
  * Models of a configured scope type whose key or search columns match a term.
@@ -16,32 +19,19 @@ final class SearchScopeModelsAction
     public function __construct(private readonly FeatureFlagManager $features) {}
 
     /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
-    {
-        return [
-            'type' => ['required', 'string', 'max:255'],
-            'q' => ['sometimes', 'nullable', 'string', 'max:255'],
-        ];
-    }
-
-    /**
      * @return array<int, array{id: string, title: string, scope: string}>
      *
      * @throws ModelNotFoundException when the type is not a configured scope model
      */
-    public function execute(string $type, ?string $term = null): array
+    public function execute(SearchScopeModelsData $data): array
     {
-        $scope = $this->features->scopeModel($type) ?? throw new ModelNotFoundException(sprintf('No scope model [%s] is configured.', $type));
+        $scope = $this->features->scopeModel($data->type) ?? throw new ModelNotFoundException(sprintf('No scope model [%s] is configured.', $data->type));
 
-        $term = trim((string) $term);
+        ScopeModelsSearchingActionEvent::dispatch($data);
 
-        if ($term === '') {
-            return [];
-        }
+        $term = trim((string) $data->q);
 
-        return $scope->find($term)
+        $models = $term === '' ? [] : $scope->find($term)
             ->map(fn (Model $model): array => [
                 'id' => $scope->keyOf($model),
                 'title' => $scope->titleFor($model),
@@ -49,5 +39,9 @@ final class SearchScopeModelsAction
             ])
             ->values()
             ->all();
+
+        ScopeModelsSearchedActionEvent::dispatch($data);
+
+        return $models;
     }
 }

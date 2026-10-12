@@ -38,7 +38,7 @@ it('shows a feature with parity to the http payload', function (): void {
 
     $http = $this->getJson(route('pennantplus.features.show', 'beta'))->json('data');
 
-    mcpTool(ShowFeatureTool::class, ['feature' => 'beta'])->assertOk()->assertStructuredContent($http);
+    mcpTool(ShowFeatureTool::class, ['feature' => 'beta'])->assertOk()->assertStructuredContent(['data' => $http]);
 });
 
 it('checks a feature for a model scope with parity to the http payload', function (): void {
@@ -64,7 +64,7 @@ it('sets a JSON-encoded global value and forgets user values', function (): void
 
     mcpTool(SetFeatureValueTool::class, ['feature' => 'beta', 'scope_type' => 'global', 'value' => 'false'])
         ->assertOk()
-        ->assertStructuredContent(fn (AssertableJson $json) => $json->where('global', true)->where('value', false)->etc());
+        ->assertStructuredContent(fn (AssertableJson $json) => $json->where('data.global', true)->where('data.value', false)->etc());
 
     $this->assertDatabaseMissing('features', ['name' => 'beta', 'scope' => Feature::serializeScope($ada)]);
 });
@@ -103,7 +103,7 @@ it('lists stored values with page metadata', function (): void {
 
     mcpTool(ListFeatureValuesTool::class, ['scope' => User::class])
         ->assertOk()
-        ->assertStructuredContent(['data' => $http, 'meta' => ['current_page' => 1, 'last_page' => 1, 'total' => 1]]);
+        ->assertStructuredContent(['data' => $http, 'meta' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 25, 'total' => 1]]);
 });
 
 it('lists scope types and searches their models', function (): void {

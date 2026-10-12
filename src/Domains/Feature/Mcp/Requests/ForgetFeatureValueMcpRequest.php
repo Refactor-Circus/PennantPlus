@@ -6,21 +6,19 @@ namespace RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests;
 
 use Laravel\Mcp\Response;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\DeleteFeatureValueAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\DeleteFeatureValueData;
 use RefactorCircus\PennantPlus\Mcp\Request;
 
 final class ForgetFeatureValueMcpRequest extends Request
 {
     protected function rules(): array
     {
-        return DeleteFeatureValueAction::rules();
+        return DeleteFeatureValueData::rules();
     }
 
     protected function handle(array $validated): Response
     {
-        app(DeleteFeatureValueAction::class)->execute(
-            (string) $validated['feature'],
-            $this->features()->scopeFromInput($validated),
-        );
+        app(DeleteFeatureValueAction::class)->execute(DeleteFeatureValueData::fromValidated($validated));
 
         return Response::text('Feature value forgotten.');
     }

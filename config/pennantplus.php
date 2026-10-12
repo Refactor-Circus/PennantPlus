@@ -44,6 +44,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Scope type cache
+    |--------------------------------------------------------------------------
+    |
+    | How many seconds the model types that have stored values (the
+    | dashboard's scope filter and `GET scopes`) are cached in the
+    | default cache store. Writes through PennantPlus forget the cache at
+    | once; a model type first stored elsewhere shows up when it expires.
+    | 0 reads them afresh every time.
+    |
+    */
+
+    'scope_types_cache_seconds' => 300,
+
+    /*
+    |--------------------------------------------------------------------------
     | Feature discovery
     |--------------------------------------------------------------------------
     |
@@ -111,6 +126,27 @@ return [
 
     'atrium' => [
         'resolve_features' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auditing
+    |--------------------------------------------------------------------------
+    |
+    | PennantPlus keeps no audit log of its own. With refactor-circus/keen
+    | installed, Keen records every flag change PennantPlus makes, and
+    | PennantPlus shows the history on its Atrium page, its
+    | `GET /pennantplus/history` route and its history MCP tool. Without Keen
+    | none of that exists.
+    |
+    | enabled: Set to false to keep PennantPlus out of the audit log even
+    |          while Keen is installed: Keen records nothing of PennantPlus's,
+    |          and PennantPlus offers no history.
+    |
+    */
+
+    'audit' => [
+        'enabled' => true,
     ],
 
     /*

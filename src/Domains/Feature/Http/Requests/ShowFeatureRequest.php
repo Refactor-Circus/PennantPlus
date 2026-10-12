@@ -6,6 +6,7 @@ namespace RefactorCircus\PennantPlus\Domains\Feature\Http\Requests;
 
 use Illuminate\Http\JsonResponse;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\ShowFeatureAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\ShowFeatureData;
 use RefactorCircus\PennantPlus\Domains\Feature\Http\Resources\FeatureResource;
 use RefactorCircus\PennantPlus\Http\Request;
 
@@ -13,13 +14,13 @@ final class ShowFeatureRequest extends Request
 {
     public function rules(): array
     {
-        return ShowFeatureAction::rules();
+        return ShowFeatureData::rules();
     }
 
     public function persist(): JsonResponse
     {
         return (new FeatureResource(
-            app(ShowFeatureAction::class)->execute($this->string('feature')->toString()),
+            app(ShowFeatureAction::class)->execute(ShowFeatureData::fromValidated($this->validated())),
         ))->response();
     }
 

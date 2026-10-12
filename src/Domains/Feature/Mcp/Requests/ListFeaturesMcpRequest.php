@@ -11,15 +11,8 @@ use RefactorCircus\PennantPlus\Mcp\Request;
 
 final class ListFeaturesMcpRequest extends Request
 {
-    protected function rules(): array
-    {
-        return ListFeaturesAction::rules();
-    }
-
     protected function handle(array $validated): ResponseFactory
     {
-        return $this->structuredCollection(
-            FeatureResource::collection(app(ListFeaturesAction::class)->execute())->resolve(),
-        );
+        return FeatureResource::collection(app(ListFeaturesAction::class)->execute())->toStructuredResponse();
     }
 }

@@ -9,6 +9,7 @@ use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use RefactorCircus\Keystone\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Resources\FeatureValueResource;
 use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\SetFeatureValueMcpRequest;
 use RefactorCircus\PennantPlus\Domains\Scope\Concerns\DescribesScope;
 
@@ -29,5 +30,10 @@ final class SetFeatureValueTool extends Tool
             ...$this->scopeSchema($schema),
             'value' => $schema->string()->description('The value, JSON-encoded: "true", "false", or any richer JSON value.')->required(),
         ];
+    }
+
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return FeatureValueResource::structuredSchema($schema);
     }
 }

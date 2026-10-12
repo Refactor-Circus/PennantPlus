@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
-use Laravel\Pennant\Feature;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\ShowFeatureData;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureShowingActionEvent;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureShownActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
@@ -15,22 +17,18 @@ final class ShowFeatureAction
     public function __construct(private readonly FeatureFlagManager $features) {}
 
     /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
-    {
-        return [
-            'feature' => ['required', 'string', 'max:255'],
-        ];
-    }
-
-    /**
      * @return array{name: string, defined: bool, global: mixed, global_stored: bool, overrides: int, value: mixed}
      */
-    public function execute(string $feature): array
+    public function execute(ShowFeatureData $data): array
     {
-        $value = $this->features->store()->for([null])->value($feature);
+        FeatureShowingActionEvent::dispatch($data);
 
-        return [...$this->features->summary($feature), 'value' => $value];
+        $value = $this->features->store()->for([null])->value($data->feature);
+
+        $feature = [...$this->features->summary($data->feature), 'value' => $value];
+
+        FeatureShownActionEvent::dispatch($data);
+
+        return $feature;
     }
 }

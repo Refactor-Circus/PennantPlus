@@ -9,6 +9,8 @@ use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use RefactorCircus\Keystone\Mcp\Tool;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\ListFeatureValuesData;
+use RefactorCircus\PennantPlus\Domains\Feature\Http\Resources\FeatureValueResource;
 use RefactorCircus\PennantPlus\Domains\Feature\Mcp\Requests\ListFeatureValuesMcpRequest;
 
 #[Description('List stored feature flag values, newest first. Filter by feature and by scope: "global", "other", or a model type (optionally one model key). Paginated.')]
@@ -25,7 +27,11 @@ final class ListFeatureValuesTool extends Tool
             'feature' => $schema->string()->description('Only values of this feature.'),
             'scope' => $schema->string()->description('Scope filter: "global", "other", or a model type.'),
             'scope_id' => $schema->string()->description('With a model type, only this model key; with "other", only this string scope.'),
-            'page' => $schema->integer()->description('Page number, starting at 1.')->min(1),
-        ];
+        ] + ListFeatureValuesData::pagination()->schema($schema);
+    }
+
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return FeatureValueResource::collectionSchema($schema, ListFeatureValuesData::pagination());
     }
 }

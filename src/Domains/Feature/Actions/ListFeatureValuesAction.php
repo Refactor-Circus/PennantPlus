@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\ListFeatureValuesData;
 use RefactorCircus\PennantPlus\Domains\Feature\Data\StoredFeatureValue;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValuesListedActionEvent;
+use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValuesListingActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
 
 /**
@@ -16,27 +19,20 @@ final class ListFeatureValuesAction
     public function __construct(private readonly FeatureFlagManager $features) {}
 
     /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
-    {
-        return [
-            'feature' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'scope' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'scope_id' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'page' => ['sometimes', 'integer', 'min:1'],
-        ];
-    }
-
-    /**
-     * The scope filter is `global`, `other`, or a model type as Pennant
-     * stores it.
-     *
-     * @param  array{feature?: string|null, scope?: string|null, scope_id?: string|null}  $filters
      * @return LengthAwarePaginator<int, StoredFeatureValue>
      */
-    public function execute(array $filters = [], ?int $page = null): LengthAwarePaginator
+    public function execute(ListFeatureValuesData $filters = new ListFeatureValuesData): LengthAwarePaginator
     {
-        return $this->features->paginate($filters, page: $page);
+        FeatureValuesListingActionEvent::dispatch($filters);
+
+        $values = $this->features->paginate([
+            'feature' => $filters->feature,
+            'scope' => $filters->scope,
+            'scope_id' => $filters->scopeId,
+        ], $filters->perPage, $filters->page);
+
+        FeatureValuesListedActionEvent::dispatch($filters);
+
+        return $values;
     }
 }

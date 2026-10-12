@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RefactorCircus\PennantPlus\Domains\Feature\Actions;
 
-use Illuminate\Support\Facades\DB;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\PurgeFeatureData;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeaturePurgedActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeaturePurgingActionEvent;
 use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
@@ -16,29 +16,21 @@ final class PurgeFeatureAction
 {
     public function __construct(private readonly FeatureFlagManager $features) {}
 
-    /**
-     * @return array<string, mixed>
-     */
-    public static function rules(): array
+    public function execute(PurgeFeatureData $data): void
     {
-        return [
-            'feature' => ['required', 'string', 'max:255'],
-        ];
-    }
+        FeaturePurgingActionEvent::dispatch($data);
 
-    public function execute(string $feature): void
-    {
-        FeaturePurgingActionEvent::dispatch($feature);
+        $this->perform($data->feature);
 
-        $this->perform($feature);
-
-        FeaturePurgedActionEvent::dispatch($feature);
+        FeaturePurgedActionEvent::dispatch($data->feature);
     }
 
     private function perform(string $feature): void
     {
-        DB::transaction(function () use ($feature): void {
+        $this->features->transaction(function () use ($feature): void {
             $this->features->store()->purge($feature);
         });
+
+        $this->features->forgetScopeTypes();
     }
 }

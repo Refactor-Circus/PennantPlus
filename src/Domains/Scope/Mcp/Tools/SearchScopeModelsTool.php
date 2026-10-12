@@ -26,4 +26,15 @@ final class SearchScopeModelsTool extends Tool
             'q' => $schema->string()->description('The search term: a model key or part of a searched column.'),
         ];
     }
+
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return [
+            'data' => $schema->array()->items($schema->object([
+                'id' => $schema->string()->description('The model key.')->required(),
+                'title' => $schema->string()->required(),
+                'scope' => $schema->string()->description('The scope exactly as Pennant stores it, to pass as scope to other tools.')->required(),
+            ]))->required(),
+        ];
+    }
 }

@@ -8,8 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use RefactorCircus\Atrium\Http\Requests\Request;
 use RefactorCircus\PennantPlus\Atrium\Http\Requests\Concerns\AuthorizesFeatureFlags;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
-use RefactorCircus\PennantPlus\Domains\Feature\Services\FeatureFlagManager;
-use RefactorCircus\PennantPlus\Domains\Scope\Support\ScopeRules;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\UpdateFeatureValueData;
 
 /**
  * Stores a feature flag value for a scope from the dashboard form.
@@ -28,23 +27,12 @@ class UpdateFeatureValueRequest extends Request
      */
     public function rules(): array
     {
-        return [
-            'feature' => ['required', 'string', 'max:255'],
-            ...ScopeRules::required(),
-            'value' => ['required', 'json'],
-        ];
+        return UpdateFeatureValueData::rules(encoded: true);
     }
 
     public function persist(): RedirectResponse
     {
-        /** @var array{feature: string, value: string} $data */
-        $data = $this->validated();
-
-        app(UpdateFeatureValueAction::class)->execute(
-            $data['feature'],
-            app(FeatureFlagManager::class)->scopeFromInput($data),
-            json_decode($data['value'], true, flags: JSON_THROW_ON_ERROR),
-        );
+        app(UpdateFeatureValueAction::class)->execute(UpdateFeatureValueData::fromEncoded($this->validated()));
 
         return redirect()->to($this->redirectToFeatureFlags())
             ->with('status', __('pennantplus::pennantplus.value_saved'));

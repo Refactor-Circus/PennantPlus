@@ -23,4 +23,15 @@ final class ListScopeTypesTool extends Tool
     {
         return [];
     }
+
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return [
+            'data' => $schema->array()->items($schema->object([
+                'type' => $schema->string()->description('"global", "other", or a model type as Pennant stores it.')->required(),
+                'label' => $schema->string()->required(),
+                'searchable' => $schema->boolean()->description('Whether search-scope-models can find its models.')->required(),
+            ]))->required(),
+        ];
+    }
 }

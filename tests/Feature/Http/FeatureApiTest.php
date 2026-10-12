@@ -159,6 +159,12 @@ it('checks the configured ability on every endpoint', function (): void {
     config(['pennantplus.ability' => 'manageFeatures']);
     Gate::define('manageFeatures', fn (?User $user): bool => false);
 
+    // Guests are told to sign in; signed-in users without the ability are refused.
+    $this->getJson(route('pennantplus.features.index'))->assertUnauthorized();
+    $this->putJson(route('pennantplus.values.update'), ['feature' => 'beta', 'scope_type' => 'global', 'value' => true])->assertUnauthorized();
+
+    $this->actingAs(makeUser());
+
     $this->getJson(route('pennantplus.features.index'))->assertForbidden();
     $this->putJson(route('pennantplus.values.update'), ['feature' => 'beta', 'scope_type' => 'global', 'value' => true])->assertForbidden();
 

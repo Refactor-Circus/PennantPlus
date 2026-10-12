@@ -6,12 +6,13 @@ use Illuminate\Support\Facades\Event;
 use Laravel\Pennant\Feature;
 use RefactorCircus\Keystone\Audit\Contracts\Auditable;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\UpdateFeatureValueAction;
+use RefactorCircus\PennantPlus\Domains\Feature\Data\UpdateFeatureValueData;
 use RefactorCircus\PennantPlus\Domains\Feature\Events\FeatureValueUpdatedActionEvent;
 
 it('records a stored flag value as an entry about no model, with the feature, scope and value', function (): void {
     Event::fake([FeatureValueUpdatedActionEvent::class]);
 
-    app(UpdateFeatureValueAction::class)->execute('new-checkout', Feature::serializeScope(null), ['tier' => 'gold']);
+    app(UpdateFeatureValueAction::class)->execute(new UpdateFeatureValueData('new-checkout', ['tier' => 'gold'], scope: Feature::serializeScope(null)));
 
     Event::assertDispatched(FeatureValueUpdatedActionEvent::class, function (FeatureValueUpdatedActionEvent $event): bool {
         expect($event)->toBeInstanceOf(Auditable::class)
