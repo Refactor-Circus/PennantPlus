@@ -1,0 +1,13 @@
+id: 2026-10-27-2338-drop-paratest-conflict-pin
+title: Drop the paratest conflict pin and require Pest ^5.3.4
+status: merged
+review_passes: 1
+created: 2026-10-27
+pr: { number: 7, url: "https://github.com/Refactor-Circus/PennantPlus/pull/7" }
+ticket: { provider: github, key: "#6", url: "https://github.com/Refactor-Circus/PennantPlus/issues/6" }
+runs:
+  - { workflow: ring-master-factory, run_id: wf_cdd95f44-3bc, result: needs-decision, round: 0, date: 2026-10-28 }
+standards:
+  refactor-circus/standards:
+    version: dev-main
+    reference: a5b675396232
