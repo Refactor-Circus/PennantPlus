@@ -1,0 +1,8 @@
+- id: Q-001
+  question: "Create this GitHub issue as drafted? Title: Drop brianium/paratest conflict for Pest 5.3. Problem: the brianium/paratest entry in composer.json conflict blocks resolving with Pest 5.3 (paratest 7.26.1+); Cortex#13 waits on it. Outcome: remove that one entry, nothing else. Acceptance: composer resolves with Pest 5.3, composer test passes, CI lanes P8.5 and L13.* green. Out of scope: any pest/phpunit constraint change."
+  options:
+    - Create the ticket as drafted
+    - Skip the ticket and go straight to shaping
+  recommendation: Create the ticket as drafted
+  evidence: "RingMaster task 30 asks for a single-entry removal from composer.json; the ticket stage is on."
+  source: ticket
