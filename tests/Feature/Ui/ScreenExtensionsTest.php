@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+// Namespaced so the marker component compiles as a class: Blade treats a
+// component name without a backslash as a view.
+
+namespace RefactorCircus\PennantPlus\Tests\Feature\Ui;
+
+use FilesystemIterator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Http\Request;
@@ -11,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 use Laravel\Pennant\Feature;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RefactorCircus\Atrium\Domains\Navigation\Data\NavItem;
 use RefactorCircus\Atrium\Domains\Screens\Data\ResolvedScreen;
 use RefactorCircus\Atrium\Domains\Screens\Data\Screen;
@@ -21,6 +29,7 @@ use RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow;
 use RefactorCircus\PennantPlus\Atrium\Http\Controllers\FeatureFlagController;
 use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
 use RefactorCircus\PennantPlus\Domains\Feature\Data\StoredFeatureValue;
+use SplFileInfo;
 
 /*
  * The feature flags page declares itself as the `pennantplus.features` list
@@ -54,7 +63,7 @@ const PENNANT_SCREEN_SLOTS = ['header.actions', 'before', 'row.actions', 'after'
 beforeEach(function (): void {
     Gate::define('viewAtrium', fn (?User $user): bool => true);
 
-    Blade::component('pennant-marker', PennantScreenMarker::class);
+    Blade::component(PennantScreenMarker::class, 'pennant-marker');
 });
 
 /**

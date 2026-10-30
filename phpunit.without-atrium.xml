@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     The package with refactor-circus/atrium absent. Run it through
-    `composer test:without-atrium` (Pest with `--test-directory=tests/WithoutAtrium`,
-    so the main suite's tests/Pest.php is not booted).
+    `composer test:without-atrium`, which points Pest's test directory at
+    tests/WithoutAtrium so the main suite's tests/Pest.php is not booted.
+    XML comments may not hold a double hyphen, so the option is not spelled
+    out here.
 -->
 <phpunit
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
