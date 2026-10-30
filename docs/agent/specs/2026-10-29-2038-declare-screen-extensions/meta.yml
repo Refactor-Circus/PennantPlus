@@ -1,7 +1,8 @@
 id: 2026-10-29-2038-declare-screen-extensions
 title: 'Declare screen extensions'
-status: approved
+status: in-review
 created: '2026-10-29 20:38'
+pr: { number: 9, url: https://github.com/Refactor-Circus/PennantPlus/pull/9 }
 standards:
   refactor-circus/standards:
     version: dev-main
