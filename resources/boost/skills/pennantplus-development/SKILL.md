@@ -117,7 +117,23 @@ With `refactor-circus/atrium` installed, Atrium discovers a **Feature flags** pa
 
 The page uses Atrium icon buttons and status dots (`data-status="active|inactive"`, assert on that and on `data-testid`, not on button text) and a `flag` nav icon. Its navigation item and every control (set value, toggle, forget, purge) show only when `RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess::allows()` passes - the same `pennantplus.ability` check the controller and form requests refuse with; published views can use `@pennantplusManages ... @endpennantplusManages`. Do not gate the page behind a Pennant feature: that could lock admins out of turning it back on.
 
-The page uses only `x-atrium::*` components and Atrium's safelisted utilities (no package stylesheet): `x-atrium::form.combobox` for the feature fields (`data-testid="pennant-feature"` / `"pennant-filter-feature"`, free text allowed), `x-atrium::flash` for status (`data-testid="flash-status"`), and `x-atrium::audit-trail source="pennantplus"`, which shows the package-wide history once refactor-circus/keen is installed. A stored value's audit entry has no subject and carries `feature`, `scope` and `value` context (`FeatureValueUpdatedActionEvent` implements `RefactorCircus\Keystone\Audit\Contracts\Auditable`).
+The page uses only `x-atrium::*` components and Atrium's safelisted utilities (no package stylesheet): `x-atrium::form.combobox` for the feature fields (`data-testid="pennant-feature"` / `"pennant-filter-feature"`, free text allowed), `x-atrium::flash` for status (`data-testid="flash-status"`). The page has no history and no history nav item of its own: history comes from refactor-circus/keen, whose History section joins the page through the screen extensions registry. A stored value's audit entry has no subject and carries `feature`, `scope` and `value` context (`FeatureValueUpdatedActionEvent` implements `RefactorCircus\Keystone\Audit\Contracts\Auditable`).
+
+The page declares itself on Atrium's screen extensions registry as the `pennantplus.features` list screen (needs Atrium 0.2.0 or later; PennantPlus's composer `conflict` refuses older Atrium, which stays optional). To add to it, register from a service provider's `boot()` with `Atrium::screens()`, never from PennantPlus:
+
+- Slots: `header.actions`, `before`, `after`, and the row slot `row.actions` (once per stored value, in a trailing cell). No built-in tabs, so the page is `overview`; a registered tab opens with `?tab={key}` and replaces the page except `header.actions`.
+- The page's own `pennantplus.ability` check runs first: a refused viewer gets 403 and no `authorize()` or resolver runs.
+- `permission()` is a Gate ability (no policies): `Gate::forUser($request->user())->allows($permission)`, given the row in `row.actions`; guests are asked as guests and an undefined ability is denied.
+- A `row.actions` `$record` is a `RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow`: an unsaved, read-only model (save, reload and delete throw) whose `$record->value` is the `StoredFeatureValue`. `$record->value->scope` is the raw scope Pennant stores (`App\Models\User|5`), so treat it as an identifier, not display text.
+- Never throw from a registered closure or view: the page administers production flags, and a throwing tab panel fails it with a 500.
+
+```php
+Atrium::screens()->section('pennantplus.features', 'row.actions', SectionDefinition::make('acme.flag-owner')
+    ->view('acme::flag-owner')
+    ->permission('acme.flag-owner'));
+
+Gate::define('acme.flag-owner', fn (User $user, FeatureValueRow $row): bool => $user->owns($row->value->feature));
+```
 
 PennantPlus also registers Atrium's feature resolver, so `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware ask `FeatureGate::allows($feature, $request->user())`. `pennantplus.gate.global_only => ['*']` makes Pennant decide only global visibility, leaving per-user visibility to Atrium's `can()` permissions. `pennantplus.atrium.resolve_features => false` opts out.
 

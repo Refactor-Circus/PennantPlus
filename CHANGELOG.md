@@ -17,6 +17,8 @@
 - MCP tools answering with a resource wrap it under `data`: `show-feature-tool` and `set-feature-value-tool` answer `{"data": {...}}` (as the HTTP API does), and `list-feature-values-tool`'s `meta` also carries `per_page`.
 - The starting events of the write Actions carry the input Data: `FeatureValueUpdatingActionEvent($data, $scope)` (was `($feature, $scope, $value)`), `FeatureValueDeletingActionEvent($data, $scope)` (was `($feature, $scope)`) and `FeaturePurgingActionEvent($data)` (was `($feature)`); read the feature as `$event->data->feature`.
 - Guests are answered 401 instead of 403 when the `pennantplus.ability` check refuses them (Keystone's request base); signed-in users still get 403.
+- With Atrium installed, PennantPlus needs Atrium 0.2.0 or later, the first release with the screen extensions registry: `composer.json` gains a `conflict` on `refactor-circus/atrium` below it. Atrium stays optional.
+- The Feature flags page no longer renders its own history, and the package's navigation no longer links an audit log: history comes from refactor-circus/keen, which adds its History section to the page through the screen extensions registry. The `pennantplus/history` route and the `list-pennantplus-history-tool` MCP tool stay.
 
 - Moved to the Refactor Circus organisation: the package is now `refactor-circus/pennantplus` with the PHP namespace `RefactorCircus\PennantPlus` (it was `jayi/pennantplus` and `JayI\PennantPlus`). Update `composer.json` requirements and `use` statements. Old class names are not kept as aliases, so stored values written under them - polymorphic `*_type` columns, audit subjects, Pennant feature names - need updating to the new names.
 
@@ -31,7 +33,8 @@
 - `list-feature-values-tool` and `GET values` accept `per_page` (1-100, default 25).
 - An `audit.enabled` config key: false keeps PennantPlus out of the audit log, and its history off, even while refactor-circus/keen is installed.
 - The package's section in Atrium's sidebar rail has its own icon (`flag`) and a fixed place in the rail.
-- An **Audit log** link in the package's sidebar group, opening its own audit log in Atrium (`/atrium/history/pennantplus`), shown while an audit log (refactor-circus/keen) is installed and to those who may read the package's history.
+- The Feature flags page declares itself on Atrium's screen extensions registry as the `pennantplus.features` list screen, so other packages add tabs (opened with `?tab=`) and sections in `header.actions`, `before`, `after` and the row slot `row.actions` without PennantPlus knowing them. An extension's `permission()` is a Gate ability, given the row in `row.actions`; each row is a `RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow`, an unsaved, read-only model carrying the `StoredFeatureValue` as `$record->value`. Nothing registered changes nothing, except a trailing actions cell in each value row for those who manage flags.
+- A `WithoutAtrium` suite (`composer test:without-atrium`, run by `composer test`) and a CI job with Atrium uninstalled prove PennantPlus boots, serves its API and its MCP server without Atrium.
 
 ### Breaking
 
@@ -125,7 +128,6 @@
 - The Atrium **Feature flags** page, moved from `refactor-circus/atrium` (`RefactorCircus\PennantPlus\Atrium`). Setting a global value purges every other scope's value of that feature.
 - Atrium's feature checks (`NavItem::feature()`, plugin `features()`, the `atrium.feature` middleware) are answered by the feature gate when Atrium is installed. Turn it off with `pennantplus.atrium.resolve_features`.
 - The Atrium page's feature field and feature filter are searchable comboboxes over the discovered features (Atrium's `x-atrium::form.combobox`; the package's own combobox partial and `atriumPennantFeature` script are gone).
-- The Feature flags page shows PennantPlus's history through `<x-atrium::audit-trail source="pennantplus" />` once an audit log (refactor-circus/keen) is installed, package-wide even when one feature is filtered.
 - `FeatureValueUpdatedActionEvent` implements refactor-circus/keystone's `Auditable`, so its audit entry has no subject and records the `feature`, `scope` and `value`.
 - Cortex integration: when `refactor-circus/cortex` is installed, the MCP server registers with it as `pennantplus` and every tool joins its tool registry (tagged `pennantplus`), so agents can use them. Published instruction and tool description overrides are served to MCP clients and agents. Configured under `pennantplus.cortex`; Cortex stays optional.
 
