@@ -1,6 +1,8 @@
 # Release Notes
 
-## [Unreleased](https://github.com/Refactor-Circus/PennantPlus/commits/main)
+## [Unreleased](https://github.com/Refactor-Circus/PennantPlus/compare/v0.1.0...main)
+
+## [v0.1.0](https://github.com/Refactor-Circus/PennantPlus/commits/v0.1.0) - 2026-10-30
 
 ### Changed
 
