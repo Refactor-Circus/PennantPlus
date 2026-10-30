@@ -177,7 +177,7 @@ Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\
 
 ### Screen extensions
 
-The Feature flags page declares itself on Atrium's screen extensions registry as the `pennantplus.features` list screen, so other packages add tabs and sections to it without PennantPlus knowing they exist. This needs Atrium 0.2.0 or later, the first release with the registry: Composer refuses an older Atrium through PennantPlus's `conflict` entry. Atrium itself stays optional.
+The Feature flags page declares itself on Atrium's screen extensions registry as the `pennantplus.features` list screen, so other packages add tabs and sections to it without PennantPlus knowing they exist. This needs Atrium 0.1.0 or later, the first release with the registry: Composer refuses an older Atrium through PennantPlus's `conflict` entry. Atrium itself stays optional.
 
 - **Slots.** `header.actions` (beside the page title), `before` (above the page), `after` (below it) and the row slot `row.actions`, rendered once per stored value in a trailing cell of the values table. Keen's History section lands in `after` by default.
 - **Tabs.** The page has no built-in tabs, so it is the `overview` tab. A registered tab opens with `?tab={key}` and replaces the page; only `header.actions` stays. An unknown `?tab=` opens `overview`.
