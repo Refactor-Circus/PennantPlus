@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Model;
 use RefactorCircus\Keystone\Testing\Arch;
+use RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow;
 
 const PENNANTPLUS_DOMAINS = __DIR__.'/../src/Domains';
 
@@ -62,8 +63,8 @@ arch('every action lives in a domain Actions directory')
     )))
     ->toBeEmpty();
 
-// PennantPlus stores its values through Pennant and has no models today;
-// this catches any Eloquent model added under src.
+// PennantPlus stores its values through Pennant and has no models with a
+// table today; this catches any Eloquent model added under src.
 arch('every model fires an event for every lifecycle hook')
     ->expect(fn (): array => Arch::modelEventGaps(array_values(array_filter(
         array_map(
@@ -73,8 +74,20 @@ arch('every model fires an event for every lifecycle hook')
                 fn (SplFileInfo $file): bool => $file->getExtension() === 'php' && ctype_upper($file->getFilename()[0]),
             ),
         ),
-        fn (string $class): bool => class_exists($class) && is_subclass_of($class, Model::class) && ! (new ReflectionClass($class))->isAbstract(),
+        // FeatureValueRow is the screen's unsaved row stand-in for a stored
+        // value, not a model with a table: it has no lifecycle to announce,
+        // and it refuses to save, reload or delete (see the rule below).
+        fn (string $class): bool => $class !== FeatureValueRow::class
+            && class_exists($class) && is_subclass_of($class, Model::class) && ! (new ReflectionClass($class))->isAbstract(),
     ))))
+    ->toBeEmpty();
+
+arch('the excluded row stand-in is final and has no table')
+    ->expect(fn (): array => array_values(array_filter([
+        (new ReflectionClass(FeatureValueRow::class))->isFinal() ? null : 'not final',
+        (new ReflectionProperty(FeatureValueRow::class, 'table'))->getDeclaringClass()->getName() === Model::class ? null : 'declares $table',
+        (new ReflectionMethod(FeatureValueRow::class, 'getTable'))->getDeclaringClass()->getName() === Model::class ? null : 'overrides getTable()',
+    ])))
     ->toBeEmpty();
 
 arch('requests validate once, with the Data rules, and build from what they validated')
