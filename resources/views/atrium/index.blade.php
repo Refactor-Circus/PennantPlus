@@ -10,189 +10,213 @@
         + [FeatureFlagManager::OTHER => __('pennantplus::pennantplus.other')];
 @endphp
 
+{{-- The `pennantplus.features` screen: header actions always render; an open
+     registered tab's panel replaces the page, and `before`, `after` and each
+     value row's `row.actions` render only around it. A row is the value's
+     FeatureValueRow, so row sections receive it as `$record`. --}}
 <x-atrium::layout :title="__('pennantplus::pennantplus.features')">
-    <x-atrium::page-header :title="__('pennantplus::pennantplus.features')" :description="__('pennantplus::pennantplus.description')" />
+    <x-atrium::page-header :title="__('pennantplus::pennantplus.features')" :description="__('pennantplus::pennantplus.description')">
+        @if ($resolved->sections('header.actions') !== [])
+            <x-slot:actions>
+                <x-atrium::screen-sections :screen="$resolved" slot="header.actions" />
+            </x-slot:actions>
+        @endif
+    </x-atrium::page-header>
 
     <div class="mt-5 flex flex-col gap-5">
+        <x-atrium::screen-tabs :screen="$resolved" />
+
         <x-atrium::flash />
 
-        @unless ($supported)
-            <x-atrium::alert variant="warning" data-testid="pennant-unsupported">{{ __('pennantplus::pennantplus.unsupported') }}</x-atrium::alert>
-        @endunless
+        @if ($resolved->openRegisteredTab !== null)
+            <x-atrium::screen-tab-panel :screen="$resolved" />
+        @else
+            <x-atrium::screen-sections :screen="$resolved" slot="before" />
 
-        @if ($manages)
-        <x-atrium::card :title="__('pennantplus::pennantplus.set_value')">
-            <form method="POST" action="{{ route('atrium.pennant.values.update') }}" class="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-5" data-testid="pennant-set-value">
-                @csrf
-                @method('PUT')
+            @unless ($supported)
+                <x-atrium::alert variant="warning" data-testid="pennant-unsupported">{{ __('pennantplus::pennantplus.unsupported') }}</x-atrium::alert>
+            @endunless
 
-                {{-- Free text is still submitted, so features Pennant has not discovered remain usable. --}}
-                <x-atrium::form.combobox name="feature" id="atrium-pennant-feature" :label="__('pennantplus::pennantplus.feature')"
-                                         :options="$features" :empty="__('pennantplus::pennantplus.no_features')"
-                                         required data-testid="pennant-feature" />
+            @if ($manages)
+            <x-atrium::card :title="__('pennantplus::pennantplus.set_value')">
+                <form method="POST" action="{{ route('atrium.pennant.values.update') }}" class="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-5" data-testid="pennant-set-value">
+                    @csrf
+                    @method('PUT')
 
-                <div class="contents" x-data="atriumPennantScope(@js(route('atrium.pennant.scopes')), @js(old('scope_type', FeatureFlagManager::GLOBAL)))">
-                    <x-atrium::form.select name="scope_type" id="atrium-pennant-scope-type" :label="__('pennantplus::pennantplus.scope')"
-                                           :options="$formScopeOptions" :selected="FeatureFlagManager::GLOBAL"
-                                           x-model="type" x-on:change="clear()" />
+                    {{-- Free text is still submitted, so features Pennant has not discovered remain usable. --}}
+                    <x-atrium::form.combobox name="feature" id="atrium-pennant-feature" :label="__('pennantplus::pennantplus.feature')"
+                                             :options="$features" :empty="__('pennantplus::pennantplus.no_features')"
+                                             required data-testid="pennant-feature" />
 
-                    {{-- Global needs no ID; the other scope kinds each render their own field. --}}
-                    <div class="w-full" x-show="type === @js(FeatureFlagManager::GLOBAL)"></div>
+                    <div class="contents" x-data="atriumPennantScope(@js(route('atrium.pennant.scopes')), @js(old('scope_type', FeatureFlagManager::GLOBAL)))">
+                        <x-atrium::form.select name="scope_type" id="atrium-pennant-scope-type" :label="__('pennantplus::pennantplus.scope')"
+                                               :options="$formScopeOptions" :selected="FeatureFlagManager::GLOBAL"
+                                               x-model="type" x-on:change="clear()" />
 
-                    <template x-if="type === @js(FeatureFlagManager::OTHER)">
-                        <x-atrium::form.input name="scope_id" id="atrium-pennant-scope-string" :label="__('pennantplus::pennantplus.scope_string')" />
-                    </template>
+                        {{-- Global needs no ID; the other scope kinds each render their own field. --}}
+                        <div class="w-full" x-show="type === @js(FeatureFlagManager::GLOBAL)"></div>
 
-                    <template x-if="type !== @js(FeatureFlagManager::GLOBAL) && type !== @js(FeatureFlagManager::OTHER)">
-                        <div class="relative flex w-full flex-col gap-1.5 text-on-surface dark:text-on-surface-dark" x-on:click.outside="open = false">
-                            <label for="atrium-pennant-scope-search" class="w-fit text-sm font-medium text-on-surface-strong dark:text-on-surface-dark-strong">{{ __('pennantplus::pennantplus.find_model') }}</label>
+                        <template x-if="type === @js(FeatureFlagManager::OTHER)">
+                            <x-atrium::form.input name="scope_id" id="atrium-pennant-scope-string" :label="__('pennantplus::pennantplus.scope_string')" />
+                        </template>
 
-                            <input type="hidden" name="scope_id" x-bind:value="id">
+                        <template x-if="type !== @js(FeatureFlagManager::GLOBAL) && type !== @js(FeatureFlagManager::OTHER)">
+                            <div class="relative flex w-full flex-col gap-1.5 text-on-surface dark:text-on-surface-dark" x-on:click.outside="open = false">
+                                <label for="atrium-pennant-scope-search" class="w-fit text-sm font-medium text-on-surface-strong dark:text-on-surface-dark-strong">{{ __('pennantplus::pennantplus.find_model') }}</label>
 
-                            <div x-show="id !== ''" class="flex h-9 items-center justify-between gap-2 rounded-radius border border-outline bg-surface px-3 text-sm text-on-surface-strong shadow-xs dark:border-outline-dark dark:bg-white/5 dark:text-on-surface-dark-strong">
-                                <span x-text="title" data-testid="pennant-scope-picked"></span>
-                                <button type="button" class="cursor-pointer rounded-md px-1.5 py-0.5 text-xs font-medium text-on-surface transition-colors hover:bg-on-surface-strong/5 hover:text-on-surface-strong dark:text-on-surface-dark dark:hover:bg-white/5 dark:hover:text-on-surface-dark-strong" x-on:click="clear()">{{ __('pennantplus::pennantplus.clear') }}</button>
-                            </div>
+                                <input type="hidden" name="scope_id" x-bind:value="id">
 
-                            <div x-show="id === ''">
-                                <x-atrium::search-input wrapper="w-full" id="atrium-pennant-scope-search" autocomplete="off"
-                                                        :placeholder="__('pennantplus::pennantplus.find_model_placeholder')"
-                                                        x-model="query" x-on:input.debounce.250ms="search()" x-on:focus="open = results.length > 0"
-                                                        data-testid="pennant-scope-search" />
-                            </div>
-
-                            <ul x-show="open" x-cloak
-                                class="absolute top-full z-20 mt-1.5 max-h-60 w-full overflow-y-auto rounded-radius border border-outline bg-surface p-1 text-sm shadow-xl dark:border-outline-dark dark:bg-surface-dark">
-                                <template x-for="result in results" x-bind:key="result.id">
-                                    <li>
-                                        <button type="button" class="flex w-full cursor-pointer justify-between gap-3 rounded-md px-2 py-1.5 text-left text-on-surface-strong transition-colors hover:bg-on-surface-strong/5 dark:text-on-surface-dark-strong dark:hover:bg-white/5"
-                                                x-on:click="pick(result)">
-                                            <span x-text="result.title"></span>
-                                            <span class="opacity-60" x-text="'#' + result.id"></span>
-                                        </button>
-                                    </li>
-                                </template>
-                                <li x-show="results.length === 0" class="px-3 py-1.5 opacity-75">{{ __('pennantplus::pennantplus.no_models') }}</li>
-                            </ul>
-
-                            @error('scope_id')
-                                <small class="text-xs text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
-                    </template>
-                </div>
-
-                <x-atrium::form.input name="value" :label="__('pennantplus::pennantplus.value')" value="true" :hint="__('pennantplus::pennantplus.value_hint')" required />
-
-                <x-atrium::form.actions>
-                    <x-atrium::icon-button icon="check" :label="__('pennantplus::pennantplus.save')" variant="primary" type="submit" data-testid="pennant-save" />
-                </x-atrium::form.actions>
-            </form>
-        </x-atrium::card>
-        @endif
-
-        @if ($supported)
-            <form method="GET" action="{{ route('atrium.pennant.index') }}" class="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennant-filters">
-                <x-atrium::form.combobox name="feature" id="atrium-pennant-filter-feature" :label="__('pennantplus::pennantplus.feature')"
-                                         :options="$features" :value="$filters['feature']" :placeholder="__('pennantplus::pennantplus.all_features')"
-                                         :empty="__('pennantplus::pennantplus.no_features')" data-testid="pennant-filter-feature" />
-                <x-atrium::form.select name="scope" id="atrium-pennant-filter-scope" :label="__('pennantplus::pennantplus.scope')"
-                                       :options="$scopeOptions" :selected="$filters['scope']" />
-                <x-atrium::form.input name="scope_id" id="atrium-pennant-filter-scope-id" :label="__('pennantplus::pennantplus.scope_id')" :value="$filters['scope_id']" />
-
-                <div class="flex gap-2">
-                    <x-atrium::icon-button icon="funnel" :label="__('pennantplus::pennantplus.filter')" variant="outline" type="submit" data-testid="pennant-filter" />
-                    <x-atrium::icon-button icon="x-mark" :label="__('pennantplus::pennantplus.reset')" :href="route('atrium.pennant.index')" data-testid="pennant-reset" />
-                </div>
-            </form>
-
-            @if ($values->isEmpty())
-                <x-atrium::empty-state :title="__('pennantplus::pennantplus.no_values')" />
-            @else
-                <x-atrium::table data-testid="pennant-values">
-                    <x-slot:head>
-                        <x-atrium::table.row>
-                            <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.feature') }}</x-atrium::table.cell>
-                            <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.scope') }}</x-atrium::table.cell>
-                            <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.value') }}</x-atrium::table.cell>
-                            <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.updated') }}</x-atrium::table.cell>
-                            @if ($manages)
-                                <x-atrium::table.cell heading />
-                            @endif
-                        </x-atrium::table.row>
-                    </x-slot:head>
-
-                    @foreach ($values as $value)
-                        <x-atrium::table.row data-testid="pennant-value">
-                            <x-atrium::table.cell class="font-medium">{{ $value->feature }}</x-atrium::table.cell>
-                            <x-atrium::table.cell>
-                                <span title="{{ $value->scope }}">{{ $value->scopeLabel() }}</span>
-                                @if ($value->title)
-                                    <span class="block text-xs opacity-75">{{ $value->title }}</span>
-                                @endif
-                            </x-atrium::table.cell>
-                            <x-atrium::table.cell>
-                                <div class="flex items-center gap-2">
-                                    <x-atrium::status-dot :variant="$value->isActive() ? 'success' : 'neutral'"
-                                                          :label="$value->isActive() ? __('pennantplus::pennantplus.active') : __('pennantplus::pennantplus.inactive')"
-                                                          :data-status="$value->isActive() ? 'active' : 'inactive'" data-testid="pennant-value-status" />
-                                    @unless (is_bool($value->value))
-                                        <code class="text-xs">{{ \Illuminate\Support\Str::limit($value->displayValue(), 60) }}</code>
-                                    @endunless
+                                <div x-show="id !== ''" class="flex h-9 items-center justify-between gap-2 rounded-radius border border-outline bg-surface px-3 text-sm text-on-surface-strong shadow-xs dark:border-outline-dark dark:bg-white/5 dark:text-on-surface-dark-strong">
+                                    <span x-text="title" data-testid="pennant-scope-picked"></span>
+                                    <button type="button" class="cursor-pointer rounded-md px-1.5 py-0.5 text-xs font-medium text-on-surface transition-colors hover:bg-on-surface-strong/5 hover:text-on-surface-strong dark:text-on-surface-dark dark:hover:bg-white/5 dark:hover:text-on-surface-dark-strong" x-on:click="clear()">{{ __('pennantplus::pennantplus.clear') }}</button>
                                 </div>
-                            </x-atrium::table.cell>
-                            <x-atrium::table.cell>{{ $value->updatedAt?->diffForHumans() }}</x-atrium::table.cell>
-                            @if ($manages)
-                            <x-atrium::table.cell>
-                                <div class="flex justify-end gap-2">
-                                    <form method="POST" action="{{ route('atrium.pennant.values.update') }}">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="feature" value="{{ $value->feature }}">
-                                        <input type="hidden" name="scope" value="{{ $value->scope }}">
-                                        <input type="hidden" name="value" value="{{ $value->isActive() ? 'false' : 'true' }}">
-                                        <x-atrium::icon-button :icon="$value->isActive() ? 'no-symbol' : 'check-circle'"
-                                                               :label="$value->isActive() ? __('pennantplus::pennantplus.deactivate') : __('pennantplus::pennantplus.activate')"
-                                                               type="submit" size="sm" variant="outline" data-testid="pennant-toggle" />
-                                    </form>
 
-                                    <form method="POST" action="{{ route('atrium.pennant.values.destroy') }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <input type="hidden" name="feature" value="{{ $value->feature }}">
-                                        <input type="hidden" name="scope" value="{{ $value->scope }}">
-                                        <x-atrium::icon-button icon="x-mark" :label="__('pennantplus::pennantplus.forget')" type="submit" size="sm" data-testid="pennant-forget" />
-                                    </form>
+                                <div x-show="id === ''">
+                                    <x-atrium::search-input wrapper="w-full" id="atrium-pennant-scope-search" autocomplete="off"
+                                                            :placeholder="__('pennantplus::pennantplus.find_model_placeholder')"
+                                                            x-model="query" x-on:input.debounce.250ms="search()" x-on:focus="open = results.length > 0"
+                                                            data-testid="pennant-scope-search" />
                                 </div>
-                            </x-atrium::table.cell>
-                            @endif
-                        </x-atrium::table.row>
-                    @endforeach
-                </x-atrium::table>
 
-                <x-atrium::pagination :paginator="$values" />
+                                <ul x-show="open" x-cloak
+                                    class="absolute top-full z-20 mt-1.5 max-h-60 w-full overflow-y-auto rounded-radius border border-outline bg-surface p-1 text-sm shadow-xl dark:border-outline-dark dark:bg-surface-dark">
+                                    <template x-for="result in results" x-bind:key="result.id">
+                                        <li>
+                                            <button type="button" class="flex w-full cursor-pointer justify-between gap-3 rounded-md px-2 py-1.5 text-left text-on-surface-strong transition-colors hover:bg-on-surface-strong/5 dark:text-on-surface-dark-strong dark:hover:bg-white/5"
+                                                    x-on:click="pick(result)">
+                                                <span x-text="result.title"></span>
+                                                <span class="opacity-60" x-text="'#' + result.id"></span>
+                                            </button>
+                                        </li>
+                                    </template>
+                                    <li x-show="results.length === 0" class="px-3 py-1.5 opacity-75">{{ __('pennantplus::pennantplus.no_models') }}</li>
+                                </ul>
+
+                                @error('scope_id')
+                                    <small class="text-xs text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </template>
+                    </div>
+
+                    <x-atrium::form.input name="value" :label="__('pennantplus::pennantplus.value')" value="true" :hint="__('pennantplus::pennantplus.value_hint')" required />
+
+                    <x-atrium::form.actions>
+                        <x-atrium::icon-button icon="check" :label="__('pennantplus::pennantplus.save')" variant="primary" type="submit" data-testid="pennant-save" />
+                    </x-atrium::form.actions>
+                </form>
+            </x-atrium::card>
             @endif
 
-            @if ($filters['feature'] !== '')
-                @if ($manages)
-                <form method="POST" action="{{ route('atrium.pennant.features.purge') }}"
-                      onsubmit="return confirm(@js(__('pennantplus::pennantplus.purge_confirm')))">
-                    @csrf
-                    @method('DELETE')
-                    <input type="hidden" name="feature" value="{{ $filters['feature'] }}">
-                    <x-atrium::icon-button icon="trash" :label="__('pennantplus::pennantplus.purge').': '.$filters['feature']"
-                                           type="submit" variant="danger" size="sm" tooltip="right" data-testid="pennant-purge" />
+            @if ($supported)
+                <form method="GET" action="{{ route('atrium.pennant.index') }}" class="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennant-filters">
+                    <x-atrium::form.combobox name="feature" id="atrium-pennant-filter-feature" :label="__('pennantplus::pennantplus.feature')"
+                                             :options="$features" :value="$filters['feature']" :placeholder="__('pennantplus::pennantplus.all_features')"
+                                             :empty="__('pennantplus::pennantplus.no_features')" data-testid="pennant-filter-feature" />
+                    <x-atrium::form.select name="scope" id="atrium-pennant-filter-scope" :label="__('pennantplus::pennantplus.scope')"
+                                           :options="$scopeOptions" :selected="$filters['scope']" />
+                    <x-atrium::form.input name="scope_id" id="atrium-pennant-filter-scope-id" :label="__('pennantplus::pennantplus.scope_id')" :value="$filters['scope_id']" />
+
+                    <div class="flex gap-2">
+                        <x-atrium::icon-button icon="funnel" :label="__('pennantplus::pennantplus.filter')" variant="outline" type="submit" data-testid="pennant-filter" />
+                        <x-atrium::icon-button icon="x-mark" :label="__('pennantplus::pennantplus.reset')" :href="route('atrium.pennant.index')" data-testid="pennant-reset" />
+                    </div>
                 </form>
+
+                @if ($values->isEmpty())
+                    <x-atrium::empty-state :title="__('pennantplus::pennantplus.no_values')" />
+                @else
+                    @php
+                        // The trailing cell holds the manager's controls and the
+                        // row sections, so it renders only when there is either.
+                        $rowCell = $manages || collect($rows)->contains(fn ($row): bool => $resolved->rowSections('row.actions', $row) !== []);
+                    @endphp
+
+                    <x-atrium::table data-testid="pennant-values">
+                        <x-slot:head>
+                            <x-atrium::table.row>
+                                <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.feature') }}</x-atrium::table.cell>
+                                <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.scope') }}</x-atrium::table.cell>
+                                <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.value') }}</x-atrium::table.cell>
+                                <x-atrium::table.cell heading>{{ __('pennantplus::pennantplus.updated') }}</x-atrium::table.cell>
+                                @if ($rowCell)
+                                    <x-atrium::table.cell heading />
+                                @endif
+                            </x-atrium::table.row>
+                        </x-slot:head>
+
+                        @foreach ($rows as $row)
+                            @php($value = $row->value)
+                            <x-atrium::table.row data-testid="pennant-value">
+                                <x-atrium::table.cell class="font-medium">{{ $value->feature }}</x-atrium::table.cell>
+                                <x-atrium::table.cell>
+                                    <span title="{{ $value->scope }}">{{ $value->scopeLabel() }}</span>
+                                    @if ($value->title)
+                                        <span class="block text-xs opacity-75">{{ $value->title }}</span>
+                                    @endif
+                                </x-atrium::table.cell>
+                                <x-atrium::table.cell>
+                                    <div class="flex items-center gap-2">
+                                        <x-atrium::status-dot :variant="$value->isActive() ? 'success' : 'neutral'"
+                                                              :label="$value->isActive() ? __('pennantplus::pennantplus.active') : __('pennantplus::pennantplus.inactive')"
+                                                              :data-status="$value->isActive() ? 'active' : 'inactive'" data-testid="pennant-value-status" />
+                                        @unless (is_bool($value->value))
+                                            <code class="text-xs">{{ \Illuminate\Support\Str::limit($value->displayValue(), 60) }}</code>
+                                        @endunless
+                                    </div>
+                                </x-atrium::table.cell>
+                                <x-atrium::table.cell>{{ $value->updatedAt?->diffForHumans() }}</x-atrium::table.cell>
+                                @if ($rowCell)
+                                <x-atrium::table.cell>
+                                    <div class="flex justify-end gap-2">
+                                        @if ($manages)
+                                        <form method="POST" action="{{ route('atrium.pennant.values.update') }}">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="feature" value="{{ $value->feature }}">
+                                            <input type="hidden" name="scope" value="{{ $value->scope }}">
+                                            <input type="hidden" name="value" value="{{ $value->isActive() ? 'false' : 'true' }}">
+                                            <x-atrium::icon-button :icon="$value->isActive() ? 'no-symbol' : 'check-circle'"
+                                                                   :label="$value->isActive() ? __('pennantplus::pennantplus.deactivate') : __('pennantplus::pennantplus.activate')"
+                                                                   type="submit" size="sm" variant="outline" data-testid="pennant-toggle" />
+                                        </form>
+
+                                        <form method="POST" action="{{ route('atrium.pennant.values.destroy') }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <input type="hidden" name="feature" value="{{ $value->feature }}">
+                                            <input type="hidden" name="scope" value="{{ $value->scope }}">
+                                            <x-atrium::icon-button icon="x-mark" :label="__('pennantplus::pennantplus.forget')" type="submit" size="sm" data-testid="pennant-forget" />
+                                        </form>
+                                        @endif
+
+                                        <x-atrium::screen-sections :screen="$resolved" slot="row.actions" :row="$row" />
+                                    </div>
+                                </x-atrium::table.cell>
+                                @endif
+                            </x-atrium::table.row>
+                        @endforeach
+                    </x-atrium::table>
+
+                    <x-atrium::pagination :paginator="$values" />
+                @endif
+
+                @if ($filters['feature'] !== '')
+                    @if ($manages)
+                    <form method="POST" action="{{ route('atrium.pennant.features.purge') }}"
+                          onsubmit="return confirm(@js(__('pennantplus::pennantplus.purge_confirm')))">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="feature" value="{{ $filters['feature'] }}">
+                        <x-atrium::icon-button icon="trash" :label="__('pennantplus::pennantplus.purge').': '.$filters['feature']"
+                                               type="submit" variant="danger" size="sm" tooltip="right" data-testid="pennant-purge" />
+                    </form>
+                    @endif
                 @endif
             @endif
-        @endif
 
-        {{--
-            Flag changes are about no model, so the history is the package's
-            own, whichever feature is filtered. Renders nothing until an audit
-            log (refactor-circus/keen) is installed.
-        --}}
-        <x-atrium::audit-trail source="pennantplus" />
+            <x-atrium::screen-sections :screen="$resolved" slot="after" />
+        @endif
     </div>
 
     @once

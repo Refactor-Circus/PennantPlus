@@ -11,12 +11,14 @@ use Laravel\Pennant\PennantServiceProvider;
 use Orchestra\Testbench\Concerns\WithLaravelMigrations;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RefactorCircus\Atrium\AtriumServiceProvider;
+use RefactorCircus\Atrium\Testing\ResetsScreenExtensions;
 use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
 use RefactorCircus\PennantPlus\PennantPlusServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
     use RefreshDatabase;
+    use ResetsScreenExtensions;
     use WithLaravelMigrations;
 
     protected function getPackageProviders($app): array
