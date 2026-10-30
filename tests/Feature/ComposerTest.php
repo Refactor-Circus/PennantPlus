@@ -56,12 +56,40 @@ it('runs the without-atrium suite in ci with atrium uninstalled', function (): v
     $job = pennantPlusWithoutAtriumJob();
 
     expect($job)->not->toBe('')
-        ->toContain('composer remove --dev refactor-circus/atrium --no-update')
+        ->toMatch('/composer remove --dev [^\n]*--no-update/')
         ->toContain('composer update')
         ->toContain('composer test:without-atrium');
 
-    expect(strpos($job, 'composer remove --dev refactor-circus/atrium --no-update'))
-        ->toBeLessThan(strpos($job, 'composer update'))
+    $remove = (int) strpos($job, 'composer remove --dev');
+
+    expect($remove)->toBeLessThan(strpos($job, 'composer update'))
         ->and(strpos($job, 'composer update'))
         ->toBeLessThan(strpos($job, 'composer test:without-atrium'));
+});
+
+it('removes atrium and every dev package that requires it in the without-atrium job', function (): void {
+    $root = dirname(__DIR__, 2);
+    $devPackages = array_keys((array) pennantPlusComposerManifest()['require-dev']);
+
+    $requiringAtrium = array_values(array_filter($devPackages, function (string $package) use ($root): bool {
+        $path = $root.'/vendor/'.$package.'/composer.json';
+
+        if (! is_file($path)) {
+            return false;
+        }
+
+        /** @var array<string, mixed> $manifest */
+        $manifest = json_decode((string) file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+
+        return array_key_exists('refactor-circus/atrium', (array) ($manifest['require'] ?? []));
+    }));
+
+    preg_match('/composer remove --dev ([^\n]*?) --no-update/', pennantPlusWithoutAtriumJob(), $match);
+    $removed = preg_split('/\s+/', $match[1] ?? '', flags: PREG_SPLIT_NO_EMPTY) ?: [];
+
+    expect($removed)->toContain('refactor-circus/atrium');
+
+    foreach ($requiringAtrium as $package) {
+        expect($removed)->toContain($package);
+    }
 });

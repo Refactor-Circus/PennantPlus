@@ -93,12 +93,14 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      # No dev package requires refactor-circus/atrium, so only Atrium goes.
-      # Scripts stay off: testbench.yaml names Atrium's provider, so the
-      # post-autoload-dump package discovery would fail without it.
+      # refactor-circus/cortex requires refactor-circus/atrium, so it goes too
+      # (PennantPlus reaches Cortex only through Keystone's guarded
+      # CortexIntegration). Scripts stay off: testbench.yaml names Atrium's
+      # provider, so the post-autoload-dump package discovery would fail
+      # without it.
       - name: Uninstall Atrium
         run: |
-          composer remove --dev refactor-circus/atrium --no-update --no-interaction
+          composer remove --dev refactor-circus/atrium refactor-circus/cortex --no-update --no-interaction
           composer update --prefer-dist --no-interaction --no-progress --no-scripts
 
       - name: Test Suite without Atrium
