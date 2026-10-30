@@ -1,0 +1,44 @@
+# Declare screen extensions (PennantPlus)
+
+## Goal
+
+The PennantPlus feature flags page declares itself on Atrium's screen extensions registry (Atrium spec `2026-10-29-2037-screen-extensions-registry`, PR #16), so other packages, Keen's History among them, add tabs and sections without PennantPlus knowing they exist. PennantPlus drops its inline audit trail and History nav item, refuses an Atrium older than the registry, and proves it runs without Atrium.
+
+## Acceptance criteria
+
+1. **Screen declared.** `FeatureFlagController::index` builds `Screen::standard('pennantplus.features', Screen::LIST)` with no record, resolves it with `ScreenExtensions::resolve($screen, $request)` after its `abort_unless($manages, 403)`, and passes the result to the view as `resolved`. It has no built-in tabs, so the synthetic `overview` tab is the default. Slots: `header.actions`, `before`, `after`, row slot `row.actions`. Proven by `tests/Feature/Ui/ScreenExtensionsTest.php`: it registers a tab and a section in every slot and asserts each section renders once (`data-testid="section-{key}"`), an `aside` section does not, `overview` is active without `?tab=`, the tab opens through `?tab=`, `?tab=unknown` answers 200 on `overview`, and page 2 of `values` yields `rows` for page 2 only.
+2. **Value rows (D-036).** Each row of the values table is wrapped in `RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow`, following Atrium's `SettingsPanelRow`: a final, unsaved, read-only `Model` with string primary key `key`, no timestamps, no table, `public private(set) StoredFeatureValue $value`, built with `FeatureValueRow::for(StoredFeatureValue $value)`. The key joins the feature name and the scope serialized by `FeatureFlagManager`'s existing scope serialization (the string Pennant stores), with an encoding that keeps a feature name containing `|` from colliding (D-043). `save()`, `fresh()`, `refresh()` and `delete()` throw. A unit test covers `for()` for a global value, a scoped value and a name containing `|` (distinct keys), and asserts `getKeyType() === 'string'`, `getIncrementing() === false`, `timestamps === false`, `exists === false`, `value` is the same instance, the class is final, and persistence throws. A feature test with two stored values asserts the row section renders once per row with each `FeatureValueRow` as `$record`.
+3. **Arch exclusion (D-040, D-042).** `tests/ArchTest.php`'s `every model fires an event for every lifecycle hook` excludes `RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow::class` by name, with a comment, and asserts the class is final and has no table. A row in `docs/agent/standards-feedback.md` records the exclusion. The arch suite passes.
+4. **Access closure.** The screen gets `access(fn (string $permission, Request $request, ?Model $record): bool => Gate::forUser($request->user())->allows($permission, $record === null ? [] : [$record]))`: PennantPlus has no policies, and its own check (`pennantplus.ability`) is a Gate ability. Feature tests: a `permission('acme.extra')` section renders only after `Gate::define('acme.extra', ...)`; a row `permission()` with no Gate definition is denied; a row permission receives the `FeatureValueRow` as the Gate argument; a null user is evaluated as a guest.
+5. **Own authorization first.** A user who may not manage flags gets 403 and no registered `authorize` closure or resolver runs (counting closures).
+6. **Layout (D-038).** `header.actions` in `x-atrium::page-header`'s `actions` slot; `x-atrium::screen-tabs` under the header; with a registered tab open, `x-atrium::screen-tab-panel` replaces the body and only `header.actions` stays; otherwise `before` first and `after` last. `row.actions` sits in a trailing cell of each value row under an empty header cell, rendered only when `$manages` or when the slot has resolved sections. Proven by `assertSeeInOrder` on testids, and only `header.actions` plus the panel with a tab open.
+7. **Nothing registered, nothing changes.** With nothing registered, a feature test asserts no `screen-tabs`, `screen-tab-panel` or `section-` testid, and that the values table and controls still render. The trailing cell of criterion 6 is the only accepted markup change. Existing tests change only where criteria 6 and 8 force it; each is listed in the PR by file and test name.
+8. **Audit trail and History nav item removed.** `<x-atrium::audit-trail source="pennantplus" />` leaves `resources/views/atrium/index.blade.php`, and `PennantPlugin::navigation()` no longer calls `historyNavItem()`. Feature tests assert the index HTML has no audit-trail output and no navigation item's URL matches the history route, and a source scan of `src` and `resources` finds no `audit-trail`, `x-atrium::audit` or `historyNavItem`. Deleted: `tests/Feature/AtriumAuditTrailTest.php` and `tests/Feature/HistoryNavigationTest.php`. The history route and MCP tool (`tests/Feature/HistoryTest.php`) stay.
+9. **Test isolation.** `tests/TestCase.php` uses `RefactorCircus\Atrium\Testing\ResetsScreenExtensions`. Two ordered tests prove it: the first registers a section, the second finds the registry empty.
+10. **Composer (D-034, D-039).** Atrium stays in `require-dev` and `suggest`, never `require`; its `require-dev` constraint names the Atrium release with the registry once one exists (`dev-main` until then), and `conflict` gains `refactor-circus/atrium` below that release. A feature test reads `composer.json` and asserts the `conflict` key, that `require` has no `refactor-circus/atrium` and that Keystone is its only `refactor-circus/*` package.
+11. **Without-Atrium proof (D-034).** A `WithoutAtrium` suite (`phpunit.without-atrium.xml`, bootstrap `tests/WithoutAtrium/bootstrap.php` removing the `RefactorCircus\Atrium\` PSR-4 prefix, a test case registering no Atrium provider) asserts: no Atrium class loads; the provider boots (its `class_exists` guards for `Gatekeeper` and `PluginRegistry` hold); no `atrium.` route exists; `pennantplus.features.index` answers; the MCP server's `tools/list` succeeds. A `test:without-atrium` composer script runs it, and `composer test` calls it after `@test:unit`. A `without-atrium` job in `.github/workflows/tests.yml` runs `composer remove --dev refactor-circus/atrium --no-update` (plus any dev package that requires Atrium), `composer update`, then `composer test:without-atrium`.
+12. **Docs.** The README and the Boost skill (`resources/boost/skills/pennantplus-development/SKILL.md`) drop the audit-trail text, name the `pennantplus.features` screen and its slots, say history comes from Keen, say row permissions are Gate abilities receiving a `FeatureValueRow` (which exposes the raw scope identifier), and note the minimum Atrium. Done-step: a grep for `audit-trail` and `historyNavItem` in `src`, `resources`, README, CLAUDE.md and `docs/agent/product` is empty and listed in the PR.
+13. **Gate.** `composer test` passes, including `StylesTest` and the WithoutAtrium suite. PennantPlus has no browser suite.
+
+## Design
+
+- **One screen.** `pennant/scopes` (`FeatureFlagController::scopes`) returns JSON for the scope picker, and Atrium excludes JSON routes from screens, so only `pennantplus.features` is declared.
+- **`Atrium\Data\FeatureValueRow`**, per criterion 2. The controller passes `rows` (the current page's values mapped through `FeatureValueRow::for`) next to `values`, so pagination stays on `values`.
+- History comes from Keen's wildcard registration (default slot `after`). PennantPlus registers nothing into other screens (D-001).
+- No config, routes, migrations, events or MCP changes, so the malformed-config rule (D-035) has nothing to apply to here.
+
+## Out of scope
+
+- Moving the guarded Atrium references in `PennantPlusServiceProvider` into `src/Atrium`, and an arch rule banning Atrium classes outside `src/Atrium` (D-037, D-041).
+- Keen's History section, nav items and wildcard config.
+- The scope picker JSON endpoint.
+
+## Risks
+
+- **Merge order.** The removals are forced by Atrium PR #16, so this merges with Atrium and Keen as a group, in the order Atrium, Keen, PennantPlus.
+- **Conflict version.** Atrium has no tags yet; the `conflict` and `require-dev` constraints are set from the first Atrium release carrying the registry when the group merges.
+- **Failing extensions.** A third-party resolver or `authorize` closure that throws follows Atrium's handling; the flags page administers production flags, so the README says registrants must not throw.
+
+## Changelog
+
+- Applied D-034 (WithoutAtrium suite plus CI lane, `conflict`), D-035 (noted: no integration config), D-036/D-040/D-042 (`FeatureValueRow` with a named arch exclusion and standards-feedback row), D-037/D-041 (no arch rule or provider move), D-038 (trailing cell only when `$manages` or sections), D-039 (`require-dev` bump and `conflict`), D-043 (key uses `FeatureFlagManager`'s scope serialization).

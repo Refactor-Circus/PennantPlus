@@ -167,13 +167,40 @@ The page follows Atrium's screen conventions: actions are icon buttons (the labe
 
 The page is built only from Atrium's components and the utilities Atrium's stylesheet ships; PennantPlus has no stylesheet of its own. The feature field and filter are Atrium's `x-atrium::form.combobox` over the discovered features (free text still allowed), status and validation messages show through `x-atrium::flash` (requests flash `status`), and the scope picker searches PennantPlus's own scope endpoint.
 
-With an audit log installed (refactor-circus/keen), the page ends with PennantPlus's history (`<x-atrium::audit-trail source="pennantplus" />`); without one it renders nothing. Flag values are about no model, so the history is package-wide even when one feature is filtered. `FeatureValueUpdatedActionEvent` implements refactor-circus/keystone's `Auditable`: its entry has no subject and records `feature`, `scope` and `value` as context, while the forget and purge events' `feature` and `scope` properties are recorded as they are.
+The page shows no history of its own, and its navigation links none. With refactor-circus/keen installed, Keen adds its History section to the page through the screen extensions registry (see below); PennantPlus registers nothing for it. `FeatureValueUpdatedActionEvent` implements refactor-circus/keystone's `Auditable`: its entry has no subject and records `feature`, `scope` and `value` as context, while the forget and purge events' `feature` and `scope` properties are recorded as they are.
 
 PennantPlus deliberately has no Pennant feature switch of its own for the Feature flags page: gating the feature-flag manager behind a feature flag could lock admins out of turning it back on. Restrict it with `pennantplus.ability`, or hide it with `atrium.disabled`.
 
 PennantPlus also answers Atrium's feature checks - `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware - through the feature gate, so `global_only` and the bypass callback apply in the dashboard exactly as they do on routes and MCP tools. To have Pennant decide only global visibility and leave per-user visibility to permissions (`NavItem::can()`), set `pennantplus.gate.global_only` to `['*']`. Set `pennantplus.atrium.resolve_features` to `false` to leave Atrium's feature resolver alone.
 
 Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, and `FeaturePurging`/`FeaturePurged` (each suffixed `ActionEvent`). Reads fire a pair too - `FeaturesListing`/`FeaturesListed`, `FeatureShowing`/`FeatureShown`, `FeatureChecking`/`FeatureChecked`, `FeatureValuesListing`/`FeatureValuesListed`, and in `Domains\Scope\Events` `ScopeTypesListing`/`ScopeTypesListed` and `ScopeModelsSearching`/`ScopeModelsSearched` - which the audit log does not record. Every read pair implements Keystone's `ReadActionEvent` marker, which is how the audit log knows they only read. Starting events carry the action's input Data (`FeatureValueUpdating` and `FeatureValueDeleting` also the scope as Pennant serializes it). Each write runs in one database transaction on the Pennant store's connection; finished events fire only once it commits, and a failed write fires none.
+
+### Screen extensions
+
+The Feature flags page declares itself on Atrium's screen extensions registry as the `pennantplus.features` list screen, so other packages add tabs and sections to it without PennantPlus knowing they exist. This needs Atrium 0.1.0 or later, the first release with the registry: Composer refuses an older Atrium through PennantPlus's `conflict` entry. Atrium itself stays optional.
+
+- **Slots.** `header.actions` (beside the page title), `before` (above the page), `after` (below it) and the row slot `row.actions`, rendered once per stored value in a trailing cell of the values table. Keen's History section lands in `after` by default.
+- **Tabs.** The page has no built-in tabs, so it is the `overview` tab. A registered tab opens with `?tab={key}` and replaces the page; only `header.actions` stays. An unknown `?tab=` opens `overview`.
+- **The page's own check comes first.** A viewer `pennantplus.ability` refuses gets a 403 before any extension's `authorize()` or resolver runs.
+- **Permissions are Gate abilities.** Feature flags have no policies, so an extension's `permission()` is asked as `Gate::forUser($request->user())->allows($permission)`, with the row as the Gate argument in `row.actions`. A request without a user is asked as a guest, and an ability the Gate does not define is denied.
+- **Rows are `FeatureValueRow`s.** A stored value is not a model, so a `row.actions` section receives a `RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow` as `$record`: an unsaved, read-only model keyed by the feature and the scope, whose `$record->value` is the `StoredFeatureValue` (`feature`, `scope`, `value`, `updatedAt`). Saving, reloading or deleting it throws.
+- **The raw scope is exposed.** `$record->value->scope` is the scope exactly as Pennant stores it (`__laravel_null`, `App\Models\User|5`, or any string), which names the scope model by class and key. Do not show it to viewers who may not know that model exists.
+- **Do not throw.** This page administers production flags. A section that throws renders nothing and is reported, but a registered tab whose panel throws fails the page with a 500, so keep registered closures and views from throwing.
+
+```php
+use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\Gate;
+use RefactorCircus\Atrium\Domains\Screens\Data\SectionDefinition;
+use RefactorCircus\Atrium\Facades\Atrium;
+use RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow;
+
+// In a service provider's boot():
+Atrium::screens()->section('pennantplus.features', 'row.actions', SectionDefinition::make('acme.flag-owner')
+    ->view('acme::flag-owner') // reads $record->value->feature
+    ->permission('acme.flag-owner'));
+
+Gate::define('acme.flag-owner', fn (User $user, FeatureValueRow $row): bool => $user->owns($row->value->feature));
+```
 
 ### Atrium's theme switcher
 
