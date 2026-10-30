@@ -1,9 +1,11 @@
 id: 2026-10-29-2038-declare-screen-extensions
 title: 'Declare screen extensions'
-status: building
+status: approved
 created: '2026-10-29 20:38'
 standards:
   refactor-circus/standards:
     version: dev-main
     reference: a5b675396232
 review_passes: 1
+runs:
+  - { workflow: ring-master-factory, run_id: wf_00d8036c-59c, result: "approved: gate green, 1 round, one nit; impact: Cortex failed on a missing composer.lock in the throwaway worktree (environmental); conflict normalized to <0.1.0 by hand", round: 1, date: 2026-10-30 }
