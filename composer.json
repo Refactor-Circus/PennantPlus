@@ -38,6 +38,9 @@
         "refactor-circus/ringside": "dev-main",
         "refactor-circus/standards": "dev-main"
     },
+    "conflict": {
+        "refactor-circus/atrium": "<0.2.0"
+    },
     "suggest": {
         "refactor-circus/atrium": "Manage stored feature flag values from the Atrium dashboard (dev-main).",
         "refactor-circus/cortex": "Let Cortex agents use the PennantPlus tools and manage the MCP instructions and tool descriptions (dev-main)."
@@ -87,11 +90,15 @@
         "test:unit": [
             "vendor/bin/pest --parallel"
         ],
+        "test:without-atrium": [
+            "vendor/bin/pest --configuration=phpunit.without-atrium.xml --test-directory=tests/WithoutAtrium"
+        ],
         "test": [
             "@analyse",
             "@lint:check",
             "@test:types",
-            "@test:unit"
+            "@test:unit",
+            "@test:without-atrium"
         ],
         "clear": [
             "@php vendor/bin/testbench package:purge-skeleton --ansi"
