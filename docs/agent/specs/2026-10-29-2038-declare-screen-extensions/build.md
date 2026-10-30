@@ -126,3 +126,17 @@ Branch `ring-master/2026-10-29-2038-declare-screen-extensions`, commit "2026-10-
 - **`tests/Unit/DocumentationTest.php` is outside the group's file list.** Task 3.1 asks for a check, and the job asks for the tests first. The docs check needed a test file, and none of the group's files is a test.
 - **`AGENTS.md`** is the real file behind `CLAUDE.md`, so it is the file committed. Before this group, the worktree had an uncommitted ring-master sync line in `AGENTS.md` (the "Keep this checkout on `main`" bullet). I kept it out of this commit and left it uncommitted afterwards, as I found it.
 - The spec's grep does not cover `CHANGELOG.md`, so the test does not scan it either. It already holds neither name: everything in it is unreleased, and the two entries that named them are gone.
+
+### Retry
+
+- Tasks 3.1 to 3.3 were already in `4c15ce2`. I checked that commit against criterion 12 and found nothing missing:
+  - The README and the Boost skill drop the audit-trail text.
+  - They name `pennantplus.features` and its four slots.
+  - They say history comes from Keen.
+  - They say a row permission is a Gate ability given a `FeatureValueRow`, and that `$record->value->scope` is the raw scope.
+  - They name Atrium 0.2.0 as the minimum.
+- Done-step grep, rerun for the PR: `grep -rn -E "audit-trail|historyNavItem" src resources README.md CLAUDE.md docs/agent/product` gives no output.
+- `pint --test tests/Unit/DocumentationTest.php` passes. PHPStan analyses only `src` and `config` (`phpstan.neon.dist`), so the new test is not in its scope. The test's closures are fully typed for `test:types`.
+- I did not run the suite; the gate runs `composer test`.
+- No doc changes in this retry. The uncommitted ring-master sync line in `AGENTS.md` is still left out, as before.
+- Not changed, because it is outside this spec: `AGENTS.md`'s Keystone section has a sentence pair repeated from before this job ("The one exception is the bulk forget..." through `forgetScopeTypes()`, and the 401/403 sentence at the end of the last bullet). The `config/pennantplus.php` bullet also still sits after the Frontend paragraphs instead of under Layout.
