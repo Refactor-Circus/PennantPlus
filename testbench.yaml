@@ -3,7 +3,6 @@ laravel: '@testbench'
 providers:
   - Laravel\Pennant\PennantServiceProvider
   - Laravel\Mcp\Server\McpServiceProvider
-  - RefactorCircus\Atrium\AtriumServiceProvider
   - RefactorCircus\PennantPlus\PennantPlusServiceProvider
   - Workbench\App\Providers\WorkbenchServiceProvider
 
@@ -18,10 +17,10 @@ seeders:
   - Workbench\Database\Seeders\DatabaseSeeder
 
 workbench:
-  # The Feature flags page. With `user` set, `/` sends a guest through
+  # The JSON API's feature list. With `user` set, `/` sends a guest through
   # /_workbench, which signs them in and redirects here; starting at `/`
   # would loop.
-  start: '/atrium/pennant'
+  start: '/pennantplus/features'
   user: admin@example.com
   install: true
   health: false
@@ -39,8 +38,6 @@ workbench:
     - migrate-fresh
   assets:
     - laravel-assets
-    # Atrium's stylesheet and scripts, served from public/vendor/atrium.
-    - atrium-assets
   sync:
     - from: storage
       to: workbench/storage

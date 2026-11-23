@@ -9,7 +9,7 @@ return [
     | Managed store
     |--------------------------------------------------------------------------
     |
-    | The Pennant store the API, MCP tools and dashboard manage, null for
+    | The Pennant store the API endpoints and MCP tools manage, null for
     | Pennant's default. Listing stored values needs a store using the
     | `database` or `pennantplus` driver.
     |
@@ -23,8 +23,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | An optional Gate ability checked, as the signed-in user or as a guest,
-    | by every API endpoint, MCP tool and the dashboard page. Null lets the
-    | route middleware (and Atrium's own gate) decide on their own.
+    | by every API endpoint and MCP tool. Null lets the route and MCP
+    | middleware decide on their own.
     |
     */
 
@@ -48,8 +48,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | How many seconds the model types that have stored values (the
-    | dashboard's scope filter and `GET scopes`) are cached in the
-    | default cache store. Writes through PennantPlus forget the cache at
+    | `GET scopes` endpoint and the list-scope-types MCP tool) are cached
+    | in the default cache store. Writes through PennantPlus forget the cache at
     | once; a model type first stored elsewhere shows up when it expires.
     | 0 reads them afresh every time.
     |
@@ -110,34 +110,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Atrium
-    |--------------------------------------------------------------------------
-    |
-    | When refactor-circus/atrium is installed, PennantPlus answers whether the features
-    | Atrium's navigation, plugins and `atrium.feature` middleware name are
-    | on, using the feature gate above - so `gate.global_only` and the bypass
-    | callback apply there too. To have Pennant decide only global
-    | visibility, and leave per-user visibility to permissions, set
-    | `gate.global_only` to ['*'].
-    |
-    | resolve_features: false leaves Atrium's feature resolver alone.
-    |
-    */
-
-    'atrium' => [
-        'resolve_features' => true,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Auditing
     |--------------------------------------------------------------------------
     |
     | PennantPlus keeps no audit log of its own. With refactor-circus/keen
     | installed, Keen records every flag change PennantPlus makes, and
-    | PennantPlus shows the history on its Atrium page, its
-    | `GET /pennantplus/history` route and its history MCP tool. Without Keen
-    | none of that exists.
+    | PennantPlus serves the history on its `GET /pennantplus/history` route
+    | and its history MCP tool. Without Keen none of that exists.
     |
     | enabled: Set to false to keep PennantPlus out of the audit log even
     |          while Keen is installed: Keen records nothing of PennantPlus's,

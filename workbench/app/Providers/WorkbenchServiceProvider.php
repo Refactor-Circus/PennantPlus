@@ -4,17 +4,15 @@ namespace Workbench\App\Providers;
 
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Kernel;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
-use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
 use Workbench\App\Http\Middleware\SignInWorkbenchUser;
 use Workbench\App\Models\User;
 
 /**
  * Turns the workbench into a demo app: PennantPlus's layered store on the
- * workbench User, with the Atrium Feature flags page open to the signed-in
- * user.
+ * workbench User, with the JSON API (start at /pennantplus/features) and
+ * the MCP server managing its feature flags.
  */
 class WorkbenchServiceProvider extends ServiceProvider
 {
@@ -40,9 +38,6 @@ class WorkbenchServiceProvider extends ServiceProvider
                     'title' => 'name',
                 ],
             ],
-            // Atrium discovers plugins from vendor/composer/installed.json,
-            // which never lists the package being developed.
-            'atrium.plugins' => [PennantPlugin::class],
         ]);
     }
 
@@ -57,9 +52,6 @@ class WorkbenchServiceProvider extends ServiceProvider
                 $kernel->appendMiddlewareToGroup('web', SignInWorkbenchUser::class);
             }
         });
-
-        // The demo dashboard is open to every signed-in workbench user.
-        Gate::define('viewAtrium', fn (?User $user): bool => $user !== null);
 
         // Closure features, defined the way an application would.
         Feature::define('dark-mode', fn (mixed $scope): bool => false);

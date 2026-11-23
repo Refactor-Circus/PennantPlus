@@ -31,16 +31,19 @@ it('requires no suite package but keystone', function (): void {
         ->toBe(['refactor-circus/keystone']);
 });
 
-it('keeps atrium a suggestion and a dev dependency', function (): void {
-    $manifest = pennantPlusComposerManifest();
+it('names atrium in no require, require-dev, suggest or conflict entry', function (string $section): void {
+    expect((array) (pennantPlusComposerManifest()[$section] ?? []))->not->toHaveKey('refactor-circus/atrium');
+})->with(['require', 'require-dev', 'suggest', 'conflict']);
 
-    expect($manifest['suggest'])->toHaveKey('refactor-circus/atrium')
-        ->and($manifest['require-dev'])->toHaveKey('refactor-circus/atrium')
-        ->and(((array) $manifest['require-dev'])['refactor-circus/atrium'])->toBe('^0.1');
+it('declares no atrium plugin', function (): void {
+    expect((array) (pennantPlusComposerManifest()['extra'] ?? []))->not->toHaveKey('atrium');
 });
 
-it('conflicts with atrium releases from before the screen registry', function (): void {
-    expect(pennantPlusComposerManifest()['conflict'] ?? null)->toBe(['refactor-circus/atrium' => '<0.1.0']);
+it('describes the package without atrium', function (): void {
+    $description = (string) pennantPlusComposerManifest()['description'];
+
+    expect($description)->not->toBe('')
+        ->and(stripos($description, 'atrium'))->toBeFalse();
 });
 
 it('runs the without-atrium suite from composer test, after the unit tests', function (): void {
@@ -67,7 +70,7 @@ it('runs the without-atrium suite in ci with atrium uninstalled', function (): v
         ->toBeLessThan(strpos($job, 'composer test:without-atrium'));
 });
 
-it('removes atrium and every dev package that requires it in the without-atrium job', function (): void {
+it('removes cortex and every other dev package that requires atrium in the without-atrium job', function (): void {
     $root = dirname(__DIR__, 2);
     $devPackages = array_keys((array) pennantPlusComposerManifest()['require-dev']);
 
@@ -87,7 +90,11 @@ it('removes atrium and every dev package that requires it in the without-atrium 
     preg_match('/composer remove --dev ([^\n]*?) --no-update/', pennantPlusWithoutAtriumJob(), $match);
     $removed = preg_split('/\s+/', $match[1] ?? '', flags: PREG_SPLIT_NO_EMPTY) ?: [];
 
-    expect($removed)->toContain('refactor-circus/atrium');
+    // Atrium is no dev dependency of its own: removing what pulls it in is
+    // what uninstalls it, and the job names only packages require-dev lists.
+    expect($removed)->toContain('refactor-circus/cortex')
+        ->not->toContain('refactor-circus/atrium')
+        ->and(array_values(array_diff($removed, $devPackages)))->toBe([]);
 
     foreach ($requiringAtrium as $package) {
         expect($removed)->toContain($package);

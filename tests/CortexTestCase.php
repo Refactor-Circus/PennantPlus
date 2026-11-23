@@ -29,6 +29,11 @@ abstract class CortexTestCase extends TestCase
         parent::defineEnvironment($app);
 
         $app['config']->set('cortex.cache.store', 'array');
+
+        // Cortex (a dev dependency) pulls in Atrium, whose provider this
+        // suite does not load: keep Cortex off the Atrium dashboard, so it
+        // boots with its JSON API, MCP server and tool registry only.
+        $app['config']->set('cortex.ui', ['enabled' => false]);
     }
 
     protected function defineDatabaseMigrations(): void
