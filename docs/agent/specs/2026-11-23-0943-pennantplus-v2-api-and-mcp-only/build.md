@@ -148,3 +148,4 @@ Docs and full gate (AC 19-23).
 
 - None from the standards.
 - `CLAUDE.md` is a symlink to `AGENTS.md`, so the edits were made in `AGENTS.md` only. The identical-guidance test still reads both paths.
+- Retry check: on the retry, tasks 4.1-4.5 were already committed and the README, CHANGELOG, skill and agent guidance met AC 19-22. One tidy in `AGENTS.md`, which this group owns: the Keystone section repeated two passages, a fault older than this job. The transactions bullet stated the bulk-forget exception, the no-tables note and the memo note twice. The audit bullet repeated the 401/403 and JSON 404 sentences from the authorization bullet. Both repeats are removed. `pest tests/Unit/DocumentationTest.php` passed 14 tests with 71 assertions.
