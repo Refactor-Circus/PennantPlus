@@ -4,8 +4,8 @@ description: >
   Configure and apply the PennantPlus package in Laravel applications: a
   Pennant driver that layers per-user values over one global value, a
   FeatureGate (and `feature:` middleware) for routes and MCP tools, and
-  feature flag management through a REST API, an MCP server, and an Atrium
-  dashboard page.
+  feature flag management through a JSON API, an MCP server, and a generated
+  TypeScript client.
 license: MIT
 metadata:
   author: Jay Fletcher
@@ -13,7 +13,9 @@ metadata:
 
 # PennantPlus
 
-Use this skill when a Laravel application uses `refactor-circus/pennantplus` to layer Pennant feature flags (one global value, per-user overrides), gate routes or MCP tools on them, or manage stored flag values through the API, MCP tools, or the Atrium page.
+Use this skill when a Laravel application uses `refactor-circus/pennantplus` to layer Pennant feature flags (one global value, per-user overrides), gate routes or MCP tools on them, or manage stored flag values through the JSON API, the MCP tools, or the TypeScript client.
+
+PennantPlus ships no UI. Atrium v2 provides the optional feature flags screen on top of the JSON API.
 
 ## Primary Goal
 
@@ -63,11 +65,11 @@ Keep the global default `false` only for kill switches that must stay dark until
 
 ### 4. Secure the management surface before exposing it
 
-The API, MCP server and dashboard change flags for **every** user. Routes ship on `api` middleware only and both MCP transports are off:
+The API and the MCP server change flags for **every** user. Routes ship on `api` middleware only and both MCP transports are off:
 
 ```php
 // config/pennantplus.php
-'ability' => 'manageFeatures', // optional Gate ability checked by every endpoint, tool and the page
+'ability' => 'manageFeatures', // optional Gate ability checked by every endpoint and tool
 'routes' => ['enabled' => true, 'prefix' => 'pennantplus', 'middleware' => ['api', 'auth:sanctum']],
 'mcp' => [
     'web' => ['enabled' => true, 'route' => 'mcp/pennantplus', 'middleware' => ['auth:sanctum']],
@@ -75,7 +77,7 @@ The API, MCP server and dashboard change flags for **every** user. Routes ship o
 ],
 ```
 
-Or register `RefactorCircus\PennantPlus\Mcp\PennantPlusServer` yourself in `routes/ai.php` behind your own auth group.
+Or register `RefactorCircus\PennantPlus\Mcp\PennantPlusServer` yourself in `routes/ai.php` behind your own auth group. Do not gate the management surface behind a Pennant feature: that could lock admins out of turning it back on. Restrict it with `pennantplus.ability` instead.
 
 ### 5. Manage flags via the API (or the matching MCP tools)
 
@@ -88,7 +90,7 @@ A scope is picked with `scope` (as Pennant stores it: `__laravel_null`, `App\Mod
 - `GET /pennantplus/values?feature=&scope=&scope_id=&page=&per_page=` — stored values, newest first (scope filter: `global`, `other`, or a model type). MCP `list-feature-values-tool`.
 - `PUT /pennantplus/values` `{feature, scope|scope_type+scope_id, value}` — store a value (any JSON). Setting the **global** value forgets every other scope's value of that feature (`purge_scopes_on_global_update`), in id chunks after the global value commits. MCP `set-feature-value-tool` takes `value` JSON-encoded (`"true"`, `"false"`, `"{...}"`) and answers the stored value under `data`.
 - `DELETE /pennantplus/values` `{feature, scope|scope_type+scope_id}` — forget one scope's value so it follows global again. MCP `forget-feature-value-tool`.
-- `GET /pennantplus/scopes` — scope types. MCP `list-scope-types-tool`.
+- `GET /pennantplus/scopes` — scope types (cached for `scope_types_cache_seconds`; writes forget the cache). MCP `list-scope-types-tool`.
 - `GET /pennantplus/scopes/{type}/models?q=` — find models of a configured type, with the serialized `scope` to reuse. MCP `search-scope-models-tool`.
 - `GET /pennantplus/history?subject_type=&subject_id=&action=&cursor=&per_page=` — the package's audit entries, newest first; 404 until refactor-circus/keen is installed (or while `pennantplus.audit.enabled` is false). MCP `list-pennantplus-history-tool`.
 
@@ -104,38 +106,26 @@ app(ListFeatureValuesAction::class)->execute(ListFeatureValuesData::from($reques
 
 The Data classes live in `RefactorCircus\PennantPlus\Domains\Feature\Data` (`CheckFeatureData`, `ShowFeatureData`, `PurgeFeatureData`, `ListFeatureValuesData`, `UpdateFeatureValueData`, `DeleteFeatureValueData`) and `Domains\Scope\Data\SearchScopeModelsData`.
 
-### 6. Configure discovery and scope models
+### 6. Call the API from TypeScript
+
+`openapi.json` at the package root is the OpenAPI 3.1 document of the JSON API (paths relative to the `/pennantplus` prefix). `client/` is `@refactor-circus/pennantplus-client`, an `openapi-fetch` client typed from it. It is not on a registry: install it as a git dependency on the v2 tag, which builds it on install (pnpm: `pnpm add "github:Refactor-Circus/PennantPlus#v2.0.0&path:/client"`).
+
+```ts
+import { createPennantPlusClient } from '@refactor-circus/pennantplus-client';
+
+const pennant = createPennantPlusClient({ baseUrl: '/pennantplus', credentials: 'include' });
+
+const { data, error } = await pennant.GET('/values', { params: { query: { feature: 'new-checkout' } } });
+```
+
+`createPennantPlusClient(options)` takes any openapi-fetch option and returns `Client<paths>`; the `paths`, `components` and `operations` types are exported too. `openapi.json`, `client/openapi.json` and `client/src/schema.d.ts` are generated: after an API change, run `npm --prefix client ci` then `composer client:generate` and commit the result. Tests and CI fail on a stale document or client.
+
+### 7. Configure discovery and scope models
 
 ```php
 'features' => [app_path('Features'), app_path('Domains/*/Features')], // globbed, so features list before first use
 'scopes' => [App\Models\User::class => ['label' => 'Users', 'search' => ['name', 'email'], 'title' => 'name']],
 ```
-
-### 7. The Atrium page
-
-With `refactor-circus/atrium` installed, Atrium discovers a **Feature flags** page (plugin key `pennant`, routes `atrium.pennant.*`). Hide it with `atrium.disabled => ['pennant']`.
-
-The page uses Atrium icon buttons and status dots (`data-status="active|inactive"`, assert on that and on `data-testid`, not on button text) and a `flag` nav icon. Its navigation item and every control (set value, toggle, forget, purge) show only when `RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess::allows()` passes - the same `pennantplus.ability` check the controller and form requests refuse with; published views can use `@pennantplusManages ... @endpennantplusManages`. Do not gate the page behind a Pennant feature: that could lock admins out of turning it back on.
-
-The page uses only `x-atrium::*` components and Atrium's safelisted utilities (no package stylesheet): `x-atrium::form.combobox` for the feature fields (`data-testid="pennant-feature"` / `"pennant-filter-feature"`, free text allowed), `x-atrium::flash` for status (`data-testid="flash-status"`). The page has no history and no history nav item of its own: history comes from refactor-circus/keen, whose History section joins the page through the screen extensions registry. A stored value's audit entry has no subject and carries `feature`, `scope` and `value` context (`FeatureValueUpdatedActionEvent` implements `RefactorCircus\Keystone\Audit\Contracts\Auditable`).
-
-The page declares itself on Atrium's screen extensions registry as the `pennantplus.features` list screen (needs Atrium 0.1.0 or later; PennantPlus's composer `conflict` refuses older Atrium, which stays optional). To add to it, register from a service provider's `boot()` with `Atrium::screens()`, never from PennantPlus:
-
-- Slots: `header.actions`, `before`, `after`, and the row slot `row.actions` (once per stored value, in a trailing cell). No built-in tabs, so the page is `overview`; a registered tab opens with `?tab={key}` and replaces the page except `header.actions`.
-- The page's own `pennantplus.ability` check runs first: a refused viewer gets 403 and no `authorize()` or resolver runs.
-- `permission()` is a Gate ability (no policies): `Gate::forUser($request->user())->allows($permission)`, given the row in `row.actions`; guests are asked as guests and an undefined ability is denied.
-- A `row.actions` `$record` is a `RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow`: an unsaved, read-only model (save, reload and delete throw) whose `$record->value` is the `StoredFeatureValue`. `$record->value->scope` is the raw scope Pennant stores (`App\Models\User|5`), so treat it as an identifier, not display text.
-- Never throw from a registered closure or view: the page administers production flags, and a throwing tab panel fails it with a 500.
-
-```php
-Atrium::screens()->section('pennantplus.features', 'row.actions', SectionDefinition::make('acme.flag-owner')
-    ->view('acme::flag-owner')
-    ->permission('acme.flag-owner'));
-
-Gate::define('acme.flag-owner', fn (User $user, FeatureValueRow $row): bool => $user->owns($row->value->feature));
-```
-
-PennantPlus also registers Atrium's feature resolver, so `NavItem::feature()`, a plugin's `features()`, and the `atrium.feature` middleware ask `FeatureGate::allows($feature, $request->user())`. `pennantplus.gate.global_only => ['*']` makes Pennant decide only global visibility, leaving per-user visibility to Atrium's `can()` permissions. `pennantplus.atrium.resolve_features => false` opts out.
 
 ### 8. Cortex
 
@@ -143,18 +133,20 @@ With `refactor-circus/cortex` installed, the MCP server registers with Cortex as
 
 ### 9. React to changes
 
-Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Reads fire pairs too (`FeaturesListing`, `FeatureShowing`, `FeatureChecking`, `FeatureValuesListing`, and in `Domains\Scope\Events` `ScopeTypesListing`, `ScopeModelsSearching`, with their `-ed`/`Shown` partners); the audit log skips them. Listen to `RefactorCircus\Keystone\Contracts\ActionFinishedEvent` (from refactor-circus/keystone) for all of them; writes run in one transaction on the Pennant store's connection (`FeatureFlagManager::transaction()`) and finished events fire after commit. Starting events carry the input Data (`$event->data`), plus the serialized `$event->scope` on the value events.
+Every write fires an action event pair from `RefactorCircus\PennantPlus\Domains\Feature\Events`: `FeatureValueUpdating`/`FeatureValueUpdated`, `FeatureValueDeleting`/`FeatureValueDeleted`, `FeaturePurging`/`FeaturePurged` (suffixed `ActionEvent`). Reads fire pairs too (`FeaturesListing`, `FeatureShowing`, `FeatureChecking`, `FeatureValuesListing`, and in `Domains\Scope\Events` `ScopeTypesListing`, `ScopeModelsSearching`, with their `-ed`/`Shown` partners); the audit log skips them. Listen to `RefactorCircus\Keystone\Contracts\ActionFinishedEvent` (from refactor-circus/keystone) for all of them; writes run in one transaction on the Pennant store's connection (`FeatureFlagManager::transaction()`) and finished events fire after commit. Starting events carry the input Data (`$event->data`), plus the serialized `$event->scope` on the value events. A stored value's audit entry (refactor-circus/keen) has no subject and carries `feature`, `scope` and `value` context (`FeatureValueUpdatedActionEvent` implements `RefactorCircus\Keystone\Audit\Contracts\Auditable`).
 
 ## Rules, References, and Templates
 
 Read before executing:
 
 - `config/pennantplus.php` — store, ability, purge switch, discovery, scopes, gate patterns, routes, MCP transports
-- `README.md` — driver, gate, API and MCP reference
+- `README.md` — driver, gate, API, OpenAPI and client, and MCP reference
+- `openapi.json` — the exact request and response shapes of the JSON API
 
 ## Anti-patterns
 
 - do not expose the routes or enable the MCP web transport without auth middleware
-- do not change a global value outside the API/MCP/page (e.g. tinker) and expect user values to follow — only those surfaces purge the stored user values
+- do not change a global value outside the API or the MCP tools (e.g. tinker) and expect user values to follow — only those surfaces purge the stored user values
 - do not hand-write `resolve()` returning a hard-coded default for user scopes; extend `OnLayeredFeature` or `OffLayeredFeature` so users follow global flips
 - do not check `*SupportFeature` (global-only) flags per user
+- do not edit `openapi.json` or the client's `schema.d.ts` by hand; regenerate them with `composer client:generate`

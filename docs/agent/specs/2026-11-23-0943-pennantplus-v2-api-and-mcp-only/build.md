@@ -101,3 +101,50 @@ TypeScript client (AC 15-18).
 - Spec design snippet: `src/index.ts` imports the schema as `'../src/schema.js'`, not `'./schema'`. tsc never copies a `.d.ts` input into `outDir`. With `'./schema'`, the emitted `dist/index.d.ts` pointed at a `dist/schema.d.ts` that does not exist (checked by building), so consumers would get untyped or broken declarations. The changed specifier resolves to the committed `src/schema.d.ts` from both `src/` and `dist/`. The `.js` extension also lets it resolve under NodeNext. The exported API is the one in the spec.
 - `ClientTest` sits in `tests/Feature` as the task lists, although it uses no framework boot (test-layers puts boot-free tests in `Unit`). `ComposerTest`, which is also boot-free, already sits there.
 - Retry check: on the retry, all of 3.1-3.5 were already committed. Targeted runs passed: `pest tests/Feature/ClientTest.php tests/Feature/ComposerTest.php` (21 tests, 62 assertions, the schema check not skipped) and `pest tests/OpenApi` (5 tests). `npm --prefix client run build` passed, and so did Pint `--test` on both test files. No code changed. PHPStan does not analyse `tests/` (`phpstan.neon.dist` covers only `src` and `config`). Run directly on the two test files, it reports Pest-typing noise, for example `markTestSkipped()` on `TestCall`. That noise does not affect `composer analyse`.
+
+## Group 4
+
+Docs and full gate (AC 19-23).
+
+### Files
+
+- `README.md`:
+  - The intro describes layered flags with a JSON API and an MCP server, the OpenAPI document and the client, and says that Atrium v2 provides the optional UI.
+  - The "Atrium dashboard", "Screen extensions" and "Atrium's theme switcher" sections are removed. Their package-level facts move to the sections that still own them: the global-update purge and the scope-type cache go to "Management API", and the event and `Auditable` paragraphs go to a new "Events" section.
+  - The API section no longer names the page.
+  - The indexes note says "the newest-first listing of stored values (`GET values`)" instead of the dashboard listing.
+  - "Testing" lists what `composer test` runs and points to `composer local:install` instead of an Atrium path repository.
+  - New "OpenAPI and TypeScript client" section: `openapi.json`, the pnpm git install on `#v2.0.0&path:/client`, a `createPennantPlusClient` example that type-checks against the committed schema, `npm --prefix client ci` with `composer client:generate`, and the staleness checks.
+- `CHANGELOG.md`: a new `v2.0.0` section, with `Unreleased` now comparing `v2.0.0...main`. It has three parts:
+  - **Breaking**: the page and plugin, with `extra.atrium.plugins` and `atrium.pennant.*`; the feature resolver and `pennantplus.atrium.resolve_features`; `@pennantplusManages`; `FeatureFlagAccess`; `FeatureValueRow` and the screen registration; `resources/views`, the view namespace and `pennantplus-views`; the pruned keys in `lang/en/pennantplus.php`.
+  - **Upgrade**: Atrium v2 for the UI, and Atrium's own Pennant integration for its feature flags.
+  - **Added**: `openapi.json`, the client and `composer client:generate`.
+- `resources/boost/skills/pennantplus-development/SKILL.md`:
+  - Section 7 (the page) and the Atrium-resolver paragraph are removed.
+  - The front matter, intro, section 4, the references and the "do not" list no longer mention a page or dashboard.
+  - The "do not gate behind a Pennant feature" advice now applies to the management surface.
+  - New section 6, "Call the API from TypeScript", covers the client, its install, `createPennantPlusClient` and the regeneration rule. Sections 7-9 are renumbered.
+  - The audit-context note moves to section 9, and a "do not edit generated files" anti-pattern is added.
+- `AGENTS.md`. `CLAUDE.md` is a symlink to it in this repo, so both always carry identical guidance.
+  - The `src/Atrium` rule is replaced by the no-Atrium rule, with the checking tests and the D-006 VCS-repository note.
+  - The `src/Atrium` layout bullet is gone. The stray `config/pennantplus.php` bullet moves back into Layout, next to a no-UI bullet.
+  - The Frontend section (styles, `FeatureFlagAccess`, the screen registry, `ResetsScreenExtensions`) is replaced by "Generated artifacts". That section covers what `openapi.json` and `client/` are, `composer client:generate`, where the Scramble config lives, and the staleness tests and CI job. It keeps the `test:without-atrium` paragraph.
+  - The Keystone bullets no longer mention Atrium requests, the Atrium controller or the `FeatureValueRow` arch exclusion.
+
+### Tests
+
+- `tests/Unit/DocumentationTest.php` (rewritten; the audit-trail scan stays). It checks the following:
+  - The README intro names Pennant, the JSON API and the MCP server, and not a page or dashboard.
+  - None of the three removed headings remain.
+  - The "OpenAPI and TypeScript client" section names `openapi.json`, the package name, `#v2.0.0`, `createPennantPlusClient(` and `composer client:generate`.
+  - The README names Atrium v2, and every README line that names Atrium names Atrium v2.
+  - Neither the README nor the skill mentions `@pennantplusManages`, `FeatureValueRow`, `FeatureFlagAccess` or `resolve_features`.
+  - The skill describes the API, MCP and the client, and has no "page"/"pages" word (the `page=` query parameter is allowed), no dashboard, no `atrium.pennant` and no `Atrium::screens()`.
+  - The CHANGELOG `v2.0.0` section has Breaking with every AC 20 removal, Upgrade with Atrium v2 and the Pennant integration, and Added with `openapi.json` and the client.
+  - CLAUDE.md and AGENTS.md have no `src/Atrium`, `ResetsScreenExtensions`, screen registry, `Atrium::css()`, `x-atrium`, `FeatureValueRow`, `FeatureFlagAccess` or Frontend section. Both state the no-Atrium rule and name `openapi.json`, `client/` and `composer client:generate`, and their shared guidance (before Ring Master) is identical.
+- Targeted run only (the gate runs `vendor/bin/pest` and `composer test`): `pest tests/Unit/DocumentationTest.php` passed 14 tests with 71 assertions. Pint `--test` passes on the test file. Task 4.5 is ticked because the gate covers it.
+
+### Deviations
+
+- None from the standards.
+- `CLAUDE.md` is a symlink to `AGENTS.md`, so the edits were made in `AGENTS.md` only. The identical-guidance test still reads both paths.

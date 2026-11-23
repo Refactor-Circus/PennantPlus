@@ -39,8 +39,8 @@ depends on: 1, 3
 files: README.md, CHANGELOG.md, resources/boost/skills/pennantplus-development/SKILL.md, CLAUDE.md, AGENTS.md, tests/Unit/DocumentationTest.php
 criteria: 19, 20, 21, 22, 23
 
-- [ ] 4.1 Write the tests first, in DocumentationTest. README: describes the API and MCP, has an "OpenAPI and TypeScript client" section with `createPennantPlusClient` and `composer client:generate`, and mentions Atrium v2 as the optional UI. Neither README nor the Boost skill mentions `@pennantplusManages`, `FeatureValueRow`, `FeatureFlagAccess` or `resolve_features`. CHANGELOG has a `v2.0.0` section with Breaking, Upgrade and Added. CLAUDE.md and AGENTS.md have no `src/Atrium` and name `composer client:generate`.
-- [ ] 4.2 README: remove the "Atrium dashboard", "Screen extensions" and "Atrium's theme switcher" sections and the Atrium wording in the intro, API and Testing sections. Add the client section.
-- [ ] 4.3 CHANGELOG: add a v2.0.0 section with Breaking (every removal in AC 20), Upgrade (Atrium v2 for the UI and Atrium's own Pennant integration) and Added (openapi.json and the client).
-- [ ] 4.4 Boost skill: drop section 7 and the resolver paragraph, remove the page wording throughout, and describe the client. In CLAUDE.md and AGENTS.md, replace the Atrium layout and Frontend guidance with the no-Atrium rule and the generated-artifacts rule.
-- [ ] 4.5 Run vendor/bin/pest and the full `composer test`; all green.
+- [x] 4.1 Write the tests first, in DocumentationTest. README: describes the API and MCP, has an "OpenAPI and TypeScript client" section with `createPennantPlusClient` and `composer client:generate`, and mentions Atrium v2 as the optional UI. Neither README nor the Boost skill mentions `@pennantplusManages`, `FeatureValueRow`, `FeatureFlagAccess` or `resolve_features`. CHANGELOG has a `v2.0.0` section with Breaking, Upgrade and Added. CLAUDE.md and AGENTS.md have no `src/Atrium` and name `composer client:generate`.
+- [x] 4.2 README: remove the "Atrium dashboard", "Screen extensions" and "Atrium's theme switcher" sections and the Atrium wording in the intro, API and Testing sections. Add the client section.
+- [x] 4.3 CHANGELOG: add a v2.0.0 section with Breaking (every removal in AC 20), Upgrade (Atrium v2 for the UI and Atrium's own Pennant integration) and Added (openapi.json and the client).
+- [x] 4.4 Boost skill: drop section 7 and the resolver paragraph, remove the page wording throughout, and describe the client. In CLAUDE.md and AGENTS.md, replace the Atrium layout and Frontend guidance with the no-Atrium rule and the generated-artifacts rule.
+- [x] 4.5 Run vendor/bin/pest and the full `composer test`; all green.
