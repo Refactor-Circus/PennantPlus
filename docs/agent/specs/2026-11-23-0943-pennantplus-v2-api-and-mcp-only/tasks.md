@@ -18,10 +18,10 @@ depends on: 1
 files: composer.json, testbench.yaml, workbench/app/Providers/WorkbenchServiceProvider.php, openapi.json, tests/OpenApiTestCase.php, tests/OpenApi/OpenApiTest.php, tests/Pest.php, tests/Feature/ComposerTest.php
 criteria: 12, 13, 14
 
-- [ ] 2.1 Write the tests first. OpenApiTest, under OpenApiTestCase, binds `uses(...)->in('OpenApi')` in Pest.php and registers the package providers, `ScrambleServiceProvider` and `WorkbenchServiceProvider`. It covers the following: the export to a temporary file equals the committed `openapi.json` after JSON decoding; `info.title` is `PennantPlus` and `info.version` is `2.0.0`; there is one operation per AC 9 route (path and method); there are no absolute paths. ComposerTest: `dedoc/scramble` is in require-dev and not in require, and src/config have no `Dedoc\`.
-- [ ] 2.2 Add `dedoc/scramble`, with a caret on the latest release that supports Laravel 13, to require-dev, and add its provider to the testbench.yaml providers. Set `scramble.api_path` to `pennantplus`, `info.version` to `2.0.0` and a fixed `servers` in `WorkbenchServiceProvider::register()`. If no compatible release exists, stop and escalate (spec Risks).
-- [ ] 2.3 Export `openapi.json` with `vendor/bin/testbench scramble:export --path=openapi.json` and commit it. Run the export twice to confirm the output is byte-stable.
-- [ ] 2.4 Run vendor/bin/pest; all green.
+- [x] 2.1 Write the tests first. OpenApiTest, under OpenApiTestCase, binds `uses(...)->in('OpenApi')` in Pest.php and registers the package providers, `ScrambleServiceProvider` and `WorkbenchServiceProvider`. It covers the following: the export to a temporary file equals the committed `openapi.json` after JSON decoding; `info.title` is `PennantPlus` and `info.version` is `2.0.0`; there is one operation per AC 9 route (path and method); there are no absolute paths. ComposerTest: `dedoc/scramble` is in require-dev and not in require, and src/config have no `Dedoc\`.
+- [x] 2.2 Add `dedoc/scramble`, with a caret on the latest release that supports Laravel 13, to require-dev, and add its provider to the testbench.yaml providers. Set `scramble.api_path` to `pennantplus`, `info.version` to `2.0.0` and a fixed `servers` in `WorkbenchServiceProvider::register()`. If no compatible release exists, stop and escalate (spec Risks).
+- [x] 2.3 Export `openapi.json` with `vendor/bin/testbench scramble:export --path=openapi.json` and commit it. Run the export twice to confirm the output is byte-stable.
+- [x] 2.4 Run vendor/bin/pest; all green.
 
 ## Group 3: TypeScript client
 depends on: 2

@@ -12,7 +12,8 @@ use Workbench\App\Models\User;
 /**
  * Turns the workbench into a demo app: PennantPlus's layered store on the
  * workbench User, with the JSON API (start at /pennantplus/features) and
- * the MCP server managing its feature flags.
+ * the MCP server managing its feature flags. It also configures Scramble,
+ * which exports the JSON API's OpenAPI document.
  */
 class WorkbenchServiceProvider extends ServiceProvider
 {
@@ -38,6 +39,13 @@ class WorkbenchServiceProvider extends ServiceProvider
                     'title' => 'name',
                 ],
             ],
+            // The OpenAPI document (openapi.json): `scramble:export` and
+            // tests/OpenApi both read this one configuration, so the export
+            // holds only the JSON API and nothing machine-specific.
+            'scramble.api_path' => 'pennantplus',
+            'scramble.ui.title' => 'PennantPlus',
+            'scramble.info.version' => '2.0.0',
+            'scramble.servers' => ['PennantPlus API' => 'http://localhost/pennantplus'],
         ]);
     }
 

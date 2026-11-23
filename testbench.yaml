@@ -4,6 +4,8 @@ providers:
   - Laravel\Pennant\PennantServiceProvider
   - Laravel\Mcp\Server\McpServiceProvider
   - RefactorCircus\PennantPlus\PennantPlusServiceProvider
+  # Dev only: `scramble:export` writes openapi.json from the JSON API.
+  - Dedoc\Scramble\ScrambleServiceProvider
   - Workbench\App\Providers\WorkbenchServiceProvider
 
 migrations:

@@ -100,3 +100,28 @@ it('removes cortex and every other dev package that requires atrium in the witho
         expect($removed)->toContain($package);
     }
 });
+
+it('requires scramble for development only', function (): void {
+    $manifest = pennantPlusComposerManifest();
+
+    expect((array) $manifest['require-dev'])->toHaveKey('dedoc/scramble')
+        ->and((array) $manifest['require'])->not->toHaveKey('dedoc/scramble');
+});
+
+it('references scramble nowhere in src or config', function (): void {
+    $root = dirname(__DIR__, 2);
+    $offenders = [];
+
+    foreach (['src', 'config'] as $directory) {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/'.$directory, FilesystemIterator::SKIP_DOTS));
+
+        /** @var SplFileInfo $file */
+        foreach ($files as $file) {
+            if (str_contains((string) file_get_contents($file->getPathname()), 'Dedoc\\')) {
+                $offenders[] = substr($file->getPathname(), strlen($root) + 1);
+            }
+        }
+    }
+
+    expect($offenders)->toBe([]);
+});
