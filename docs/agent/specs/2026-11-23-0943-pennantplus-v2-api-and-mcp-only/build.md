@@ -65,4 +65,5 @@ OpenAPI export (AC 12-14).
 - None from the standards.
 - One file outside this group's list was touched: `phpunit.xml.dist` (see Files).
 - Not touched, outside this group's files: `phpunit.xml.dist` has no `Cortex` testsuite either, so `tests/Cortex/CortexTest.php` does not run under `vendor/bin/pest`. This gap predates this job.
+- Retry check: on the retry, the work above was already committed and complete. Two fresh `scramble:export` runs were byte-identical to each other and to the committed `openapi.json` (`cmp`). The targeted `pest tests/OpenApi tests/Feature/ComposerTest.php` run passed (17 tests), and so did `phpstan analyse` (0 errors). No code changed.
 - Local install: `composer.local.json` (gitignored) was regenerated with `bin/composer-local.php`, with keystone and cortex set to `dev-main` as in the main checkout, to install Scramble. Because Cortex dev-main no longer requires Atrium, the update also removed `refactor-circus/atrium` from this worktree's `vendor/`.
