@@ -96,6 +96,11 @@
             "@test:unit",
             "@test:without-atrium"
         ],
+        "client:generate": [
+            "@php vendor/bin/testbench scramble:export --path=openapi.json --ansi",
+            "@php -r \"copy('openapi.json', 'client/openapi.json');\"",
+            "npm --prefix client run generate"
+        ],
         "clear": [
             "@php vendor/bin/testbench package:purge-skeleton --ansi"
         ],

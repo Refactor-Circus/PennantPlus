@@ -67,3 +67,36 @@ OpenAPI export (AC 12-14).
 - Not touched, outside this group's files: `phpunit.xml.dist` has no `Cortex` testsuite either, so `tests/Cortex/CortexTest.php` does not run under `vendor/bin/pest`. This gap predates this job.
 - Retry check: on the retry, the work above was already committed and complete. Two fresh `scramble:export` runs were byte-identical to each other and to the committed `openapi.json` (`cmp`). The targeted `pest tests/OpenApi tests/Feature/ComposerTest.php` run passed (17 tests), and so did `phpstan analyse` (0 errors). No code changed.
 - Local install: `composer.local.json` (gitignored) was regenerated with `bin/composer-local.php`, with keystone and cortex set to `dev-main` as in the main checkout, to install Scramble. Because Cortex dev-main no longer requires Atrium, the update also removed `refactor-circus/atrium` from this worktree's `vendor/`.
+
+## Group 3
+
+TypeScript client (AC 15-18).
+
+### Files
+
+- `client/package.json` (new): `@refactor-circus/pennantplus-client` `2.0.0`, `private`, `type: module`; `main`, `types` and `exports["."]` (`types`, `import`) under `./dist/`; `files` is `dist` and `src`; scripts `generate`, `build`, `prepare` as in AC 15. Dependencies: `openapi-fetch ^0.17.0`; devDependencies: `openapi-typescript ^7.13.0` and `typescript ^5.9.3`. TypeScript is held at 5.x because `openapi-typescript` 7.13 declares the peer `typescript ^5.x`, and the latest TypeScript (7.0.2) would fail `npm ci` on the peer conflict.
+- `client/package-lock.json` (new): from `npm --prefix client install`.
+- `client/tsconfig.json` (new): `strict`, `declaration`, `outDir: dist`, `rootDir: src`, ES2022 with `moduleResolution: Bundler`.
+- `client/src/index.ts` (new): `createPennantPlusClient(options: ClientOptions = {}): Client<paths>` wrapping `createClient<paths>()`, and `export type { paths, components, operations }`.
+- `client/openapi.json`, `client/src/schema.d.ts` (new): written by `composer client:generate`. The export left the root `openapi.json` unchanged.
+- `client/README.md` (new): install (pnpm `#v2.0.0&path:/client`), a `createPennantPlusClient` example, and how to regenerate.
+- `.gitignore`: `/client/node_modules` and `/client/dist`.
+- `composer.json`: the `client:generate` script, exactly as in the spec's design.
+- `.github/workflows/tests.yml`: new `client` job (ubuntu-latest, PHP 8.5, `actions/setup-node` v7.1.0 pinned by SHA with `node-version: lts/*` and the npm cache on `client/package-lock.json`). It runs `composer update`, `composer run prepare`, then `npm --prefix client ci`, `composer client:generate`, `git diff --exit-code -- openapi.json client` and `npm --prefix client run build`.
+
+### Tests
+
+- `tests/Feature/ClientTest.php` (new):
+  - `client/openapi.json` is byte-identical to `openapi.json`.
+  - When `client/node_modules/.bin/openapi-typescript` (`.cmd` on Windows) exists, it regenerates the schema from inside `client/` into a temporary file and compares it with `client/src/schema.d.ts`. Otherwise it skips with a message naming `npm --prefix client ci`.
+  - `package.json` declares the AC 15 name, version, private flag, type, dependency, devDependencies and scripts; `main`, `types` and every `exports` target are under `./dist/`.
+  - `tsconfig.json` is strict, emits declarations and builds into `dist`; the lockfile is committed and `/client/node_modules` and `/client/dist` are gitignored; `src/index.ts` wraps openapi-fetch and re-exports the three types.
+- `tests/Feature/ComposerTest.php`: `client:generate` is exactly the three steps in order. The `client` job runs on ubuntu-latest with PHP 8.5 and Node `lts/*`, and has the four AC 18 commands in order. The workflow job lookup is now `pennantPlusWorkflowJob($name)`, which `pennantPlusWithoutAtriumJob()` reuses.
+- Targeted run only, not the full suite (the gate runs `vendor/bin/pest`): `pest tests/Feature/ClientTest.php tests/Feature/ComposerTest.php` passed 21 tests with 62 assertions, and the schema check was not skipped. `npm --prefix client run build` passes. Pint `--test` passes on both test files, and `composer validate` passes.
+- A scratch consumer (strict, `module`/`moduleResolution: nodenext`, without `skipLibCheck`) imported `dist/index.js`. Unknown paths were rejected, which confirms that the emitted declarations carry the schema types.
+
+### Deviations
+
+- None from the standards.
+- Spec design snippet: `src/index.ts` imports the schema as `'../src/schema.js'`, not `'./schema'`. tsc never copies a `.d.ts` input into `outDir`. With `'./schema'`, the emitted `dist/index.d.ts` pointed at a `dist/schema.d.ts` that does not exist (checked by building), so consumers would get untyped or broken declarations. The changed specifier resolves to the committed `src/schema.d.ts` from both `src/` and `dist/`. The `.js` extension also lets it resolve under NodeNext. The exported API is the one in the spec.
+- `ClientTest` sits in `tests/Feature` as the task lists, although it uses no framework boot (test-layers puts boot-free tests in `Unit`). `ComposerTest`, which is also boot-free, already sits there.

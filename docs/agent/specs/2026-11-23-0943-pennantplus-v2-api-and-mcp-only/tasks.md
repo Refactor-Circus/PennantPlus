@@ -28,11 +28,11 @@ depends on: 2
 files: client/package.json, client/package-lock.json, client/tsconfig.json, client/openapi.json, client/src/schema.d.ts, client/src/index.ts, client/README.md, .gitignore, composer.json, .github/workflows/tests.yml, tests/Feature/ClientTest.php, tests/Feature/ComposerTest.php
 criteria: 15, 16, 17, 18
 
-- [ ] 3.1 Write the tests first. ClientTest: `client/openapi.json` is byte-identical to `openapi.json`; the schema regenerates equal to `client/src/schema.d.ts` when `client/node_modules/.bin/openapi-typescript` exists, otherwise the test is skipped with a message naming `npm --prefix client ci`; package.json has the name, version, private flag, type, dependency, devDependencies, scripts and dist entry points from AC 15. ComposerTest: the `client:generate` steps in order (AC 17), and the tests.yml `client` job runs `npm --prefix client ci`, `composer client:generate`, `git diff --exit-code -- openapi.json client` and `npm --prefix client run build`.
-- [ ] 3.2 Create client/package.json and tsconfig.json (strict, declaration, outDir dist), and add `client/node_modules` and `client/dist` to .gitignore. Run `npm --prefix client install` and commit package-lock.json.
-- [ ] 3.3 Write client/src/index.ts with `createPennantPlusClient(options?: ClientOptions): Client<paths>` and the type re-exports. Add a short client/README.md.
-- [ ] 3.4 Add the `client:generate` composer script (export, copy, `npm --prefix client run generate`). Run it and commit client/openapi.json and client/src/schema.d.ts. Add the `client` CI job (ubuntu, PHP 8.5, Node LTS).
-- [ ] 3.5 Run `npm --prefix client run build` and vendor/bin/pest (ClientTest not skipped); all green.
+- [x] 3.1 Write the tests first. ClientTest: `client/openapi.json` is byte-identical to `openapi.json`; the schema regenerates equal to `client/src/schema.d.ts` when `client/node_modules/.bin/openapi-typescript` exists, otherwise the test is skipped with a message naming `npm --prefix client ci`; package.json has the name, version, private flag, type, dependency, devDependencies, scripts and dist entry points from AC 15. ComposerTest: the `client:generate` steps in order (AC 17), and the tests.yml `client` job runs `npm --prefix client ci`, `composer client:generate`, `git diff --exit-code -- openapi.json client` and `npm --prefix client run build`.
+- [x] 3.2 Create client/package.json and tsconfig.json (strict, declaration, outDir dist), and add `client/node_modules` and `client/dist` to .gitignore. Run `npm --prefix client install` and commit package-lock.json.
+- [x] 3.3 Write client/src/index.ts with `createPennantPlusClient(options?: ClientOptions): Client<paths>` and the type re-exports. Add a short client/README.md.
+- [x] 3.4 Add the `client:generate` composer script (export, copy, `npm --prefix client run generate`). Run it and commit client/openapi.json and client/src/schema.d.ts. Add the `client` CI job (ubuntu, PHP 8.5, Node LTS).
+- [x] 3.5 Run `npm --prefix client run build` and vendor/bin/pest (ClientTest not skipped); all green.
 
 ## Group 4: Docs and full gate
 depends on: 1, 3

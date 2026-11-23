@@ -14,13 +14,21 @@ function pennantPlusComposerManifest(): array
 }
 
 /**
+ * A job of the tests workflow, or '' when it is missing.
+ */
+function pennantPlusWorkflowJob(string $name): string
+{
+    $workflow = (string) file_get_contents(dirname(__DIR__, 2).'/.github/workflows/tests.yml');
+
+    return preg_match('/^  '.preg_quote($name, '/').':\n(?:(?:    .*)?\n)*/m', $workflow, $match) === 1 ? $match[0] : '';
+}
+
+/**
  * The `without-atrium` job of the tests workflow, or '' when it is missing.
  */
 function pennantPlusWithoutAtriumJob(): string
 {
-    $workflow = (string) file_get_contents(dirname(__DIR__, 2).'/.github/workflows/tests.yml');
-
-    return preg_match('/^  without-atrium:\n(?:(?:    .*)?\n)*/m', $workflow, $match) === 1 ? $match[0] : '';
+    return pennantPlusWorkflowJob('without-atrium');
 }
 
 it('requires no suite package but keystone', function (): void {
@@ -106,6 +114,36 @@ it('requires scramble for development only', function (): void {
 
     expect((array) $manifest['require-dev'])->toHaveKey('dedoc/scramble')
         ->and((array) $manifest['require'])->not->toHaveKey('dedoc/scramble');
+});
+
+it('regenerates the openapi document, its client copy and the client schema in order', function (): void {
+    expect(pennantPlusComposerManifest()['scripts']['client:generate'] ?? null)->toBe([
+        '@php vendor/bin/testbench scramble:export --path=openapi.json --ansi',
+        "@php -r \"copy('openapi.json', 'client/openapi.json');\"",
+        'npm --prefix client run generate',
+    ]);
+});
+
+it('fails ci on a stale document or client in the client job', function (): void {
+    $job = pennantPlusWorkflowJob('client');
+
+    expect($job)->not->toBe('')
+        ->toContain('runs-on: ubuntu-latest')
+        ->toMatch('/php-version: [\'"]?8\.5[\'"]?\n/')
+        ->toMatch('/node-version: [\'"]?lts\/\*[\'"]?\n/');
+
+    $steps = [
+        'npm --prefix client ci',
+        'composer client:generate',
+        'git diff --exit-code -- openapi.json client',
+        'npm --prefix client run build',
+    ];
+    $positions = array_map(fn (string $step): int|false => strpos($job, $step), $steps);
+    $ordered = $positions;
+    sort($ordered);
+
+    expect($positions)->not->toContain(false)
+        ->and($positions)->toBe($ordered);
 });
 
 it('references scramble nowhere in src or config', function (): void {
