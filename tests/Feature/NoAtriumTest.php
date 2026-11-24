@@ -7,9 +7,11 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 
 /*
- * PennantPlus v2 ships only its JSON API and MCP server: nothing in the
- * package names Atrium, and the Atrium page, resolver and Blade conditional
- * are gone.
+ * PennantPlus v2's PHP is its JSON API and MCP server: no PHP code names
+ * Atrium, and the Atrium page, resolver and Blade conditional are gone. Its
+ * UI is its Atrium front-end module, JavaScript only: the `atrium/` sources,
+ * the built `dist/atrium/` and `extra.atrium` in composer.json (checked in
+ * AtriumModuleTest), which this file leaves alone.
  */
 
 /**
@@ -50,6 +52,31 @@ it('names atrium in no file under src, config, lang or database', function (): v
 
     expect(pennantPlusFilesUnder(['src']))->not->toBeEmpty()
         ->and($found)->toBe([]);
+});
+
+it('names atrium in no php file of the workbench', function (): void {
+    $root = dirname(__DIR__, 2);
+
+    $php = array_filter(pennantPlusFilesUnder(['workbench']), fn (string $path): bool => str_ends_with($path, '.php'));
+
+    $found = array_values(array_map(
+        fn (string $path): string => substr($path, strlen($root) + 1),
+        array_filter($php, fn (string $path): bool => stripos((string) file_get_contents($path), 'atrium') !== false),
+    ));
+
+    expect($php)->not->toBeEmpty()
+        ->and($found)->toBe([]);
+});
+
+it('keeps the atrium module out of the php source', function (): void {
+    $root = dirname(__DIR__, 2);
+
+    $foreign = array_values(array_filter(
+        pennantPlusFilesUnder(['src', 'config', 'lang', 'database']),
+        fn (string $path): bool => ! str_ends_with($path, '.php') && ! str_ends_with($path, '.stub'),
+    ));
+
+    expect(array_map(fn (string $path): string => substr($path, strlen($root) + 1), $foreign))->toBe([]);
 });
 
 it('has no atrium directory in the source', function (): void {

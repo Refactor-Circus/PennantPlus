@@ -89,3 +89,9 @@
 - Rationale: The user said "i'd like everything release as v2 to match". This supersedes any earlier choice to keep `^0.1` constraints or release Keystone as v0.2.0.
 - Date: 2026-11-23
 - Raised by: user
+
+## D-016: Where does PennantPlus's Atrium front end live?
+- Choice: In PennantPlus. The feature flags module staged in Atrium (`ui/modules/pennantplus`) moves to `atrium/` (Vue sources, Vitest suite, built with `@refactor-circus/atrium/vite`, the SDK a dev dependency pinned to Atrium commit ad559e4), built to the committed `dist/atrium/` and declared under `extra.atrium` (`key`, `scripts`, `styles`) in `composer.json`. It types its API calls with the package's own generated client (`client/src/schema.d.ts`), not a vendored copy. Still no Atrium PHP: no `RefactorCircus\Atrium` class, no Composer require/suggest of Atrium; the no-Atrium tests now cover PHP (src, config, lang, database, workbench PHP) and allow the module's files. A CI `ui` job rebuilds and diffs `dist/atrium`, and `AtriumModuleTest` checks the build's source hash.
+- Rationale: The user said "move the vue files for each module back into their respective modules. modules need to register their js. js should be injected into the blade file. modules are responsible for their own frontend and cjs clients from now on". This supersedes the "ships no UI" part of the v2 scope (PennantPlus still ships no server-rendered UI).
+- Date: 2026-11-24
+- Raised by: user

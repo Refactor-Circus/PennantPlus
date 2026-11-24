@@ -15,7 +15,7 @@ metadata:
 
 Use this skill when a Laravel application uses `refactor-circus/pennantplus` to layer Pennant feature flags (one global value, per-user overrides), gate routes or MCP tools on them, or manage stored flag values through the JSON API, the MCP tools, or the TypeScript client.
 
-PennantPlus ships no UI. Atrium v2 provides the optional feature flags screen on top of the JSON API.
+PennantPlus has no server-rendered UI. It ships its Atrium v2 front-end module (the optional feature flags screen, prebuilt in `dist/atrium/` and declared under `extra.atrium` in `composer.json`), which Atrium v2 loads when installed; the module calls the same JSON API.
 
 ## Primary Goal
 

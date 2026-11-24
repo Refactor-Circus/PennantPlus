@@ -114,6 +114,15 @@ it('has no Atrium dashboard, screen extensions or theme switcher sections in the
     expect(pennantPlusDocument('README.md'))->not->toMatch('/^#+ '.preg_quote($heading, '/').'\s*$/mi');
 })->with(['Atrium dashboard', 'Screen extensions', "Atrium's theme switcher"]);
 
+it('documents the Atrium module, its build and its sources in the README', function (): void {
+    expect(pennantPlusSection(pennantPlusDocument('README.md'), '## Atrium module'))
+        ->toContain('dist/atrium/')
+        ->toContain('extra.atrium')
+        ->toContain('atrium/')
+        ->toContain('pnpm build')
+        ->toContain('No PHP code in PennantPlus refers to Atrium');
+});
+
 it('documents the OpenAPI document and the TypeScript client in the README', function (): void {
     $section = pennantPlusSection(pennantPlusDocument('README.md'), '## OpenAPI and TypeScript client');
 
@@ -125,13 +134,15 @@ it('documents the OpenAPI document and the TypeScript client in the README', fun
         ->toContain('composer client:generate');
 });
 
-it('names Atrium v2 as the optional UI, and Atrium only so', function (): void {
-    $readme = pennantPlusDocument('README.md');
+it('names Atrium v2 as the optional UI, and Atrium only so outside the Atrium module section', function (): void {
+    $readme = str_replace("\r\n", "\n", pennantPlusDocument('README.md'));
+    $section = pennantPlusSection($readme, '## Atrium module');
 
-    expect($readme)->toContain('Atrium v2');
+    expect($readme)->toContain('Atrium v2')
+        ->and($section)->not->toBe('');
 
     $lines = array_filter(
-        explode("\n", $readme),
+        explode("\n", str_replace("## Atrium module\n".$section, '', $readme)),
         fn (string $line): bool => stripos($line, 'atrium') !== false && ! str_contains($line, 'Atrium v2'),
     );
 
@@ -188,7 +199,7 @@ it('has a v2.0.0 changelog section with Breaking, Upgrade and Added', function (
         ->toContain('createPennantPlusClient');
 });
 
-it('keeps the agent guidance free of the Atrium integration and names the generated artifacts', function (string $path): void {
+it('keeps the agent guidance free of the PHP Atrium integration, names the generated artifacts and the Atrium module', function (string $path): void {
     $guidance = pennantPlusDocument($path);
 
     expect($guidance)
@@ -200,7 +211,10 @@ it('keeps the agent guidance free of the Atrium integration and names the genera
         ->not->toContain('FeatureValueRow')
         ->not->toContain('FeatureFlagAccess')
         ->not->toContain('## Frontend')
-        ->toContain('Nothing in the package names Atrium')
+        ->toContain('No PHP code in the package names Atrium')
+        ->toContain('dist/atrium/')
+        ->toContain('extra.atrium')
+        ->toContain('pnpm build')
         ->toContain('openapi.json')
         ->toContain('client/')
         ->toContain('composer client:generate');

@@ -6,7 +6,7 @@
 
 Layered [Laravel Pennant](https://laravel.com/docs/pennant) feature flags: one global value per feature with per-user overrides, a gate for entry surfaces (routes, MCP tools), and a JSON API and an MCP server for managing stored values. The API is described by a committed OpenAPI document and has a generated TypeScript client.
 
-PennantPlus ships no UI. [Atrium v2](https://github.com/Refactor-Circus/Atrium) provides the optional feature flags screen, built on the JSON API and the client.
+PennantPlus also ships its [Atrium v2](https://github.com/Refactor-Circus/Atrium) front-end module: the optional feature flags screen, built on the JSON API and the client, which Atrium v2 loads when it is installed (see [Atrium module](#atrium-module)).
 
 ## Installation
 
@@ -201,6 +201,20 @@ app(UpdateFeatureValueAction::class)->execute(UpdateFeatureValueData::from([
     'value' => false,
 ]));
 ```
+
+## Atrium module
+
+When [Atrium v2](https://github.com/Refactor-Circus/Atrium) is installed, it shows the feature flags screen at `/pennantplus/features`. PennantPlus ships that screen as an Atrium module: JavaScript and CSS only, prebuilt and committed in `dist/atrium/` (`atrium.js`, its chunks, `atrium.css` and `build.json`) and declared under `extra.atrium` in `composer.json`. Atrium v2 discovers it from Composer's installed packages (`php artisan atrium:discover`, which `package:discover` runs) and loads it while the `pennantplus` integration is active. No PHP code in PennantPlus refers to Atrium, and Composer does not require it; without Atrium the files are inert.
+
+The module's sources (Vue, TypeScript and Vitest tests) live in `atrium/`, which is left out of the dist archive, and use the generated client's types (`client/src/schema.d.ts`). After changing them, rebuild and commit `dist/atrium/`:
+
+```bash
+cd atrium
+pnpm install
+pnpm typecheck && pnpm test && pnpm build
+```
+
+The PHP suite fails when `dist/atrium/build.json` is older than the sources, and the CI `ui` job fails when a rebuild changes `dist/atrium/`.
 
 ## Testing
 

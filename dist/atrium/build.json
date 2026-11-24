@@ -1,0 +1,12 @@
+{
+  "key": "pennantplus",
+  "shared_api": "1.0",
+  "root": "../../atrium",
+  "inputs": [
+    "src",
+    "package.json",
+    "vite.config.ts",
+    "pnpm-lock.yaml"
+  ],
+  "hash": "3932241faa8932487890300c98dd604748c6678d7cb5f81601046b2526a80f5a"
+}
