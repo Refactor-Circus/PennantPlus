@@ -57,7 +57,7 @@ var U = { key: 0 }, W = {
 }, J = { class: "text-muted" }, ae = {
 	key: 0,
 	class: "px-3 py-1.5 text-muted"
-}, oe = { class: "flex items-end sm:pt-6" }, se = /* @__PURE__ */ E({
+}, oe = { class: "sm:mt-field-label" }, se = /* @__PURE__ */ E({
 	__name: "PennantPlusSetValue",
 	props: {
 		scopeTypes: {},
@@ -252,7 +252,7 @@ var U = { key: 0 }, W = {
 }), Y = {
 	class: "flex flex-col gap-5",
 	"data-testid": "pennantplus-features"
-}, ce = ["value"], X = { class: "flex gap-2" }, Z = ["title"], le = {
+}, ce = ["value"], X = { class: "mt-field-label flex gap-2" }, Z = ["title"], le = {
 	key: 0,
 	class: "block text-xs text-muted"
 }, ue = { class: "flex items-center gap-2" }, de = {
@@ -425,7 +425,7 @@ var U = { key: 0 }, W = {
 				}, null, 8, ["scope-types"]),
 				T(R, {
 					state: P(W),
-					class: "grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4",
+					class: "grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-4",
 					"data-testid": "pennantplus-filters",
 					onSubmit: ve
 				}, {

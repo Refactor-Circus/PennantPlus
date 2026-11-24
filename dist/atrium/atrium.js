@@ -41,7 +41,7 @@ var n = { pennantplus: { features: {
 } } }, r = [{
 	path: "/pennantplus/features",
 	name: "pennantplus-features",
-	component: () => import("./chunks/features-BX_zs41L.js")
+	component: () => import("./chunks/features-DUlS5rKF.js")
 }], i = { "pennantplus.features": "pennantplus-features" }, a = e({
 	key: "pennantplus",
 	routes: r,

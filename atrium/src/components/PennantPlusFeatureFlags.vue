@@ -224,7 +224,7 @@ void load()
 
       <PennantPlusSetValue :scope-types="scopeTypes" :feature-list="FEATURE_LIST" @saved="saved" @forbidden="action.forbidden.value = true" />
 
-      <UForm :state="filters" class="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennantplus-filters" @submit="applyFilters">
+      <UForm :state="filters" class="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennantplus-filters" @submit="applyFilters">
         <UFormField :label="t('pennantplus.features.feature')">
           <UInput
             v-model="filters.feature"
@@ -247,7 +247,7 @@ void load()
         <UFormField :label="t('pennantplus.features.scope_id')">
           <UInput v-model="filters.scope_id" class="w-full" data-testid="pennantplus-filter-scope-id" />
         </UFormField>
-        <div class="flex gap-2">
+        <div class="mt-field-label flex gap-2">
           <UButton type="submit" variant="outline" icon="i-lucide-funnel" :label="t('pennantplus.features.filter')" data-testid="pennantplus-filter" />
           <UButton color="neutral" variant="ghost" icon="i-lucide-x" :label="t('pennantplus.features.reset')" data-testid="pennantplus-reset" @click="resetFilters" />
         </div>

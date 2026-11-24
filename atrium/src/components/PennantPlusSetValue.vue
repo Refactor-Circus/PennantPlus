@@ -200,7 +200,7 @@ async function submit(): Promise<void> {
         <UInput v-model="value" class="w-full font-mono" data-testid="pennantplus-value-input" />
       </UFormField>
 
-      <div class="flex items-end sm:pt-6">
+      <div class="sm:mt-field-label">
         <UButton type="submit" icon="i-lucide-check" :label="t('pennantplus.features.save')" :loading="action.busy.value" data-testid="pennantplus-save" />
       </div>
     </UForm>
