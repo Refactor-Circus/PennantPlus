@@ -118,11 +118,43 @@ async function mountPage(): Promise<VueWrapper> {
   return wrapper as unknown as VueWrapper
 }
 
-/** The form control under a test id: the element itself, or the input Nuxt UI wraps. */
+/** The input under a test id: the element itself, or the one Nuxt UI wraps. */
 function control(wrapper: VueWrapper, testid: string): DOMWrapper<HTMLInputElement> {
   const found = wrapper.find<HTMLInputElement>(`[data-testid="${testid}"]`)
 
-  return found.element.matches('input, select, textarea') ? found : found.find<HTMLInputElement>('input, select, textarea')
+  return found.element.matches('input') ? found : found.find<HTMLInputElement>('input')
+}
+
+/** The stored values' rows of the <UTable>. */
+function rows(wrapper: VueWrapper): DOMWrapper<HTMLTableRowElement>[] {
+  return wrapper.findAll<HTMLTableRowElement>('[data-testid="pennantplus-values"] tbody tr')
+}
+
+/** Opens the <USelect> under a test id and returns its options (rendered in a portal). */
+async function openSelect(wrapper: VueWrapper, testid: string): Promise<HTMLElement[]> {
+  await wrapper.find(`[data-testid="${testid}"]`).trigger('pointerdown', { button: 0, pointerType: 'mouse' })
+  await settle()
+
+  return [...document.body.querySelectorAll<HTMLElement>('[role="listbox"] [role="option"]')]
+}
+
+/** The labels a <USelect> offers; it is closed again afterwards. */
+async function selectOptions(wrapper: VueWrapper, testid: string): Promise<string[]> {
+  const labels = (await openSelect(wrapper, testid)).map(option => option.textContent!.trim())
+
+  document.body.querySelector('[role="listbox"]')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  await settle()
+
+  return labels
+}
+
+/** Picks the option labelled `label` from the <USelect> under a test id. */
+async function choose(wrapper: VueWrapper, testid: string, label: string): Promise<void> {
+  const option = (await openSelect(wrapper, testid)).find(found => found.textContent!.trim() === label)
+
+  expect(option, `${testid} offers ${label}`).toBeDefined()
+  option!.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'mouse' }))
+  await settle()
 }
 
 function requests(calls: PackageCall[], method: string, route: string): PackageCall[] {
@@ -155,14 +187,14 @@ describe('loading', () => {
     expect(requests(calls, 'GET', '/values')).toHaveLength(1)
     expect(calls.every(call => call.pkg === 'pennantplus')).toBe(true)
 
-    const rows = wrapper.findAll('[data-testid="pennantplus-value"]')
-    expect(rows).toHaveLength(2)
-    expect(rows[0]!.text()).toContain('new-dashboard')
-    expect(rows[0]!.text()).toContain('Global')
-    expect(rows[0]!.find('[data-testid="pennantplus-value-status"]').attributes('data-status')).toBe('active')
-    expect(rows[1]!.text()).toContain('User #7')
-    expect(rows[1]!.text()).toContain('Ada Lovelace')
-    expect(rows[1]!.find('[data-testid="pennantplus-value-status"]').attributes('data-status')).toBe('inactive')
+    const shown = rows(wrapper)
+    expect(shown).toHaveLength(2)
+    expect(shown[0]!.text()).toContain('new-dashboard')
+    expect(shown[0]!.text()).toContain('Global')
+    expect(shown[0]!.find('[data-testid="pennantplus-value-status"]').attributes('data-status')).toBe('active')
+    expect(shown[1]!.text()).toContain('User #7')
+    expect(shown[1]!.text()).toContain('Ada Lovelace')
+    expect(shown[1]!.find('[data-testid="pennantplus-value-status"]').attributes('data-status')).toBe('inactive')
   })
 
   it('asks atrium.screens.show for its extensions', async () => {
@@ -192,8 +224,7 @@ describe('loading', () => {
     const offered = wrapper.findAll<HTMLOptionElement>('[data-testid="pennantplus-feature-options"] option').map(option => option.element.value)
     expect(offered).toEqual(['new-dashboard', 'App\\Features\\Beta'])
 
-    const filterScopes = control(wrapper, 'pennantplus-filter-scope').findAll('option').map(option => option.text())
-    expect(filterScopes).toEqual(['All scopes', 'Global', 'Users', 'Other scopes'])
+    expect(await selectOptions(wrapper, 'pennantplus-filter-scope')).toEqual(['All scopes', 'Global', 'Users', 'Other scopes'])
   })
 
   it('offers only global, the configured models and other scopes when setting a value', async () => {
@@ -202,8 +233,7 @@ describe('loading', () => {
     })
     const wrapper = await mountPage()
 
-    const formScopes = control(wrapper, 'pennantplus-scope-type').findAll<HTMLOptionElement>('option').map(option => option.element.value)
-    expect(formScopes).toEqual(['global', USER, 'other'])
+    expect(await selectOptions(wrapper, 'pennantplus-scope-type')).toEqual(['Global', 'Users', 'Other scopes'])
   })
 
   it('shows a value that is not a boolean as JSON', async () => {
@@ -213,7 +243,7 @@ describe('loading', () => {
     await wrapper.find('[data-testid="pennantplus-next"]').trigger('click')
     await settle()
 
-    const row = wrapper.find('[data-testid="pennantplus-value"]')
+    const row = rows(wrapper)[0]!
     expect(row.text()).toContain('{"variant":"b"}')
     expect(row.find('[data-testid="pennantplus-value-status"]').attributes('data-status')).toBe('active')
   })
@@ -241,7 +271,7 @@ describe('filters and pages', () => {
     const wrapper = await mountPage()
 
     await control(wrapper, 'pennantplus-filter-feature').setValue('new-dashboard')
-    await control(wrapper, 'pennantplus-filter-scope').setValue(USER)
+    await choose(wrapper, 'pennantplus-filter-scope', 'Users')
     await control(wrapper, 'pennantplus-filter-scope-id').setValue('7')
     await wrapper.find('[data-testid="pennantplus-filters"]').trigger('submit')
     await settle()
@@ -300,7 +330,7 @@ describe('setting a value (values.update)', () => {
     const wrapper = await mountPage()
 
     await control(wrapper, 'pennantplus-feature').setValue('App\\Features\\Beta')
-    await control(wrapper, 'pennantplus-scope-type').setValue(USER)
+    await choose(wrapper, 'pennantplus-scope-type', 'Users')
     await control(wrapper, 'pennantplus-scope-search').setValue('Ada')
     await wait(300)
 
@@ -329,7 +359,7 @@ describe('setting a value (values.update)', () => {
     const wrapper = await mountPage()
 
     await control(wrapper, 'pennantplus-feature').setValue('new-dashboard')
-    await control(wrapper, 'pennantplus-scope-type').setValue('other')
+    await choose(wrapper, 'pennantplus-scope-type', 'Other scopes')
     await control(wrapper, 'pennantplus-scope-string').setValue('team-red')
     await wrapper.find('[data-testid="pennantplus-set-value"]').trigger('submit')
     await settle()

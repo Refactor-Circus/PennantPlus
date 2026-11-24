@@ -101,3 +101,9 @@
 - Rationale: The user said "move the php declarations": each package owns its Atrium integration declaration, which Atrium no longer holds in PHP.
 - Date: 2026-11-24
 - Raised by: user
+
+## D-018: Is PennantPlus's Atrium module built from Nuxt UI?
+- Choice: Yes, like Atrium's own components (Atrium D-091, SDK pinned to f6d6f83). The stored values are a `UTable` (TanStack columns, cell slots for the scope, the status `UBadge` and the row's `UButton`s, actions right-aligned via `meta.class`), the set-value card a `UPageCard` holding a `UForm`, the filter bar a `UForm`, both scope pickers `USelect`s (the filter's "All scopes" item is the sentinel `*`, since a select item cannot have an empty value, mapped back to no `scope` query), the scope model results `UButton`s, the empty list a `UEmpty`, the load error and the form's message `UAlert`s (retry as an alert action). The `<datalist>` offering known feature names stays, wired to `UInput`'s `list`: Nuxt UI has no free-text field with suggestions short of `UInputMenu`, whose typed text is not its value. Test ids, behaviour, API calls and i18n are kept; tests read rows from the table's `tbody tr` (`UTable` sets no row attributes) and drive `USelect` through its listbox. `atrium/test/nuxt-ui-guard.test.ts` fails on a raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<table>`, `<details>` or `<a href>` in `atrium/src/**/*.vue`, with a self-test of its detector.
+- Rationale: The user asked to "convert raw html": every Atrium UI is built on Nuxt UI 4, and a module ships no markup of its own for what Nuxt UI provides.
+- Date: 2026-11-24
+- Raised by: user

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { SelectItem, TableColumn } from '@nuxt/ui'
 import PennantPlusSetValue from './PennantPlusSetValue.vue'
 import {
   displayValue,
@@ -37,6 +38,9 @@ interface Filters {
 
 const FEATURE_LIST = 'pennantplus-feature-options'
 
+/** The scope filter's "all scopes" item: a select item cannot have an empty value. */
+const ALL_SCOPES = '*'
+
 const { t, locale } = useI18n()
 const client = usePennantPlus()
 const action = usePennantPlusAction()
@@ -57,6 +61,25 @@ const filters = reactive<Filters>({ feature: '', scope: '', scope_id: '' })
 const applied = ref<Filters>({ feature: '', scope: '', scope_id: '' })
 
 const forbidden = computed(() => refused.value || action.forbidden.value)
+
+/** The scope filter's value, with no scope as ALL_SCOPES. */
+const scopeFilter = computed({
+  get: () => filters.scope === '' ? ALL_SCOPES : filters.scope,
+  set: (scope: string) => { filters.scope = scope === ALL_SCOPES ? '' : scope }
+})
+
+const scopeItems = computed<SelectItem[]>(() => [
+  { label: t('pennantplus.features.all_scopes'), value: ALL_SCOPES },
+  ...scopeTypes.value.map(scope => ({ label: scope.label, value: scope.type }))
+])
+
+const columns = computed<TableColumn<PennantPlusValue>[]>(() => [
+  { accessorKey: 'feature', header: t('pennantplus.features.feature'), meta: { class: { td: 'font-medium' } } },
+  { accessorKey: 'scope', header: t('pennantplus.features.scope') },
+  { accessorKey: 'value', header: t('pennantplus.features.value') },
+  { accessorKey: 'updated_at', header: t('pennantplus.features.updated'), meta: { class: { td: 'text-muted' } } },
+  { id: 'actions', header: () => h('span', { class: 'sr-only' }, t('pennantplus.features.actions')), meta: { class: { td: 'text-right' } } }
+])
 
 const dates = computed(() => new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }))
 
@@ -192,10 +215,15 @@ void load()
 
     <USkeleton v-else-if="!loaded" class="h-32" />
 
-    <div v-else-if="failed" class="flex items-center justify-between gap-3 rounded-md border border-default p-4 text-sm" role="alert" data-testid="pennantplus-load-error">
-      <span>{{ t('pennantplus.features.load_failed') }}</span>
-      <UButton size="sm" variant="outline" icon="i-lucide-refresh-cw" :label="t('pennantplus.features.retry')" @click="load()" />
-    </div>
+    <UAlert
+      v-else-if="failed"
+      color="error"
+      variant="subtle"
+      icon="i-lucide-circle-alert"
+      :title="t('pennantplus.features.load_failed')"
+      :actions="[{ label: t('pennantplus.features.retry'), icon: 'i-lucide-refresh-cw', size: 'sm', variant: 'outline', onClick: () => load() }]"
+      data-testid="pennantplus-load-error"
+    />
 
     <template v-else>
       <datalist :id="FEATURE_LIST" :data-testid="FEATURE_LIST">
@@ -207,7 +235,7 @@ void load()
 
       <PennantPlusSetValue :scope-types="scopeTypes" :feature-list="FEATURE_LIST" @saved="saved" @forbidden="action.forbidden.value = true" />
 
-      <form class="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennantplus-filters" @submit.prevent="applyFilters">
+      <UForm :state="filters" class="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="pennantplus-filters" @submit="applyFilters">
         <UFormField :label="t('pennantplus.features.feature')">
           <UInput
             v-model="filters.feature"
@@ -219,10 +247,7 @@ void load()
           />
         </UFormField>
         <UFormField :label="t('pennantplus.features.scope')">
-          <select v-model="filters.scope" class="w-full rounded-md border border-default bg-default px-2.5 py-1.5 text-sm" data-testid="pennantplus-filter-scope">
-            <option value="">{{ t('pennantplus.features.all_scopes') }}</option>
-            <option v-for="scope in scopeTypes" :key="scope.type" :value="scope.type">{{ scope.label }}</option>
-          </select>
+          <USelect v-model="scopeFilter" :items="scopeItems" class="w-full" data-testid="pennantplus-filter-scope" />
         </UFormField>
         <UFormField :label="t('pennantplus.features.scope_id')">
           <UInput v-model="filters.scope_id" class="w-full" data-testid="pennantplus-filter-scope-id" />
@@ -231,69 +256,66 @@ void load()
           <UButton type="submit" variant="outline" icon="i-lucide-funnel" :label="t('pennantplus.features.filter')" data-testid="pennantplus-filter" />
           <UButton color="neutral" variant="ghost" icon="i-lucide-x" :label="t('pennantplus.features.reset')" data-testid="pennantplus-reset" @click="resetFilters" />
         </div>
-      </form>
+      </UForm>
 
-      <p v-if="values.length === 0" class="atrium-empty" data-testid="pennantplus-no-values">
-        {{ t('pennantplus.features.no_values') }}
-      </p>
+      <UEmpty
+        v-if="values.length === 0"
+        icon="i-lucide-flag"
+        variant="naked"
+        :description="t('pennantplus.features.no_values')"
+        data-testid="pennantplus-no-values"
+      />
 
-      <div v-else class="overflow-x-auto rounded-md border border-default">
-        <table class="w-full text-left text-sm" data-testid="pennantplus-values">
-          <thead class="bg-elevated text-muted">
-            <tr>
-              <th class="px-3 py-2 font-medium">{{ t('pennantplus.features.feature') }}</th>
-              <th class="px-3 py-2 font-medium">{{ t('pennantplus.features.scope') }}</th>
-              <th class="px-3 py-2 font-medium">{{ t('pennantplus.features.value') }}</th>
-              <th class="px-3 py-2 font-medium">{{ t('pennantplus.features.updated') }}</th>
-              <th class="px-3 py-2"><span class="sr-only">{{ t('pennantplus.features.actions') }}</span></th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-default">
-            <tr v-for="value in values" :key="`${value.feature}|${value.scope}`" data-testid="pennantplus-value">
-              <td class="px-3 py-2 font-medium">{{ value.feature }}</td>
-              <td class="px-3 py-2">
-                <span :title="value.scope">{{ value.scope_label }}</span>
-                <span v-if="value.title" class="block text-xs text-muted">{{ value.title }}</span>
-              </td>
-              <td class="px-3 py-2">
-                <div class="flex items-center gap-2">
-                  <UBadge
-                    :color="value.active ? 'success' : 'neutral'"
-                    variant="subtle"
-                    :label="value.active ? t('pennantplus.features.active') : t('pennantplus.features.inactive')"
-                    :data-status="value.active ? 'active' : 'inactive'"
-                    data-testid="pennantplus-value-status"
-                  />
-                  <code v-if="typeof value.value !== 'boolean'" class="text-xs">{{ displayValue(value.value) }}</code>
-                </div>
-              </td>
-              <td class="px-3 py-2 text-muted">{{ updated(value.updated_at) }}</td>
-              <td class="px-3 py-2">
-                <div class="flex justify-end gap-2">
-                  <UButton
-                    size="xs"
-                    variant="outline"
-                    :icon="value.active ? 'i-lucide-ban' : 'i-lucide-circle-check'"
-                    :label="value.active ? t('pennantplus.features.deactivate') : t('pennantplus.features.activate')"
-                    :loading="action.busy.value"
-                    data-testid="pennantplus-toggle"
-                    @click="toggle(value)"
-                  />
-                  <UButton
-                    size="xs"
-                    color="neutral"
-                    variant="ghost"
-                    icon="i-lucide-x"
-                    :label="t('pennantplus.features.forget')"
-                    data-testid="pennantplus-forget"
-                    @click="forget(value)"
-                  />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <UTable
+        v-else
+        :data="values"
+        :columns="columns"
+        :get-row-id="(value: PennantPlusValue) => `${value.feature}|${value.scope}`"
+        class="rounded-md border border-default"
+        data-testid="pennantplus-values"
+      >
+        <template #scope-cell="{ row }">
+          <span :title="row.original.scope">{{ row.original.scope_label }}</span>
+          <span v-if="row.original.title" class="block text-xs text-muted">{{ row.original.title }}</span>
+        </template>
+        <template #value-cell="{ row }">
+          <div class="flex items-center gap-2">
+            <UBadge
+              :color="row.original.active ? 'success' : 'neutral'"
+              variant="subtle"
+              :label="row.original.active ? t('pennantplus.features.active') : t('pennantplus.features.inactive')"
+              :data-status="row.original.active ? 'active' : 'inactive'"
+              data-testid="pennantplus-value-status"
+            />
+            <code v-if="typeof row.original.value !== 'boolean'" class="text-xs">{{ displayValue(row.original.value) }}</code>
+          </div>
+        </template>
+        <template #updated_at-cell="{ row }">
+          {{ updated(row.original.updated_at) }}
+        </template>
+        <template #actions-cell="{ row }">
+          <div class="flex justify-end gap-2">
+            <UButton
+              size="xs"
+              variant="outline"
+              :icon="row.original.active ? 'i-lucide-ban' : 'i-lucide-circle-check'"
+              :label="row.original.active ? t('pennantplus.features.deactivate') : t('pennantplus.features.activate')"
+              :loading="action.busy.value"
+              data-testid="pennantplus-toggle"
+              @click="toggle(row.original)"
+            />
+            <UButton
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-x"
+              :label="t('pennantplus.features.forget')"
+              data-testid="pennantplus-forget"
+              @click="forget(row.original)"
+            />
+          </div>
+        </template>
+      </UTable>
 
       <div v-if="lastPage > 1" class="flex items-center justify-between gap-3 text-sm">
         <UButton

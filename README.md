@@ -218,6 +218,8 @@ pnpm typecheck && pnpm test && pnpm build
 
 The PHP suite fails when `dist/atrium/build.json` is older than the sources, and the CI `ui` job fails when a rebuild changes `dist/atrium/`.
 
+The module's components compose Nuxt UI as Atrium compiles it (`@refactor-circus/atrium/ui`) and the SDK's `Atrium*` components; `atrium/test/nuxt-ui-guard.test.ts` fails when a page or component renders a raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<table>`, `<details>` or `<a href>`.
+
 ## Testing
 
 ```bash

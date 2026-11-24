@@ -44,7 +44,11 @@ const value = ref('true')
 const jsonError = ref<string | null>(null)
 
 /** Global, the configured models (whose records can be searched) and other strings. */
-const scopes = computed(() => props.scopeTypes.filter(type => type.type === GLOBAL_SCOPE || type.type === OTHER_SCOPE || type.searchable))
+const scopes = computed(() => props.scopeTypes
+  .filter(type => type.type === GLOBAL_SCOPE || type.type === OTHER_SCOPE || type.searchable)
+  .map(type => ({ label: type.label, value: type.type })))
+/** What the form holds, for <UForm> (the API validates it). */
+const state = computed(() => ({ feature: feature.value, scope_type: scopeType.value, value: value.value }))
 const isModel = computed(() => scopeType.value !== GLOBAL_SCOPE && scopeType.value !== OTHER_SCOPE)
 
 /** A scope id error with no id field to show it under goes under the scope. */
@@ -134,25 +138,14 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <h3 class="font-medium">{{ t('pennantplus.features.set_value') }}</h3>
-    </template>
-
-    <form class="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-5" data-testid="pennantplus-set-value" @submit.prevent="submit">
+  <UPageCard :title="t('pennantplus.features.set_value')" variant="outline">
+    <UForm :state="state" class="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-5" data-testid="pennantplus-set-value" @submit="submit">
       <UFormField :label="t('pennantplus.features.feature')" :error="action.error('feature')" required>
         <UInput v-model="feature" :list="featureList" autocomplete="off" class="w-full" data-testid="pennantplus-feature" />
       </UFormField>
 
       <UFormField :label="t('pennantplus.features.scope')" :error="scopeError">
-        <select
-          v-model="scopeType"
-          class="w-full rounded-md border border-default bg-default px-2.5 py-1.5 text-sm"
-          data-testid="pennantplus-scope-type"
-          @change="clear"
-        >
-          <option v-for="scope in scopes" :key="scope.type" :value="scope.type">{{ scope.label }}</option>
-        </select>
+        <USelect v-model="scopeType" :items="scopes" class="w-full" data-testid="pennantplus-scope-type" @update:model-value="clear" />
       </UFormField>
 
       <div v-if="scopeType === GLOBAL_SCOPE" />
@@ -176,23 +169,25 @@ async function submit(): Promise<void> {
             data-testid="pennantplus-scope-search"
             @update:model-value="searchSoon"
           />
-          <ul
+          <div
             v-if="searched"
-            class="absolute top-full z-20 mt-1.5 max-h-60 w-full overflow-y-auto rounded-md border border-default bg-default p-1 text-sm shadow-lg"
+            class="absolute top-full z-20 mt-1.5 flex max-h-60 w-full flex-col overflow-y-auto rounded-md border border-default bg-default p-1 text-sm shadow-lg"
           >
-            <li v-for="model in results" :key="model.id">
-              <button
-                type="button"
-                class="flex w-full cursor-pointer justify-between gap-3 rounded px-2 py-1.5 text-left hover:bg-elevated"
-                data-testid="pennantplus-scope-result"
-                @click="pick(model)"
-              >
-                <span>{{ model.title }}</span>
-                <span class="text-muted">#{{ model.id }}</span>
-              </button>
-            </li>
-            <li v-if="results.length === 0" class="px-3 py-1.5 text-muted">{{ t('pennantplus.features.no_models') }}</li>
-          </ul>
+            <UButton
+              v-for="model in results"
+              :key="model.id"
+              color="neutral"
+              variant="ghost"
+              block
+              class="justify-between"
+              data-testid="pennantplus-scope-result"
+              @click="pick(model)"
+            >
+              <span>{{ model.title }}</span>
+              <span class="text-muted">#{{ model.id }}</span>
+            </UButton>
+            <p v-if="results.length === 0" class="px-3 py-1.5 text-muted">{{ t('pennantplus.features.no_models') }}</p>
+          </div>
         </div>
       </UFormField>
 
@@ -208,8 +203,8 @@ async function submit(): Promise<void> {
       <div class="flex items-end sm:pt-6">
         <UButton type="submit" icon="i-lucide-check" :label="t('pennantplus.features.save')" :loading="action.busy.value" data-testid="pennantplus-save" />
       </div>
-    </form>
+    </UForm>
 
-    <p v-if="action.message.value" class="mt-3 text-sm text-error" role="alert">{{ action.message.value }}</p>
-  </UCard>
+    <UAlert v-if="action.message.value" color="error" variant="subtle" icon="i-lucide-circle-alert" :title="action.message.value" />
+  </UPageCard>
 </template>
