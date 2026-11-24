@@ -4,9 +4,10 @@
   "root": "../../atrium",
   "inputs": [
     "src",
+    "../client/src",
     "package.json",
     "vite.config.ts",
     "pnpm-lock.yaml"
   ],
-  "hash": "5c28dee2a5ca8b68b08b85dc651727926e45208166ab95e59d61341c7a3b3170"
+  "hash": "fa813e7fde99af11b7746c894cdcc36f5203fe9495f7fa2e0f147b96cc9100ab"
 }
