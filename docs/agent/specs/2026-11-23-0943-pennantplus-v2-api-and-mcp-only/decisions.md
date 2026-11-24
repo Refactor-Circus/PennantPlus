@@ -95,3 +95,9 @@
 - Rationale: The user said "move the vue files for each module back into their respective modules. modules need to register their js. js should be injected into the blade file. modules are responsible for their own frontend and cjs clients from now on". This supersedes the "ships no UI" part of the v2 scope (PennantPlus still ships no server-rendered UI).
 - Date: 2026-11-24
 - Raised by: user
+
+## D-017: Where is PennantPlus's Atrium integration declared?
+- Choice: In PennantPlus, as a static JSON manifest (Atrium D-090, commit 009b5bc): `atrium/src/integration.json` declares the `pennantplus.atrium` feature, the Feature flags nav item (System group, sort 90) and the `pennantplus.features` list screen at `/pennantplus/features`; no widgets, settings, search sources or hooks. The Atrium preset validates it and writes `dist/atrium/integration.json` (committed, hashed into `build.json`), and `composer.json` `extra.atrium.integration` points at it. The SDK pin moves to 009b5bc. `atrium/test/integration.test.ts` checks the manifest with `expectIntegrationManifest()` instead of Atrium's PHP-written fixture; `AtriumModuleTest` and `ComposerTest` check the shipped file and the new key. Still no Atrium PHP and no Composer dependency on Atrium.
+- Rationale: The user said "move the php declarations": each package owns its Atrium integration declaration, which Atrium no longer holds in PHP.
+- Date: 2026-11-24
+- Raised by: user

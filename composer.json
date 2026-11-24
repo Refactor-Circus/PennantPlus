@@ -131,7 +131,8 @@
             ],
             "styles": [
                 "dist/atrium/atrium.css"
-            ]
+            ],
+            "integration": "dist/atrium/integration.json"
         }
     },
     "config": {

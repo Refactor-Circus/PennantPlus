@@ -206,6 +206,8 @@ app(UpdateFeatureValueAction::class)->execute(UpdateFeatureValueData::from([
 
 When [Atrium v2](https://github.com/Refactor-Circus/Atrium) is installed, it shows the feature flags screen at `/pennantplus/features`. PennantPlus ships that screen as an Atrium module: JavaScript and CSS only, prebuilt and committed in `dist/atrium/` (`atrium.js`, its chunks, `atrium.css` and `build.json`) and declared under `extra.atrium` in `composer.json`. Atrium v2 discovers it from Composer's installed packages (`php artisan atrium:discover`, which `package:discover` runs) and loads it while the `pennantplus` integration is active. No PHP code in PennantPlus refers to Atrium, and Composer does not require it; without Atrium the files are inert.
 
+The module also declares its Atrium integration in a JSON manifest, `atrium/src/integration.json`: the `pennantplus.atrium` feature flag that gates it, the **Feature flags** nav item (group System) and the `pennantplus.features` list screen at `/pennantplus/features`. PennantPlus adds no widget, settings panel, search source or hook on other packages' screens. The build validates the manifest against Atrium's schema and writes it to `dist/atrium/integration.json`, which `extra.atrium.integration` points at; Atrium reads it when it registers the integration. To change what PennantPlus declares, edit `atrium/src/integration.json` and rebuild.
+
 The module's sources (Vue, TypeScript and Vitest tests) live in `atrium/`, which is left out of the dist archive, and use the generated client's types (`client/src/schema.d.ts`). After changing them, rebuild and commit `dist/atrium/`:
 
 ```bash

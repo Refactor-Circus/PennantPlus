@@ -18,11 +18,11 @@ function pennantPlusModuleRoot(): string
 }
 
 /**
- * @return array{key: string, scripts: list<string>, styles: list<string>}
+ * @return array{key: string, scripts: list<string>, styles: list<string>, integration: string}
  */
 function pennantPlusModuleDeclaration(): array
 {
-    /** @var array{extra: array{atrium: array{key: string, scripts: list<string>, styles: list<string>}}} $manifest */
+    /** @var array{extra: array{atrium: array{key: string, scripts: list<string>, styles: list<string>, integration: string}}} $manifest */
     $manifest = json_decode((string) file_get_contents(pennantPlusModuleRoot().'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
 
     return $manifest['extra']['atrium'];
@@ -85,12 +85,26 @@ function pennantPlusModuleSourcesHash(string $root, array $inputs): string
     return hash('sha256', implode('', $lines));
 }
 
-it('declares the module under its integration key, with the built script and stylesheet', function (): void {
+it('declares the module under its integration key, with the built script, stylesheet and integration manifest', function (): void {
     expect(pennantPlusModuleDeclaration())->toBe([
         'key' => 'pennantplus',
         'scripts' => ['dist/atrium/atrium.js'],
         'styles' => ['dist/atrium/atrium.css'],
+        'integration' => 'dist/atrium/integration.json',
     ]);
+});
+
+it('ships its integration manifest: valid JSON, version 1, under its own key', function (): void {
+    $path = pennantPlusModuleRoot().'/'.pennantPlusModuleDeclaration()['integration'];
+
+    expect(is_file($path))->toBeTrue('dist/atrium/integration.json is missing: run `pnpm build` in atrium/ and commit dist/atrium.');
+
+    /** @var array<string, mixed> $manifest */
+    $manifest = json_decode((string) file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($manifest)->toBeArray()
+        ->and($manifest['key'] ?? null)->toBe('pennantplus')
+        ->and($manifest['version'] ?? null)->toBe(1);
 });
 
 it('commits every file composer.json declares', function (string $path): void {

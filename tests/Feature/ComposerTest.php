@@ -44,13 +44,15 @@ it('names atrium in no require, require-dev, suggest or conflict entry', functio
 })->with(['require', 'require-dev', 'suggest', 'conflict']);
 
 it('declares its atrium front-end module and no atrium plugin', function (): void {
-    // The only Atrium entry: the module's built script and stylesheet. No
+    // The only Atrium entry: the module's built script, stylesheet and
+    // integration manifest (JSON, no Atrium PHP). No
     // `plugins` (the v1 PHP plugin) or any other key.
     expect((array) (pennantPlusComposerManifest()['extra'] ?? []))->toHaveKey('atrium')
         ->and(pennantPlusComposerManifest()['extra']['atrium'] ?? null)->toBe([
             'key' => 'pennantplus',
             'scripts' => ['dist/atrium/atrium.js'],
             'styles' => ['dist/atrium/atrium.css'],
+            'integration' => 'dist/atrium/integration.json',
         ]);
 });
 
