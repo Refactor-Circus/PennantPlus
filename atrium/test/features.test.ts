@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { DOMWrapper, VueWrapper } from '@vue/test-utils'
+import type { VueWrapper } from '@vue/test-utils'
 import FeaturesPage from '../src/pages/features.vue'
 import type { components } from '../../client/src/schema'
 import type { AtriumIntegrationScreenData } from '@refactor-circus/atrium'
-import { settle } from '@refactor-circus/atrium/testing'
+import { findInput, openSelectLabels, pickOption, selectValue, settle, tableRows } from '@refactor-circus/atrium/testing'
 import { mockPackageApi, mountIntegration, reply, resetPackageApis, type PackageCall, type PackageRoutes } from '@refactor-circus/atrium/testing'
 import { clearAtriumData, mockAtriumApi, useRouter } from '@refactor-circus/atrium/testing'
 
@@ -118,45 +118,6 @@ async function mountPage(): Promise<VueWrapper> {
   return wrapper as unknown as VueWrapper
 }
 
-/** The input under a test id: the element itself, or the one Nuxt UI wraps. */
-function control(wrapper: VueWrapper, testid: string): DOMWrapper<HTMLInputElement> {
-  const found = wrapper.find<HTMLInputElement>(`[data-testid="${testid}"]`)
-
-  return found.element.matches('input') ? found : found.find<HTMLInputElement>('input')
-}
-
-/** The stored values' rows of the <UTable>. */
-function rows(wrapper: VueWrapper): DOMWrapper<HTMLTableRowElement>[] {
-  return wrapper.findAll<HTMLTableRowElement>('[data-testid="pennantplus-values"] tbody tr')
-}
-
-/** Opens the <USelect> under a test id and returns its options (rendered in a portal). */
-async function openSelect(wrapper: VueWrapper, testid: string): Promise<HTMLElement[]> {
-  await wrapper.find(`[data-testid="${testid}"]`).trigger('pointerdown', { button: 0, pointerType: 'mouse' })
-  await settle()
-
-  return [...document.body.querySelectorAll<HTMLElement>('[role="listbox"] [role="option"]')]
-}
-
-/** The labels a <USelect> offers; it is closed again afterwards. */
-async function selectOptions(wrapper: VueWrapper, testid: string): Promise<string[]> {
-  const labels = (await openSelect(wrapper, testid)).map(option => option.textContent!.trim())
-
-  document.body.querySelector('[role="listbox"]')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-  await settle()
-
-  return labels
-}
-
-/** Picks the option labelled `label` from the <USelect> under a test id. */
-async function choose(wrapper: VueWrapper, testid: string, label: string): Promise<void> {
-  const option = (await openSelect(wrapper, testid)).find(found => found.textContent!.trim() === label)
-
-  expect(option, `${testid} offers ${label}`).toBeDefined()
-  option!.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'mouse' }))
-  await settle()
-}
-
 function requests(calls: PackageCall[], method: string, route: string): PackageCall[] {
   return calls.filter(call => call.method === method && call.route === route)
 }
@@ -187,7 +148,7 @@ describe('loading', () => {
     expect(requests(calls, 'GET', '/values')).toHaveLength(1)
     expect(calls.every(call => call.pkg === 'pennantplus')).toBe(true)
 
-    const shown = rows(wrapper)
+    const shown = tableRows(wrapper, 'pennantplus-values')
     expect(shown).toHaveLength(2)
     expect(shown[0]!.text()).toContain('new-dashboard')
     expect(shown[0]!.text()).toContain('Global')
@@ -224,7 +185,7 @@ describe('loading', () => {
     const offered = wrapper.findAll<HTMLOptionElement>('[data-testid="pennantplus-feature-options"] option').map(option => option.element.value)
     expect(offered).toEqual(['new-dashboard', 'App\\Features\\Beta'])
 
-    expect(await selectOptions(wrapper, 'pennantplus-filter-scope')).toEqual(['All scopes', 'Global', 'Users', 'Other scopes'])
+    expect(await openSelectLabels(wrapper, 'pennantplus-filter-scope')).toEqual(['All scopes', 'Global', 'Users', 'Other scopes'])
   })
 
   it('offers only global, the configured models and other scopes when setting a value', async () => {
@@ -233,7 +194,7 @@ describe('loading', () => {
     })
     const wrapper = await mountPage()
 
-    expect(await selectOptions(wrapper, 'pennantplus-scope-type')).toEqual(['Global', 'Users', 'Other scopes'])
+    expect(await openSelectLabels(wrapper, 'pennantplus-scope-type')).toEqual(['Global', 'Users', 'Other scopes'])
   })
 
   it('shows a value that is not a boolean as JSON', async () => {
@@ -243,7 +204,7 @@ describe('loading', () => {
     await wrapper.find('[data-testid="pennantplus-next"]').trigger('click')
     await settle()
 
-    const row = rows(wrapper)[0]!
+    const row = tableRows(wrapper, 'pennantplus-values')[0]!
     expect(row.text()).toContain('{"variant":"b"}')
     expect(row.find('[data-testid="pennantplus-value-status"]').attributes('data-status')).toBe('active')
   })
@@ -270,27 +231,45 @@ describe('filters and pages', () => {
     const calls = pennantplus()
     const wrapper = await mountPage()
 
-    await control(wrapper, 'pennantplus-filter-feature').setValue('new-dashboard')
-    await choose(wrapper, 'pennantplus-filter-scope', 'Users')
-    await control(wrapper, 'pennantplus-filter-scope-id').setValue('7')
+    await findInput(wrapper, 'pennantplus-filter-feature').setValue('new-dashboard')
+    await pickOption(wrapper, 'pennantplus-filter-scope', 'Users')
+    await findInput(wrapper, 'pennantplus-filter-scope-id').setValue('7')
     await wrapper.find('[data-testid="pennantplus-filters"]').trigger('submit')
     await settle()
 
     expect(requests(calls, 'GET', '/values').at(-1)!.query).toEqual({ feature: 'new-dashboard', scope: USER, scope_id: '7' })
   })
 
+  it('sends no scope when "All scopes" is chosen again, the select holding \'\'', async () => {
+    const calls = pennantplus()
+    const wrapper = await mountPage()
+
+    expect(selectValue(wrapper, 'pennantplus-filter-scope')).toBe('')
+
+    await pickOption(wrapper, 'pennantplus-filter-scope', 'Users')
+    expect(selectValue(wrapper, 'pennantplus-filter-scope')).toBe(USER)
+
+    await pickOption(wrapper, 'pennantplus-filter-scope', 'All scopes')
+    expect(selectValue(wrapper, 'pennantplus-filter-scope')).toBe('')
+
+    await wrapper.find('[data-testid="pennantplus-filters"]').trigger('submit')
+    await settle()
+
+    expect(requests(calls, 'GET', '/values').at(-1)!.query).toEqual({})
+  })
+
   it('resets the filters', async () => {
     const calls = pennantplus()
     const wrapper = await mountPage()
 
-    await control(wrapper, 'pennantplus-filter-feature').setValue('new-dashboard')
+    await findInput(wrapper, 'pennantplus-filter-feature').setValue('new-dashboard')
     await wrapper.find('[data-testid="pennantplus-filters"]').trigger('submit')
     await settle()
     await wrapper.find('[data-testid="pennantplus-reset"]').trigger('click')
     await settle()
 
     expect(requests(calls, 'GET', '/values').at(-1)!.query).toEqual({})
-    expect(control(wrapper, 'pennantplus-filter-feature').element.value).toBe('')
+    expect(findInput(wrapper, 'pennantplus-filter-feature').element.value).toBe('')
   })
 
   it('pages the way values.index does, by page number', async () => {
@@ -313,8 +292,8 @@ describe('setting a value (values.update)', () => {
     const calls = pennantplus()
     const wrapper = await mountPage()
 
-    await control(wrapper, 'pennantplus-feature').setValue('new-dashboard')
-    await control(wrapper, 'pennantplus-value-input').setValue('false')
+    await findInput(wrapper, 'pennantplus-feature').setValue('new-dashboard')
+    await findInput(wrapper, 'pennantplus-value-input').setValue('false')
     await wrapper.find('[data-testid="pennantplus-set-value"]').trigger('submit')
     await settle()
 
@@ -329,9 +308,9 @@ describe('setting a value (values.update)', () => {
     const calls = pennantplus()
     const wrapper = await mountPage()
 
-    await control(wrapper, 'pennantplus-feature').setValue('App\\Features\\Beta')
-    await choose(wrapper, 'pennantplus-scope-type', 'Users')
-    await control(wrapper, 'pennantplus-scope-search').setValue('Ada')
+    await findInput(wrapper, 'pennantplus-feature').setValue('App\\Features\\Beta')
+    await pickOption(wrapper, 'pennantplus-scope-type', 'Users')
+    await findInput(wrapper, 'pennantplus-scope-search').setValue('Ada')
     await wait(300)
 
     const search = requests(calls, 'GET', '/scopes/{type}/models')
@@ -342,7 +321,7 @@ describe('setting a value (values.update)', () => {
     await wrapper.find('[data-testid="pennantplus-scope-result"]').trigger('click')
     expect(wrapper.find('[data-testid="pennantplus-scope-picked"]').text()).toContain('Ada Lovelace (#7)')
 
-    await control(wrapper, 'pennantplus-value-input').setValue('{"variant":"b"}')
+    await findInput(wrapper, 'pennantplus-value-input').setValue('{"variant":"b"}')
     await wrapper.find('[data-testid="pennantplus-set-value"]').trigger('submit')
     await settle()
 
@@ -358,9 +337,9 @@ describe('setting a value (values.update)', () => {
     const calls = pennantplus()
     const wrapper = await mountPage()
 
-    await control(wrapper, 'pennantplus-feature').setValue('new-dashboard')
-    await choose(wrapper, 'pennantplus-scope-type', 'Other scopes')
-    await control(wrapper, 'pennantplus-scope-string').setValue('team-red')
+    await findInput(wrapper, 'pennantplus-feature').setValue('new-dashboard')
+    await pickOption(wrapper, 'pennantplus-scope-type', 'Other scopes')
+    await findInput(wrapper, 'pennantplus-scope-string').setValue('team-red')
     await wrapper.find('[data-testid="pennantplus-set-value"]').trigger('submit')
     await settle()
 
@@ -371,8 +350,8 @@ describe('setting a value (values.update)', () => {
     const calls = pennantplus()
     const wrapper = await mountPage()
 
-    await control(wrapper, 'pennantplus-feature').setValue('new-dashboard')
-    await control(wrapper, 'pennantplus-value-input').setValue('yes please')
+    await findInput(wrapper, 'pennantplus-feature').setValue('new-dashboard')
+    await findInput(wrapper, 'pennantplus-value-input').setValue('yes please')
     await wrapper.find('[data-testid="pennantplus-set-value"]').trigger('submit')
     await settle()
 
@@ -442,7 +421,7 @@ describe('forgetting a value (values.destroy)', () => {
 
 describe('purging a feature (features.destroy)', () => {
   async function filterByFeature(wrapper: VueWrapper, feature: string): Promise<void> {
-    await control(wrapper, 'pennantplus-filter-feature').setValue(feature)
+    await findInput(wrapper, 'pennantplus-filter-feature').setValue(feature)
     await wrapper.find('[data-testid="pennantplus-filters"]').trigger('submit')
     await settle()
   }

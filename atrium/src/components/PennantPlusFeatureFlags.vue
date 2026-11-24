@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SelectItem, TableColumn } from '@nuxt/ui'
+import type { TableColumn } from '@refactor-circus/atrium/ui'
 import PennantPlusSetValue from './PennantPlusSetValue.vue'
 import {
   displayValue,
@@ -38,9 +38,6 @@ interface Filters {
 
 const FEATURE_LIST = 'pennantplus-feature-options'
 
-/** The scope filter's "all scopes" item: a select item cannot have an empty value. */
-const ALL_SCOPES = '*'
-
 const { t, locale } = useI18n()
 const client = usePennantPlus()
 const action = usePennantPlusAction()
@@ -62,16 +59,8 @@ const applied = ref<Filters>({ feature: '', scope: '', scope_id: '' })
 
 const forbidden = computed(() => refused.value || action.forbidden.value)
 
-/** The scope filter's value, with no scope as ALL_SCOPES. */
-const scopeFilter = computed({
-  get: () => filters.scope === '' ? ALL_SCOPES : filters.scope,
-  set: (scope: string) => { filters.scope = scope === ALL_SCOPES ? '' : scope }
-})
-
-const scopeItems = computed<SelectItem[]>(() => [
-  { label: t('pennantplus.features.all_scopes'), value: ALL_SCOPES },
-  ...scopeTypes.value.map(scope => ({ label: scope.label, value: scope.type }))
-])
+/** Every scope type to filter by; <AtriumSelect>'s blank item is "All scopes" (''). */
+const scopeItems = computed(() => scopeTypes.value.map(scope => ({ label: scope.label, value: scope.type })))
 
 const columns = computed<TableColumn<PennantPlusValue>[]>(() => [
   { accessorKey: 'feature', header: t('pennantplus.features.feature'), meta: { class: { td: 'font-medium' } } },
@@ -247,7 +236,13 @@ void load()
           />
         </UFormField>
         <UFormField :label="t('pennantplus.features.scope')">
-          <USelect v-model="scopeFilter" :items="scopeItems" class="w-full" data-testid="pennantplus-filter-scope" />
+          <AtriumSelect
+            v-model="filters.scope"
+            :items="scopeItems"
+            :blank="t('pennantplus.features.all_scopes')"
+            class="w-full"
+            data-testid="pennantplus-filter-scope"
+          />
         </UFormField>
         <UFormField :label="t('pennantplus.features.scope_id')">
           <UInput v-model="filters.scope_id" class="w-full" data-testid="pennantplus-filter-scope-id" />
