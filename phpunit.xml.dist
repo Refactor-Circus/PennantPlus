@@ -25,6 +25,9 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <testsuite name="OpenApi">
+            <directory>tests/OpenApi</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

@@ -1,6 +1,36 @@
 # Release Notes
 
-## [Unreleased](https://github.com/Refactor-Circus/PennantPlus/compare/v0.1.0...main)
+## [Unreleased](https://github.com/Refactor-Circus/PennantPlus/compare/v2.0.0...main)
+
+## [v2.0.0](https://github.com/Refactor-Circus/PennantPlus/compare/v0.1.0...v2.0.0)
+
+PennantPlus now ships its JSON API, its MCP server and its Atrium front-end module. The PHP Atrium integration is gone: Atrium v2 hosts the feature flags UI by loading PennantPlus's prebuilt module (JavaScript only), which calls the API through the new OpenAPI document and TypeScript client. No PHP code in the package names Atrium any more. The JSON API, the MCP tools, the Actions, the events, the `pennantplus` driver and the `FeatureGate` are unchanged.
+
+### Breaking
+
+- The Atrium **Feature flags** page and its plugin are removed: `RefactorCircus\PennantPlus\Atrium\PennantPlugin`, `FeatureFlagController`, its form requests and the `atrium.pennant.*` routes. `composer.json` no longer declares `extra.atrium.plugins`, so Atrium discovers no PHP plugin from PennantPlus (only the front-end module below), and `refactor-circus/atrium` is gone from `require-dev`, `suggest` and `conflict`.
+- PennantPlus no longer registers Atrium's feature resolver, so `NavItem::feature()`, plugin `features()` and the `atrium.feature` middleware no longer go through the `FeatureGate`. The `pennantplus.atrium` config section and its `pennantplus.atrium.resolve_features` key are removed; delete them from a published `config/pennantplus.php`.
+- The `@pennantplusManages` / `@elsepennantplusManages` / `@endpennantplusManages` Blade conditional is removed. Ask the `pennantplus.ability` Gate ability yourself, for example with `@can`.
+- `RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess` is removed. `FeatureFlagManager::allowsManagement()` still answers the same `pennantplus.ability` check.
+- `RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow` is removed, and with it the page's `pennantplus.features` screen on Atrium's screen extensions registry. Sections registered there no longer render.
+- The views are removed: `resources/views` is gone, the `pennantplus::` view namespace is no longer loaded, and the `pennantplus-views` publish tag no longer exists. `--tag=pennantplus` publishes only the config and lang files. Delete any published `resources/views/vendor/pennantplus`.
+- `lang/en/pennantplus.php` keeps only the keys the API and MCP tools use: `global`, `other`, `scope_missing` and `feature_disabled`. Every key the page used is removed (`group`, `features`, `description`, `feature`, `scope`, `value`, `forget`, `purge`, `value_saved`, `feature_purged` and the rest).
+
+### Upgrade
+
+- For the feature flags UI, install Atrium v2. It loads PennantPlus's own Atrium module from `dist/atrium/`, which calls the PennantPlus JSON API with the generated client's types.
+- For Atrium's own feature flags (`NavItem::feature()`, plugin `features()`, the `atrium.feature` middleware), use Atrium's own Pennant integration; see the Atrium v2 documentation. PennantPlus no longer answers them.
+- Remove `pennantplus.atrium` from a published `config/pennantplus.php`, and delete published PennantPlus views and any `@pennantplusManages` use in your own views.
+- Nothing changes for the API, the MCP server, the driver, the gate or stored values.
+
+### Added
+
+- `openapi.json` at the package root: the OpenAPI 3.1 document of the JSON API (`info.version` `2.0.0`), exported with `dedoc/scramble`, a development dependency only. A test fails while it differs from a fresh export.
+- `client/`: `@refactor-circus/pennantplus-client`, a typed fetch client on `openapi-fetch` generated from `openapi.json`. `createPennantPlusClient(options)` returns a client typed by the document, and the `paths`, `components` and `operations` types are exported. It is installed as a git dependency on the v2 tag (pnpm: `github:Refactor-Circus/PennantPlus#v2.0.0&path:/client`) and builds on install.
+- PennantPlus ships its Atrium module: the feature flags screen as a prebuilt ES module and stylesheet in `dist/atrium/`, declared under `extra.atrium` in `composer.json` (`key`, `scripts`, `styles`) and loaded by Atrium v2 while the `pennantplus` integration is active. Its Vue sources are in `atrium/` (left out of the dist archive); Composer still does not require Atrium.
+- The Atrium module's screen is built from Nuxt UI (Atrium D-091): the stored values are a `UTable`, the forms `UForm` with `USelect` scope pickers, the empty list a `UEmpty` and the load error a `UAlert`; a guard test keeps raw interactive HTML out of `atrium/src`.
+- PennantPlus declares its Atrium integration in a manifest: `dist/atrium/integration.json` (built from `atrium/src/integration.json`, declared as `extra.atrium.integration`) holds the `pennantplus.atrium` feature, the **Feature flags** nav item and the `pennantplus.features` screen, as static JSON with no Atrium PHP.
+- `composer client:generate` regenerates `openapi.json`, `client/openapi.json` and `client/src/schema.d.ts`. A CI `client` job fails when any of them is stale.
 
 ## [v0.1.0](https://github.com/Refactor-Circus/PennantPlus/commits/v0.1.0) - 2026-10-30
 

@@ -1,0 +1,32 @@
+{
+  "name": "@refactor-circus/pennantplus-client",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Typed fetch client for the PennantPlus JSON API, generated from its OpenAPI document.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "generate": "openapi-typescript openapi.json -o src/schema.d.ts",
+    "build": "tsc -p .",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.17.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 use Composer\Autoload\ClassLoader;
 use Illuminate\Routing\Route as RoutingRoute;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Laravel\Pennant\Feature;
 use RefactorCircus\Atrium\AtriumServiceProvider;
 use RefactorCircus\Atrium\Domains\Access\Services\Gatekeeper;
 use RefactorCircus\Atrium\Domains\Plugins\Services\PluginRegistry;
-use RefactorCircus\PennantPlus\Atrium\FeatureFlagAccess;
-use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
 use RefactorCircus\PennantPlus\PennantPlusServiceProvider;
 use RefactorCircus\PennantPlus\Tests\WithoutAtrium\WithoutAtriumTestCase;
 
 uses(WithoutAtriumTestCase::class);
 
 /**
- * Every class, interface and trait loaded so far from Atrium or from the
- * PennantPlus layer that extends it.
+ * Every class, interface and trait loaded so far from Atrium.
  *
  * @return list<string>
  */
@@ -27,7 +23,7 @@ function loadedAtriumClasses(): array
 {
     return array_values(array_filter(
         [...get_declared_classes(), ...get_declared_interfaces(), ...get_declared_traits()],
-        fn (string $class): bool => str_starts_with($class, 'RefactorCircus\\Atrium\\') || str_starts_with($class, 'RefactorCircus\\PennantPlus\\Atrium\\'),
+        fn (string $class): bool => str_starts_with($class, 'RefactorCircus\\Atrium\\'),
     ));
 }
 
@@ -48,11 +44,8 @@ it('cannot load atrium', function (): void {
         ->and(class_exists(PluginRegistry::class))->toBeFalse();
 });
 
-it('boots the provider past its atrium guards', function (): void {
-    expect(app()->getProvider(PennantPlusServiceProvider::class))->not->toBeNull()
-        ->and(Blade::getCustomDirectives())->not->toHaveKey('pennantplusManages')
-        ->and(class_exists(FeatureFlagAccess::class, false))->toBeFalse()
-        ->and(class_exists(PennantPlugin::class, false))->toBeFalse();
+it('boots the provider', function (): void {
+    expect(app()->getProvider(PennantPlusServiceProvider::class))->not->toBeNull();
 });
 
 it('registers no atrium route', function (): void {

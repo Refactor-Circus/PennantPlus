@@ -10,15 +10,11 @@ use Laravel\Mcp\Server\McpServiceProvider;
 use Laravel\Pennant\PennantServiceProvider;
 use Orchestra\Testbench\Concerns\WithLaravelMigrations;
 use Orchestra\Testbench\TestCase as Orchestra;
-use RefactorCircus\Atrium\AtriumServiceProvider;
-use RefactorCircus\Atrium\Testing\ResetsScreenExtensions;
-use RefactorCircus\PennantPlus\Atrium\PennantPlugin;
 use RefactorCircus\PennantPlus\PennantPlusServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
     use RefreshDatabase;
-    use ResetsScreenExtensions;
     use WithLaravelMigrations;
 
     protected function getPackageProviders($app): array
@@ -26,7 +22,6 @@ abstract class TestCase extends Orchestra
         return [
             PennantServiceProvider::class,
             McpServiceProvider::class,
-            AtriumServiceProvider::class,
             PennantPlusServiceProvider::class,
         ];
     }
@@ -38,10 +33,6 @@ abstract class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
-        // refactor-circus/cortex is a dev dependency, so Atrium discovers its plugin here
-        // without its migrations; its navigation would query missing tables.
-        $app['config']->set('atrium.disabled', ['cortex']);
-
         tap($app->make(Repository::class), function (Repository $config): void {
             $config->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
 
@@ -51,10 +42,6 @@ abstract class TestCase extends Orchestra
                 'database' => ':memory:',
                 'prefix' => '',
             ]);
-
-            // Atrium discovers the plugin from composer.json in a real
-            // application; the package's own test app has to name it.
-            $config->set('atrium.plugins', [PennantPlugin::class]);
         });
     }
 }

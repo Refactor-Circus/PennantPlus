@@ -1,7 +1,7 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "refactor-circus/pennantplus",
-    "description": "Layered Pennant feature flags: a global value with per-user overrides, an entry-surface gate, and an Atrium dashboard for stored values.",
+    "description": "Layered Pennant feature flags: a global value with per-user overrides, an entry-surface gate, a JSON API and an MCP server.",
     "keywords": [
         "laravel",
         "refactor-circus",
@@ -19,12 +19,13 @@
     ],
     "require": {
         "php": "^8.5",
-        "refactor-circus/keystone": "^0.1",
+        "refactor-circus/keystone": "^2.0",
         "laravel/framework": "^13.35",
         "laravel/mcp": "^1.0.1",
         "laravel/pennant": "^1.26"
     },
     "require-dev": {
+        "dedoc/scramble": "^0.13.55",
         "larastan/larastan": "^3.13",
         "laravel/pao": "^1.1.5",
         "laravel/pint": "^1.32.1, !=1.32.2",
@@ -33,16 +34,11 @@
         "pestphp/pest-plugin-laravel": "^5.0.1",
         "pestphp/pest-plugin-type-coverage": "^5.0.3",
         "phpstan/extension-installer": "^1.4.3",
-        "refactor-circus/atrium": "^0.1",
-        "refactor-circus/cortex": "^0.1",
+        "refactor-circus/cortex": "^2.0",
         "refactor-circus/ringside": "dev-main",
         "refactor-circus/standards": "dev-main"
     },
-    "conflict": {
-        "refactor-circus/atrium": "<0.1.0"
-    },
     "suggest": {
-        "refactor-circus/atrium": "Manage stored feature flag values from the Atrium dashboard (dev-main).",
         "refactor-circus/cortex": "Let Cortex agents use the PennantPlus tools and manage the MCP instructions and tool descriptions (dev-main)."
     },
     "autoload": {
@@ -100,6 +96,11 @@
             "@test:unit",
             "@test:without-atrium"
         ],
+        "client:generate": [
+            "@php vendor/bin/testbench scramble:export --path=openapi.json --ansi",
+            "@php -r \"copy('openapi.json', 'client/openapi.json');\"",
+            "npm --prefix client run generate"
+        ],
         "clear": [
             "@php vendor/bin/testbench package:purge-skeleton --ansi"
         ],
@@ -120,10 +121,18 @@
                 "RefactorCircus\\PennantPlus\\PennantPlusServiceProvider"
             ]
         },
+        "branch-alias": {
+            "dev-main": "2.0.x-dev"
+        },
         "atrium": {
-            "plugins": [
-                "RefactorCircus\\PennantPlus\\Atrium\\PennantPlugin"
-            ]
+            "key": "pennantplus",
+            "scripts": [
+                "dist/atrium/atrium.js"
+            ],
+            "styles": [
+                "dist/atrium/atrium.css"
+            ],
+            "integration": "dist/atrium/integration.json"
         }
     },
     "config": {

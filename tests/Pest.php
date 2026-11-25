@@ -8,10 +8,12 @@ use Laravel\Mcp\Server\Tool;
 use RefactorCircus\Keystone\Testing\McpTools;
 use RefactorCircus\PennantPlus\Mcp\PennantPlusServer;
 use RefactorCircus\PennantPlus\Tests\CortexTestCase;
+use RefactorCircus\PennantPlus\Tests\OpenApiTestCase;
 use RefactorCircus\PennantPlus\Tests\TestCase;
 
 uses(TestCase::class)->in('Feature');
 uses(CortexTestCase::class)->in('Cortex');
+uses(OpenApiTestCase::class)->in('OpenApi');
 
 /**
  * Call a PennantPlus tool as an MCP client does, through tool search, with

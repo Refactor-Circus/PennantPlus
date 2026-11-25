@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Pennant\Feature;
 use RefactorCircus\PennantPlus\Domains\Feature\Actions\DeleteFeatureValueAction;
@@ -163,34 +162,6 @@ it('forgets every scoped value in chunks once the global value is committed', fu
         ->and(DB::table('features')->where('name', 'beta')->pluck('value', 'scope')->all())
         ->toBe([Feature::serializeScope(null) => 'true'])
         ->and(DB::table('features')->where('name', 'other')->count())->toBe(1);
-});
-
-it('asks whether the viewer manages feature flags once per page, not per row', function (): void {
-    config(['pennantplus.ability' => 'manageFeatures']);
-
-    $checks = 0;
-
-    Gate::define('viewAtrium', fn (User $user): bool => true);
-    Gate::define('manageFeatures', function (User $user) use (&$checks): bool {
-        $checks++;
-
-        return true;
-    });
-
-    storeRows('beta', array_map(fn (int $i): string => "team-{$i}", range(1, 20)));
-
-    $this->actingAs(makeUser())->get(route('atrium.pennant.index'))
-        ->assertOk()
-        ->assertSee('data-testid="pennant-toggle"', false);
-
-    $perPage = $checks;
-    $checks = 0;
-
-    storeRows('gamma', array_map(fn (int $i): string => "team-{$i}", range(1, 20)));
-
-    $this->actingAs(makeUser('bob@example.com'))->get(route('atrium.pennant.index'))->assertOk();
-
-    expect($checks)->toBe($perPage);
 });
 
 it('builds the configured scope models once for the same config', function (): void {

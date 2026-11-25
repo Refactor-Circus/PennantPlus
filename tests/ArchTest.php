@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Model;
 use RefactorCircus\Keystone\Testing\Arch;
-use RefactorCircus\PennantPlus\Atrium\Data\FeatureValueRow;
 
 const PENNANTPLUS_DOMAINS = __DIR__.'/../src/Domains';
 
@@ -21,6 +20,11 @@ arch('it will not use dd(), ddd(), env(), or exit()')
 arch('the package source declares strict types')
     ->expect('RefactorCircus\PennantPlus')
     ->toUseStrictTypes();
+
+// PennantPlus ships only its JSON API and MCP server; Atrium v2 hosts the UI.
+arch('names no atrium')
+    ->expect('RefactorCircus\PennantPlus')
+    ->not->toUse('RefactorCircus\Atrium');
 
 arch('actions are final classes')
     ->expect(Arch::domainNamespaces('RefactorCircus\PennantPlus', PENNANTPLUS_DOMAINS, 'Actions'))
@@ -74,25 +78,13 @@ arch('every model fires an event for every lifecycle hook')
                 fn (SplFileInfo $file): bool => $file->getExtension() === 'php' && ctype_upper($file->getFilename()[0]),
             ),
         ),
-        // FeatureValueRow is the screen's unsaved row stand-in for a stored
-        // value, not a model with a table: it has no lifecycle to announce,
-        // and it refuses to save, reload or delete (see the rule below).
-        fn (string $class): bool => $class !== FeatureValueRow::class
-            && class_exists($class) && is_subclass_of($class, Model::class) && ! (new ReflectionClass($class))->isAbstract(),
+        fn (string $class): bool => class_exists($class) && is_subclass_of($class, Model::class) && ! (new ReflectionClass($class))->isAbstract(),
     ))))
-    ->toBeEmpty();
-
-arch('the excluded row stand-in is final and has no table')
-    ->expect(fn (): array => array_values(array_filter([
-        (new ReflectionClass(FeatureValueRow::class))->isFinal() ? null : 'not final',
-        (new ReflectionProperty(FeatureValueRow::class, 'table'))->getDeclaringClass()->getName() === Model::class ? null : 'declares $table',
-        (new ReflectionMethod(FeatureValueRow::class, 'getTable'))->getDeclaringClass()->getName() === Model::class ? null : 'overrides getTable()',
-    ])))
     ->toBeEmpty();
 
 arch('requests validate once, with the Data rules, and build from what they validated')
     ->expect(fn (): array => array_values(array_filter(
-        [...(array) glob(PENNANTPLUS_DOMAINS.'/*/Http/Requests/*.php'), ...(array) glob(PENNANTPLUS_DOMAINS.'/*/Mcp/Requests/*.php'), ...(array) glob(__DIR__.'/../src/Atrium/Http/Requests/*.php')],
+        [...(array) glob(PENNANTPLUS_DOMAINS.'/*/Http/Requests/*.php'), ...(array) glob(PENNANTPLUS_DOMAINS.'/*/Mcp/Requests/*.php')],
         fn (string $path): bool => str_contains((string) file_get_contents($path), 'Data::from('),
     )))
     ->toBeEmpty();
